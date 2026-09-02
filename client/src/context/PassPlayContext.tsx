@@ -37,7 +37,7 @@ export interface PassPlayContextType {
   addPlayer: (name: string, avatar: string) => boolean;
   removePlayer: (playerId: string) => void;
   updatePlayer: (playerId: string, updates: Partial<Player>) => void;
-  setPlayers: (players: Player[]) => void;
+  setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   updateSettings: (newSettings: Partial<GameSettings>) => void;
   startPassPlayGame: (customPair?: WordPair) => boolean;
   nextRevealPlayer: () => void;
@@ -241,6 +241,14 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
     if (matchingCustomPack && matchingCustomPack.wordPairs && matchingCustomPack.wordPairs.length > 0) {
       const idx = Math.floor(Math.random() * matchingCustomPack.wordPairs.length);
       return matchingCustomPack.wordPairs[idx];
+    }
+
+    if (settings.category === '🎲 Acak / Misteri' || settings.category === 'Acak') {
+      const randomPair = getRandomWordPair();
+      return {
+        ...randomPair,
+        category: '🎲 Acak / Misteri',
+      };
     }
 
     return getRandomWordPair(settings.category);

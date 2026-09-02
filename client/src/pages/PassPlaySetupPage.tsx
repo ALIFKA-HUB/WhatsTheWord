@@ -1,37 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   Users,
-  Vote,
-  UserPlus,
-  Trash2,
   Play,
-  Layers,
   Clock,
   Shield,
   EyeOff,
   HelpCircle,
-  Plus,
-  Sparkles,
-  Edit2,
-  Check,
+  ArrowRight,
+  ArrowLeft,
+  Dices,
+  Vote,
+  Shuffle,
 } from 'lucide-react';
 import { usePassPlay } from '../context/PassPlayContext';
 import { Button } from '../components/common/Button';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
-import { Badge } from '../components/common/Badge';
+import { Card } from '../components/common/Card';
 import { Modal } from '../components/common/Modal';
-import { AvatarPicker, PRESET_AVATARS } from '../components/game/AvatarPicker';
-import { CATEGORIES } from '../data/defaultWordPacks';
+import { PRESET_AVATARS } from '../components/game/AvatarPicker';
 import { getLocalCustomPacks } from '../services/wordPackService';
 import { CustomWordPack } from '../types/game.types';
 import { Header } from '../components/common/Header';
 
 const TURN_DURATION_OPTIONS = [
-  { label: '30s', value: 30, desc: 'Cepat & Intensif' },
-  { label: '45s', value: 45, desc: 'Standar Turn' },
-  { label: '60s', value: 60, desc: 'Santai & Leluasa' },
-  { label: 'Bebas', value: 0, desc: 'Tanpa Batasan Waktu' },
+  { label: '30s', value: 30, desc: 'Cepat & Intens' },
+  { label: '45s', value: 45, desc: 'Standar' },
+  { label: '60s', value: 60, desc: 'Santai' },
+  { label: 'Bebas', value: 0, desc: 'Tanpa Timer' },
+];
+
+const QUICK_PLAYER_COUNTS = [3, 4, 5, 6, 7, 8, 10, 12];
+
+const RANDOM_NAMES = [
+  'Agent Cyber', 'Neon Fox', 'Shadow Byte', 'Phantom V', 'Holo Viper',
+  'Specter 7', 'Cyborg Zero', 'Matrix Ghost', 'Alpha Wolf', 'Quantum Cat',
+  'Vector Blade', 'Nova Spark', 'Echo Pulse', 'Stealth Hawk', 'Apex Sentinel'
 ];
 
 export interface PassPlaySetupPageProps {
@@ -42,19 +45,18 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
   const {
     players,
     settings,
-    addPlayer,
-    removePlayer,
-    updatePlayer,
+    setPlayers,
     updateSettings,
     startPassPlayGame,
   } = usePassPlay();
 
-  // Add/Edit Player Modal State
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
-  const [modalName, setModalName] = useState('');
-  const [modalAvatar, setModalAvatar] = useState('🕵️');
+  // Step Wizard state: 1 = Roles & Count, 2 = Category & Rules, 3 = Player Names & Avatars
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [totalPlayerCount, setTotalPlayerCount] = useState<number>(players.length || 4);
   const [customPacks, setCustomPacks] = useState<CustomWordPack[]>([]);
+
+  // Avatar picker popup for specific player index
+  const [avatarPickerPlayerIndex, setAvatarPickerPlayerIndex] = useState<number | null>(null);
 
   // Load custom packs from localStorage
   useEffect(() => {
@@ -66,72 +68,64 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
     }
   }, []);
 
-  const handleOpenAddModal = () => {
-    setEditingPlayerId(null);
-    // Pick random avatar not yet chosen if possible
-    const usedAvatars = new Set(players.map((p) => p.avatar));
-    const available = PRESET_AVATARS.filter((a) => !usedAvatars.has(a.emoji));
-    const defaultAvatar = available.length > 0 ? available[0].emoji : PRESET_AVATARS[0].emoji;
+  // Sync player count with players array
+  const adjustPlayerCount = (newCount: number) => {
+    const clamped = Math.max(3, Math.min(20, newCount));
+    setTotalPlayerCount(clamped);
 
-    setModalAvatar(defaultAvatar);
-    setModalName(`Pemain ${players.length + 1}`);
-    setIsAddModalOpen(true);
+    setPlayers((prev) => {
+      if (prev.length === clamped) return prev;
+      if (prev.length < clamped) {
+        const added: typeof prev = [];
+        for (let i = prev.length; i < clamped; i++) {
+          const avatar = PRESET_AVATARS[i % PRESET_AVATARS.length].emoji;
+          added.push({
+            id: 'p_' + Date.now() + '_' + i,
+            name: 'Pemain ' + (i + 1),
+            avatar,
+            isHost: i === 0,
+            isAlive: true,
+            hasVoted: false,
+          });
+        }
+        return [...prev, ...added];
+      } else {
+        return prev.slice(0, clamped);
+      }
+    });
+
+    // Auto-balance roles when total changes
+    const mrWhite = settings.enableMrWhite ? 1 : 0;
+    const maxUndercover = Math.max(1, Math.floor((clamped - mrWhite - 1) / 2));
+    const nextUndercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
+    const nextCivilian = clamped - nextUndercover - mrWhite;
+
+    updateSettings({
+      undercoverCount: nextUndercover,
+      civilianCount: nextCivilian,
+    });
   };
 
-  const handleOpenEditModal = (playerId: string) => {
-    const target = players.find((p) => p.id === playerId);
-    if (!target) return;
-    setEditingPlayerId(playerId);
-    setModalName(target.name);
-    setModalAvatar(target.avatar);
-    setIsAddModalOpen(true);
-  };
-
-  const handleSaveModalPlayer = () => {
-    if (!modalName.trim()) return;
-
-    if (editingPlayerId) {
-      updatePlayer(editingPlayerId, {
-        name: modalName.trim(),
-        avatar: modalAvatar,
-      });
-    } else {
-      addPlayer(modalName.trim(), modalAvatar);
-    }
-    setIsAddModalOpen(false);
-  };
-
-  const handleQuickAdd = () => {
-    const usedAvatars = new Set(players.map((p) => p.avatar));
-    const available = PRESET_AVATARS.filter((a) => !usedAvatars.has(a.emoji));
-    const avatar = available.length > 0
-      ? available[Math.floor(Math.random() * available.length)].emoji
-      : PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)].emoji;
-
-    addPlayer(`Pemain ${players.length + 1}`, avatar);
-  };
-
-  // Role configuration constraints
-  const totalPlayers = players.length;
+  // Role constraints
   const mrWhiteCount = settings.enableMrWhite ? 1 : 0;
-  const maxUndercover = Math.max(1, Math.floor((totalPlayers - mrWhiteCount - 1) / 2));
+  const maxUndercover = Math.max(1, Math.floor((totalPlayerCount - mrWhiteCount - 1) / 2));
   const currentUndercover = Math.min(Math.max(1, settings.undercoverCount), maxUndercover);
-  const currentCivilian = Math.max(1, totalPlayers - currentUndercover - mrWhiteCount);
+  const currentCivilian = Math.max(1, totalPlayerCount - currentUndercover - mrWhiteCount);
 
   const handleUndercoverChange = (delta: number) => {
     const next = Math.max(1, Math.min(maxUndercover, currentUndercover + delta));
     updateSettings({
       undercoverCount: next,
-      civilianCount: totalPlayers - next - mrWhiteCount,
+      civilianCount: totalPlayerCount - next - mrWhiteCount,
     });
   };
 
   const handleToggleMrWhite = () => {
     const nextEnable = !settings.enableMrWhite;
     const nextMrWhite = nextEnable ? 1 : 0;
-    const nextMaxUndercover = Math.max(1, Math.floor((totalPlayers - nextMrWhite - 1) / 2));
+    const nextMaxUndercover = Math.max(1, Math.floor((totalPlayerCount - nextMrWhite - 1) / 2));
     const nextUndercover = Math.min(currentUndercover, nextMaxUndercover);
-    const nextCivilian = totalPlayers - nextUndercover - nextMrWhite;
+    const nextCivilian = totalPlayerCount - nextUndercover - nextMrWhite;
 
     updateSettings({
       enableMrWhite: nextEnable,
@@ -141,221 +135,211 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
     });
   };
 
+  const handlePlayerNameChange = (index: number, name: string) => {
+    setPlayers((prev) => {
+      const updated = [...prev];
+      if (updated[index]) {
+        updated[index] = { ...updated[index], name };
+      }
+      return updated;
+    });
+  };
+
+  const handleSelectAvatar = (index: number, avatar: string) => {
+    setPlayers((prev) => {
+      const updated = [...prev];
+      if (updated[index]) {
+        updated[index] = { ...updated[index], avatar };
+      }
+      return updated;
+    });
+    setAvatarPickerPlayerIndex(null);
+  };
+
+  const handleRandomizeSingleName = (index: number) => {
+    const randomName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+    const randomAvatar = PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)].emoji;
+    setPlayers((prev) => {
+      const updated = [...prev];
+      if (updated[index]) {
+        updated[index] = { ...updated[index], name: randomName, avatar: randomAvatar };
+      }
+      return updated;
+    });
+  };
+
+  const handleRandomizeAll = () => {
+    const shuffledNames = [...RANDOM_NAMES].sort(() => Math.random() - 0.5);
+    const shuffledAvatars = [...PRESET_AVATARS].sort(() => Math.random() - 0.5);
+
+    setPlayers((prev) =>
+      prev.map((p, idx) => ({
+        ...p,
+        name: shuffledNames[idx % shuffledNames.length] || 'Pemain ' + (idx + 1),
+        avatar: shuffledAvatars[idx % shuffledAvatars.length]?.emoji || '🕵️',
+      }))
+    );
+  };
+
   const handleStartGame = () => {
+    // Fill empty names if any
+    setPlayers((prev) =>
+      prev.map((p, idx) => ({
+        ...p,
+        name: p.name.trim() || 'Pemain ' + (idx + 1),
+      }))
+    );
+
     const success = startPassPlayGame();
     if (!success) {
       alert('Minimal 3 pemain untuk memulai permainan!');
     }
   };
 
+  const ALL_CATEGORY_OPTIONS = [
+    { id: '🎲 Acak / Misteri', title: 'Acak / Misteri', icon: '🎲', desc: 'Paling seru! Kategori dirahasiakan & dipilih acak' },
+    { id: 'Makanan & Minuman', title: 'Makanan & Minuman', icon: '🍔', desc: 'Kuliner, jajanan, dan minuman populer' },
+    { id: 'Hewan', title: 'Hewan & Satwa', icon: '🐾', desc: 'Binatang darat, laut, dan udara' },
+    { id: 'Benda & Gadget', title: 'Benda & Gadget', icon: '📱', desc: 'Peralatan sehari-hari dan teknologi' },
+    { id: 'Tempat & Hiburan', title: 'Tempat & Hiburan', icon: '🏖️', desc: 'Destinasi wisata, kota, dan rekreasi' },
+    { id: 'Profesi', title: 'Profesi & Karier', icon: '💼', desc: 'Pekerjaan umum dan keahlian' },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#080c16] text-slate-100 flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-[100dvh] flex flex-col bg-slate-950 text-slate-100">
       <Header
-        title="PASS & PLAY"
-        subtitle="1 HP OFFLINE MODE"
-        onBack={onBack}
-        showBack={!!onBack}
-        backLabel="Menu Utama"
+        onBack={currentStep === 1 ? onBack : () => setCurrentStep((prev) => (prev - 1) as any)}
+        backLabel={currentStep === 1 ? 'Menu Utama' : 'Kembali ke Langkah ' + (currentStep - 1)}
+        className="border-b border-white/10"
       />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        {/* Banner Title */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-            Mode 1 Perangkat Tanpa Kuota / Sinyal
+      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 sm:py-8 space-y-6">
+        {/* Step Progress Header */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 font-bold">
+              Setup Permainan Offline (1 HP)
+            </span>
+            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
+              Langkah {currentStep} dari 3
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-black font-display tracking-tight bg-gradient-to-r from-cyan-300 via-white to-violet-300 bg-clip-text text-transparent">
-            Pengaturan Game Pass & Play
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto font-sans">
-            Kumpulkan teman-temanmu dalam 1 ruangan, oper HP secara bergiliran untuk melihat kata rahasia, lalu temukan siapa impostornya!
-          </p>
+
+          {/* Progress Pills */}
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { step: 1, label: '1. Peran & Jumlah' },
+              { step: 2, label: '2. Kategori & Ronde' },
+              { step: 3, label: '3. Roster Pemain' },
+            ].map((st) => (
+              <div
+                key={st.step}
+                onClick={() => {
+                  if (st.step < currentStep) setCurrentStep(st.step as any);
+                }}
+                className={'h-1.5 rounded-full transition-all duration-300 ' + (currentStep >= st.step ? 'bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.5)]' : 'bg-slate-800')}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* Left Column: Player Roster (7 Cols) */}
-          <div className="md:col-span-7 space-y-6">
-            <Card glow="cyan" className="p-4 sm:p-6">
-              <CardHeader className="p-0 pb-4 flex flex-row items-center justify-between border-b border-white/10">
-                <div className="space-y-1">
-                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-                    <Users className="w-5 h-5 text-cyan-400" />
-                    Daftar Pemain ({players.length}/20)
-                  </CardTitle>
-                  <p className="text-xs text-slate-400">Minimal 3 pemain untuk bermain</p>
+        {/* STEP 1: JUMLAH PEMAIN & KOMPOSISI PERAN */}
+        {currentStep === 1 && (
+          <motion.div
+            key="step1"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-6"
+          >
+            {/* Total Players Count Stepper */}
+            <Card glow="cyan" className="p-5 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white">Jumlah Pemain</h3>
+                    <p className="text-xs text-slate-400">Pilih total pemain yang ikut di ruangan</p>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="xs"
-                    onClick={handleQuickAdd}
-                    disabled={players.length >= 20}
-                    className="border-dashed hover:border-cyan-400 text-xs"
-                    title="Tambah Cepat"
+                  <button
+                    type="button"
+                    onClick={() => adjustPlayerCount(totalPlayerCount - 1)}
+                    disabled={totalPlayerCount <= 3}
+                    className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center text-lg active:scale-95 transition-all"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Cepat</span>
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleOpenAddModal}
-                    disabled={players.length >= 20}
-                    leftIcon={<UserPlus className="w-4 h-4" />}
-                  >
-                    Tambah
-                  </Button>
-                </div>
-              </CardHeader>
-
-              <CardContent className="p-0 pt-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
-                  <AnimatePresence initial={false}>
-                    {players.map((p, index) => (
-                      <motion.div
-                        key={p.id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.2 }}
-                        className="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-slate-950/60 border border-white/10 hover:border-cyan-500/40 hover:bg-slate-900/80 transition-all"
-                      >
-                        <div
-                          onClick={() => handleOpenEditModal(p.id)}
-                          className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
-                          title="Klik untuk ubah nama & avatar"
-                        >
-                          <span className="text-2xl shrink-0 group-hover:scale-110 transition-transform">
-                            {p.avatar}
-                          </span>
-                          <div className="min-w-0 flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-semibold text-slate-200 truncate font-sans group-hover:text-cyan-300">
-                                {p.name}
-                              </span>
-                              {p.isHost && (
-                                <Badge variant="amber" size="sm">
-                                  P1
-                                </Badge>
-                              )}
-                            </div>
-                            <span className="text-[10px] font-mono text-slate-500">
-                              Urutan #{index + 1}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEditModal(p.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-white/5 transition-all"
-                            title="Edit Pemain"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-
-                          {players.length > 3 && (
-                            <button
-                              type="button"
-                              onClick={() => removePlayer(p.id)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                              title="Hapus Pemain"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column: Roles & Game Settings (5 Cols) */}
-          <div className="md:col-span-5 space-y-6">
-            {/* Category Selector */}
-            <Card className="p-4 sm:p-5">
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-200 flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-cyan-400" />
-                    Kategori Kata
+                    -
+                  </button>
+                  <span className="text-2xl font-mono font-black text-cyan-400 min-w-[36px] text-center">
+                    {totalPlayerCount}
                   </span>
-                  {customPacks.length > 0 && (
-                    <span className="text-[10px] font-mono text-cyan-400">
-                      +{customPacks.length} Pack Kustom
-                    </span>
-                  )}
-                </label>
+                  <button
+                    type="button"
+                    onClick={() => adjustPlayerCount(totalPlayerCount + 1)}
+                    disabled={totalPlayerCount >= 20}
+                    className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center text-lg active:scale-95 transition-all"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
 
-                <select
-                  value={settings.category}
-                  onChange={(e) => updateSettings({ category: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/70 border border-white/10 text-slate-100 text-sm font-medium focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20"
-                >
-                  <optgroup label="Kategori Resmi">
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  {customPacks.length > 0 && (
-                    <optgroup label="Paket Kustom Saya">
-                      {customPacks.map((cp) => (
-                        <option key={cp.id} value={cp.title}>
-                          📦 {cp.title} ({cp.wordPairs.length} kata)
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                </select>
+              {/* Quick Select Buttons */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                {QUICK_PLAYER_COUNTS.map((cnt) => (
+                  <button
+                    key={cnt}
+                    type="button"
+                    onClick={() => adjustPlayerCount(cnt)}
+                    className={'px-3 py-1.5 rounded-xl font-mono text-xs font-bold shrink-0 transition-all ' + (totalPlayerCount === cnt ? 'bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-400/30' : 'bg-slate-900/80 border border-white/10 text-slate-400 hover:text-white')}
+                  >
+                    {cnt}P
+                  </button>
+                ))}
               </div>
             </Card>
 
-            {/* Role Distribution Sliders / Steppers */}
-            <Card className="p-4 sm:p-5 space-y-4">
+            {/* Role Breakdown */}
+            <Card className="p-5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <span className="text-sm font-bold text-slate-200 flex items-center gap-2">
                   <Shield className="w-4 h-4 text-cyan-400" />
                   Komposisi Peran
                 </span>
-                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                  Total: {totalPlayers} Pemain
+                <span className="text-xs font-mono font-semibold text-cyan-300">
+                  {currentCivilian} Warga vs {currentUndercover} Impostor {mrWhiteCount > 0 ? '+ 1 Butakata' : ''}
                 </span>
               </div>
 
               {/* Civilian Row */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-cyan-500/20">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
-                    <Shield className="w-4 h-4" />
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/60 border border-cyan-500/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold">
+                    <Shield className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-cyan-300">Warga (Civilian)</p>
-                    <p className="text-[10px] text-slate-400">Mengetahui kata rahasia asli</p>
+                    <p className="text-sm font-bold text-cyan-300">Warga (Civilian)</p>
+                    <p className="text-[11px] text-slate-400">Mendapatkan kata rahasia mayoritas</p>
                   </div>
                 </div>
-                <span className="text-base font-mono font-black text-cyan-400 px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+                <span className="text-lg font-mono font-black text-cyan-400 px-3.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
                   {currentCivilian}
                 </span>
               </div>
 
               {/* Undercover Stepper */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-rose-500/20">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold">
-                    <EyeOff className="w-4 h-4" />
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/60 border border-rose-500/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center font-bold">
+                    <EyeOff className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-rose-300">Impostor (Undercover)</p>
-                    <p className="text-[10px] text-slate-400">Kata mirip, berbeda sedikit</p>
+                    <p className="text-sm font-bold text-rose-300">Impostor (Undercover)</p>
+                    <p className="text-[11px] text-slate-400">Kata mirip, tidak tahu dirinya impostor</p>
                   </div>
                 </div>
 
@@ -364,18 +348,18 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     type="button"
                     onClick={() => handleUndercoverChange(-1)}
                     disabled={currentUndercover <= 1}
-                    className="w-7 h-7 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center font-bold"
+                    className="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center font-bold active:scale-95"
                   >
                     -
                   </button>
-                  <span className="text-base font-mono font-black text-rose-400 min-w-[24px] text-center">
+                  <span className="text-lg font-mono font-black text-rose-400 min-w-[28px] text-center">
                     {currentUndercover}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleUndercoverChange(1)}
                     disabled={currentUndercover >= maxUndercover}
-                    className="w-7 h-7 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center font-bold"
+                    className="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center font-bold active:scale-95"
                   >
                     +
                   </button>
@@ -383,153 +367,322 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
 
               {/* Mr. White Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/50 border border-purple-500/20">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
-                    <HelpCircle className="w-4 h-4" />
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/60 border border-purple-500/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">
+                    <HelpCircle className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-purple-300">Buta Kata (Mr. White)</p>
-                    <p className="text-[10px] text-slate-400">Tanpa kata, harus menebak</p>
+                    <p className="text-sm font-bold text-purple-300">Buta Kata (Mr. White)</p>
+                    <p className="text-[11px] text-slate-400">Tanpa kata sama sekali (muncul ???)</p>
                   </div>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleToggleMrWhite}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all border ${
-                    settings.enableMrWhite
-                      ? 'bg-purple-500/20 border-purple-400 text-purple-300 shadow-[0_0_15px_-3px_rgba(168,85,247,0.4)]'
-                      : 'bg-slate-800/80 border-white/10 text-slate-400 hover:text-slate-200'
-                  }`}
+                  className={'px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all border ' + (settings.enableMrWhite ? 'bg-purple-500/20 border-purple-400 text-purple-300 shadow-[0_0_15px_-3px_rgba(168,85,247,0.4)]' : 'bg-slate-900 border-white/10 text-slate-500 hover:text-slate-300')}
                 >
                   {settings.enableMrWhite ? 'AKTIF (1)' : 'NONAKTIF'}
                 </button>
               </div>
             </Card>
 
-                        {/* Voting Start Round Setting */}
-            <Card className="p-4 sm:p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                  <Vote className="w-4 h-4 text-cyan-400" />
-                  Voting Eliminasi Dimulai Pada
-                </label>
-                <span className="text-[11px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/30">
-                  Ronde {settings.votingStartRound || 2}
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">
-                Pemanasan clue memberi kesempatan semua pemain menganalisis sebelum eliminasi dimulai.
-              </p>
-
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { round: 1, label: 'Ronde 1', desc: 'Langsung Voting' },
-                  { round: 2, label: 'Ronde 2', desc: 'Pemanasan 1 Ronde (Disarankan)' },
-                  { round: 3, label: 'Ronde 3', desc: 'Pemanasan 2 Ronde' },
-                ].map((opt) => {
-                  const isSelected = (settings.votingStartRound || 2) === opt.round;
-                  return (
-                    <button
-                      key={opt.round}
-                      type="button"
-                      onClick={() => updateSettings({ votingStartRound: opt.round })}
-                      className={`p-2.5 rounded-xl text-center border transition-all ${
-                        isSelected
-                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)] font-bold'
-                          : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200 hover:bg-slate-800/80'
-                      }`}
-                    >
-                      <span className="text-xs sm:text-sm font-bold block">{opt.label}</span>
-                      <span className="text-[9px] text-slate-400 block mt-0.5">{opt.desc}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </Card>
-
-            {/* Turn Duration Settings */}
-            <Card className="p-4 sm:p-5 space-y-3">
-              <label className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-cyan-400" />
-                Durasi Clue per Pemain
-              </label>
-
-              <div className="grid grid-cols-4 gap-2">
-                {TURN_DURATION_OPTIONS.map((opt) => {
-                  const isSelected = settings.turnDurationSeconds === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => updateSettings({ turnDurationSeconds: opt.value })}
-                      className={`p-2 rounded-xl text-center border transition-all ${
-                        isSelected
-                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)] font-bold'
-                          : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200 hover:bg-slate-800/80'
-                      }`}
-                      title={opt.desc}
-                    >
-                      <span className="text-xs sm:text-sm font-mono block">{opt.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </Card>
-
-            {/* Start Game Button */}
+            {/* Next Button */}
             <Button
               variant="primary"
               size="xl"
               fullWidth
-              onClick={handleStartGame}
-              disabled={players.length < 3}
-              leftIcon={<Play className="w-5 h-5 fill-current" />}
-              className="shadow-xl shadow-cyan-500/30"
+              onClick={() => setCurrentStep(2)}
+              rightIcon={<ArrowRight className="w-5 h-5" />}
+              className="shadow-xl shadow-cyan-500/30 text-base py-4"
             >
-              Mulai Permainan ({players.length} Pemain)
+              Lanjut: Pilih Kategori & Aturan Ronde
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        )}
+
+        {/* STEP 2: PILIH KATEGORI & ATURAN RONDE */}
+        {currentStep === 2 && (
+          <motion.div
+            key="step2"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-6"
+          >
+            {/* Category Grid Selection */}
+            <Card glow="cyan" className="p-5 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="text-sm font-bold text-slate-200 flex items-center gap-2">
+                  <Dices className="w-4 h-4 text-cyan-400" />
+                  Pilih Kategori Kata
+                </span>
+                <span className="text-xs font-mono text-cyan-300 font-semibold">
+                  {settings.category || '🎲 Acak / Misteri'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {ALL_CATEGORY_OPTIONS.map((cat) => {
+                  const isSelected = (settings.category || '🎲 Acak / Misteri') === cat.id;
+
+                  return (
+                    <div
+                      key={cat.id}
+                      onClick={() => updateSettings({ category: cat.id })}
+                      className={'p-3.5 rounded-2xl border cursor-pointer transition-all ' + (isSelected ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_20px_-3px_rgba(6,182,212,0.4)] text-white' : 'bg-slate-950/60 border-white/10 text-slate-300 hover:border-cyan-500/30 hover:bg-slate-900/80')}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-2xl">{cat.icon}</span>
+                        <div>
+                          <p className="text-sm font-bold">{cat.title}</p>
+                          <p className="text-[10px] text-slate-400 leading-tight mt-0.5">{cat.desc}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Custom Packs if available */}
+                {customPacks.map((cp) => {
+                  const isSelected = settings.category === cp.title || settings.category === cp.id;
+
+                  return (
+                    <div
+                      key={cp.id}
+                      onClick={() => updateSettings({ category: cp.title })}
+                      className={'p-3.5 rounded-2xl border cursor-pointer transition-all ' + (isSelected ? 'bg-purple-500/20 border-purple-400 shadow-[0_0_20px_-3px_rgba(168,85,247,0.4)] text-white' : 'bg-slate-950/60 border-white/10 text-slate-300 hover:border-purple-500/30 hover:bg-slate-900/80')}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-2xl">📦</span>
+                        <div>
+                          <p className="text-sm font-bold">{cp.title}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">{cp.wordPairs.length} pasangan kata buatanmu</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+
+            {/* Voting Start Round & Durasi Settings */}
+            <Card className="p-5 sm:p-6 space-y-4">
+              {/* Voting Start Round Setting */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-bold text-slate-200 flex items-center gap-2">
+                    <Vote className="w-4 h-4 text-cyan-400" />
+                    Voting Eliminasi Dimulai Pada
+                  </label>
+                  <span className="text-[11px] font-mono text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+                    Ronde {settings.votingStartRound || 2}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  {[
+                    { round: 1, label: 'Ronde 1', desc: 'Langsung Voting' },
+                    { round: 2, label: 'Ronde 2', desc: 'Pemanasan 1 Ronde (Disarankan)' },
+                    { round: 3, label: 'Ronde 3', desc: 'Pemanasan 2 Ronde' },
+                  ].map((opt) => {
+                    const isSelected = (settings.votingStartRound || 2) === opt.round;
+                    return (
+                      <button
+                        key={opt.round}
+                        type="button"
+                        onClick={() => updateSettings({ votingStartRound: opt.round })}
+                        className={'p-2.5 rounded-2xl text-center border transition-all ' + (isSelected ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md font-bold' : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200')}
+                      >
+                        <span className="text-xs sm:text-sm font-bold block">{opt.label}</span>
+                        <span className="text-[9px] text-slate-400 block mt-0.5">{opt.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Turn Duration Settings */}
+              <div className="space-y-2 pt-3 border-t border-white/10">
+                <label className="text-sm font-bold text-slate-200 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-cyan-400" />
+                  Durasi Diskusi Putaran
+                </label>
+
+                <div className="grid grid-cols-4 gap-2 pt-1">
+                  {TURN_DURATION_OPTIONS.map((opt) => {
+                    const isSelected = settings.turnDurationSeconds === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => updateSettings({ turnDurationSeconds: opt.value })}
+                        className={'p-2 rounded-xl text-center border transition-all ' + (isSelected ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md font-bold' : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200')}
+                        title={opt.desc}
+                      >
+                        <span className="text-xs sm:text-sm font-mono block">{opt.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </Card>
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setCurrentStep(1)}
+                leftIcon={<ArrowLeft className="w-4 h-4" />}
+                className="w-1/3"
+              >
+                Kembali
+              </Button>
+
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={() => setCurrentStep(3)}
+                rightIcon={<ArrowRight className="w-5 h-5" />}
+                className="w-2/3 shadow-xl shadow-cyan-500/30 text-base py-3.5"
+              >
+                Lanjut: Isi Nama & Avatar
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 3: PENGISIAN NAMA & AVATAR PEMAIN */}
+        {currentStep === 3 && (
+          <motion.div
+            key="step3"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-6"
+          >
+            {/* Header with Quick Randomize */}
+            <Card glow="cyan" className="p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div>
+                  <h3 className="text-base font-bold text-white">Daftar {totalPlayerCount} Pemain</h3>
+                  <p className="text-xs text-slate-400">Ketik nama teman atau gunakan avatar favorit</p>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={handleRandomizeAll}
+                  leftIcon={<Shuffle className="w-3.5 h-3.5" />}
+                  className="text-xs"
+                >
+                  Acak Semua
+                </Button>
+              </div>
+
+              {/* Player Inputs List */}
+              <div className="space-y-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                {players.map((player, idx) => (
+                  <div
+                    key={player.id}
+                    className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-slate-950/70 border border-white/10 focus-within:border-cyan-400/50 transition-all"
+                  >
+                    {/* Index Badge */}
+                    <span className="w-7 h-7 rounded-xl bg-slate-900 text-slate-400 font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-white/5">
+                      #{idx + 1}
+                    </span>
+
+                    {/* Avatar Button */}
+                    <button
+                      type="button"
+                      onClick={() => setAvatarPickerPlayerIndex(idx)}
+                      title="Klik untuk ganti avatar"
+                      className="w-10 h-10 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-2xl flex items-center justify-center shrink-0 transition-transform active:scale-90"
+                    >
+                      {player.avatar}
+                    </button>
+
+                    {/* Name Input */}
+                    <input
+                      type="text"
+                      value={player.name}
+                      onChange={(e) => handlePlayerNameChange(idx, e.target.value)}
+                      placeholder={'Pemain ' + (idx + 1)}
+                      maxLength={20}
+                      className="flex-1 bg-transparent px-3 py-1.5 text-sm font-semibold text-white placeholder-slate-500 focus:outline-none"
+                    />
+
+                    {/* Randomize Single Player */}
+                    <button
+                      type="button"
+                      onClick={() => handleRandomizeSingleName(idx)}
+                      title="Acak nama & avatar"
+                      className="p-2 rounded-xl text-slate-500 hover:text-cyan-400 hover:bg-slate-900 transition-colors"
+                    >
+                      <Dices className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Navigation & Start Game */}
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="xl"
+                onClick={() => setCurrentStep(2)}
+                leftIcon={<ArrowLeft className="w-4 h-4" />}
+                className="w-1/3"
+              >
+                Kembali
+              </Button>
+
+              <Button
+                variant="primary"
+                size="xl"
+                fullWidth
+                onClick={handleStartGame}
+                leftIcon={<Play className="w-5 h-5 fill-current" />}
+                className="w-2/3 shadow-xl shadow-cyan-500/30 text-base py-4 font-black"
+              >
+                Mulai Permainan 🚀
+              </Button>
+            </div>
+          </motion.div>
+        )}
       </main>
 
-      {/* Add / Edit Player Modal */}
+      {/* Avatar Picker Modal */}
       <Modal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        title={editingPlayerId ? 'Ubah Profil Pemain' : 'Tambah Pemain Baru'}
-        subtitle="Pilih avatar unik dan masukkan nama pemain"
+        isOpen={avatarPickerPlayerIndex !== null}
+        onClose={() => setAvatarPickerPlayerIndex(null)}
+        title="Pilih Avatar Cyber Agent"
         size="md"
-        footer={
-          <div className="flex items-center gap-2 w-full justify-end">
-            <Button variant="ghost" size="sm" onClick={() => setIsAddModalOpen(false)}>
-              Batal
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleSaveModalPlayer}
-              disabled={!modalName.trim()}
-              leftIcon={<Check className="w-4 h-4" />}
-            >
-              Simpan Pemain
-            </Button>
-          </div>
-        }
       >
-        <div className="space-y-4 pt-1">
-          <AvatarPicker
-            selectedAvatar={modalAvatar}
-            onSelectAvatar={(av) => setModalAvatar(av)}
-            nickname={modalName}
-            onNicknameChange={(name) => setModalName(name)}
-            showNicknameInput
-          />
+        <div className="p-2 space-y-4">
+          <div className="grid grid-cols-4 gap-3">
+            {PRESET_AVATARS.map((av) => (
+              <button
+                key={av.emoji}
+                type="button"
+                onClick={() => {
+                  if (avatarPickerPlayerIndex !== null) {
+                    handleSelectAvatar(avatarPickerPlayerIndex, av.emoji);
+                  }
+                }}
+                className="p-3 rounded-2xl bg-slate-950 border border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10 flex flex-col items-center gap-1.5 transition-all active:scale-95 group"
+              >
+                <span className="text-3xl group-hover:scale-110 transition-transform">{av.emoji}</span>
+                <span className="text-[10px] font-mono text-slate-400 truncate max-w-full">{av.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </Modal>
     </div>
   );
 };
-
-export default PassPlaySetupPage;
