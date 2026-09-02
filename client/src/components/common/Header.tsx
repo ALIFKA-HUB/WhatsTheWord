@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Volume2, VolumeX, ArrowLeft, Copy, Check, Sparkles } from 'lucide-react';
+import { Volume2, VolumeX, ArrowLeft, Copy, Check } from 'lucide-react';
 import { useGameSound } from '../../hooks/useGameSound';
 import { Button } from './Button';
 import { cn } from '../../utils/cn';
@@ -66,8 +66,8 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           <div className="flex items-center gap-2.5">
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)]">
-              <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
+            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-slate-950 border border-cyan-500/40 overflow-hidden shadow-[0_0_15px_-3px_rgba(6,182,212,0.5)]">
+              <img src="/logo.svg" alt="What's The Word Logo" className="w-7 h-7 object-contain" />
               <div className="absolute -inset-0.5 rounded-xl bg-cyan-500/20 blur-sm -z-10" />
             </div>
 

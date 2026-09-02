@@ -132,11 +132,23 @@ export const HomePage: React.FC<HomePageProps> = ({
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:py-10 flex flex-col justify-center space-y-8">
         {/* Hero Section */}
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
+        <div className="text-center space-y-4 max-w-2xl mx-auto">
+          <div className="flex justify-center">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 15 }}
+              className="relative flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-slate-950 border-2 border-cyan-400 shadow-[0_0_35px_-5px_rgba(6,182,212,0.6)]"
+            >
+              <img src="/logo.svg" alt="What's The Word Logo" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
+              <div className="absolute -inset-1 rounded-3xl bg-cyan-500/20 blur-md -z-10 animate-pulse" />
+            </motion.div>
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold shadow-[0_0_15px_-3px_rgba(6,182,212,0.3)]"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold shadow-[0_0_15px_-3px_rgba(6,182,212,0.3)]"
           >
             <Sparkles className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '4s' }} />
             <span>Cyber Social Word Deduction Game</span>
