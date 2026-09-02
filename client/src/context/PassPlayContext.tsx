@@ -552,9 +552,10 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
 
     // Reset players alive status and roles
     const total = players.length;
-    const mrWhite = settings.enableMrWhite ? Math.min(settings.mrWhiteCount, 1) : 0;
-    const undercover = Math.min(Math.max(1, settings.undercoverCount), Math.floor((total - mrWhite - 1) / 2));
-    const civilian = total - undercover - mrWhite;
+    const mrWhite = settings.enableMrWhite && total >= 3 ? Math.min(settings.mrWhiteCount, 1) : 0;
+    const maxUndercover = total === 2 ? 1 : Math.max(1, Math.floor((total - mrWhite - 1) / 2));
+    const undercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
+    const civilian = Math.max(1, total - undercover - mrWhite);
 
     const validSettings: GameSettings = {
       ...settings,
@@ -588,6 +589,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       setPendingEliminatedPlayer(null);
       setVotes({});
       setIsTieLastRound(false);
+      setConsecutiveTies(0);
       setTieMessage(null);
       setMrWhiteGuessResult(null);
       setPhase('REVEAL_PASS');
