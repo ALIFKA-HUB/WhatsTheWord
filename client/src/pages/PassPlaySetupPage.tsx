@@ -35,6 +35,119 @@ const RANDOM_NAMES = [
   'Vector Blade', 'Nova Spark', 'Echo Pulse', 'Stealth Hawk', 'Apex Sentinel'
 ];
 
+interface SmoothPlayerSliderProps {
+  value: number;
+  min?: number;
+  max?: number;
+  onChange: (value: number) => void;
+}
+
+const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
+  value,
+  min = 2,
+  max = 20,
+  onChange,
+}) => {
+  const trackRef = React.useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  const calculateValueFromPointer = React.useCallback(
+    (clientX: number) => {
+      if (!trackRef.current) return value;
+      const rect = trackRef.current.getBoundingClientRect();
+      const clampedX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+      const percentage = clampedX / rect.width;
+      const rawVal = min + percentage * (max - min);
+      return Math.max(min, Math.min(max, Math.round(rawVal)));
+    },
+    [min, max, value]
+  );
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsDragging(true);
+    const newVal = calculateValueFromPointer(e.clientX);
+    if (newVal !== value) {
+      onChange(newVal);
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    const newVal = calculateValueFromPointer(e.clientX);
+    if (newVal !== value) {
+      onChange(newVal);
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsDragging(false);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
+  };
+
+  const percentage = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+
+  return (
+    <div className="space-y-3 select-none">
+      <div className="flex items-center justify-between text-[11px] font-mono">
+        <span className="text-slate-400 flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+          Scroll / Geser Bar Pemain:
+        </span>
+        <span className="text-cyan-300 font-bold font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
+          {value} Pemain Terpilih
+        </span>
+      </div>
+
+      {/* Interactive Drag Track */}
+      <div
+        ref={trackRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        className="relative h-10 flex items-center cursor-pointer touch-none group"
+      >
+        {/* Background Track */}
+        <div className="w-full h-3 rounded-full bg-slate-900 border border-white/10 relative overflow-hidden group-hover:border-cyan-500/30 transition-colors">
+          {/* Active Fill with Gradient & Glow */}
+          <div
+            className="h-full bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-300 transition-all duration-75 shadow-[0_0_15px_rgba(6,182,212,0.6)]"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+
+        {/* Draggable Thumb Knob */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none transition-transform duration-75"
+          style={{ left: `${percentage}%` }}
+        >
+          <div
+            className={`w-7 h-7 rounded-full bg-white border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.8)] flex items-center justify-center transition-all ${
+              isDragging ? 'scale-125 ring-4 ring-cyan-400/40' : 'group-hover:scale-110'
+            }`}
+          >
+            <div className="w-2 h-2 rounded-full bg-cyan-500" />
+          </div>
+        </div>
+      </div>
+
+      {/* Discrete Scale Markers */}
+      <div className="flex justify-between text-[10px] font-mono text-slate-500 px-1">
+        <span className={value === 2 ? 'text-cyan-400 font-bold' : ''}>2 (Duel)</span>
+        <span className={value === 5 ? 'text-cyan-400 font-bold' : ''}>5</span>
+        <span className={value === 10 ? 'text-cyan-400 font-bold' : ''}>10</span>
+        <span className={value === 15 ? 'text-cyan-400 font-bold' : ''}>15</span>
+        <span className={value === 20 ? 'text-cyan-400 font-bold' : ''}>20 (Maks)</span>
+      </div>
+    </div>
+  );
+};
+
 export interface PassPlaySetupPageProps {
   onBack?: () => void;
 }
@@ -267,34 +380,13 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               {/* Side-by-Side: Left Scroll Bar & Right Stepper */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3.5 pt-1">
                 {/* Left Side: Scroll Bar Track */}
-                <div className="flex-1 space-y-2.5 bg-slate-950/80 p-3.5 rounded-2xl border border-white/10">
-                  <div className="flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-slate-400 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                      Scroll Bar Pemain:
-                    </span>
-                    <span className="text-cyan-300 font-bold font-mono px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30">
-                      {totalPlayerCount} Pemain
-                    </span>
-                  </div>
-
-                  <input
-                    type="range"
+                <div className="flex-1 bg-slate-950/80 p-3.5 rounded-2xl border border-white/10">
+                  <SmoothPlayerSlider
+                    value={totalPlayerCount}
                     min={2}
                     max={20}
-                    step={1}
-                    value={totalPlayerCount}
-                    onChange={(e) => adjustPlayerCount(Number(e.target.value))}
-                    className="w-full accent-cyan-400 h-3 bg-slate-900 rounded-lg cursor-pointer appearance-none border border-white/10"
+                    onChange={adjustPlayerCount}
                   />
-
-                  <div className="flex justify-between text-[10px] font-mono text-slate-500 px-0.5">
-                    <span>2 (Duel)</span>
-                    <span>5</span>
-                    <span>10</span>
-                    <span>15</span>
-                    <span>20 (Maks)</span>
-                  </div>
                 </div>
 
                 {/* Right Side: Stepper [-] [N] [+] */}
