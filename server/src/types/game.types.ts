@@ -66,3 +66,14 @@ export interface WordPack {
   wordPairs: WordPair[];
   createdAt?: string;
 }
+
+export interface CustomWordPack {
+  id: string;
+  title: string;
+  authorName: string;
+  shareCode: string;
+  wordPairs: WordPair[];
+  isPublic?: boolean;
+  createdAt?: string;
+}
+
