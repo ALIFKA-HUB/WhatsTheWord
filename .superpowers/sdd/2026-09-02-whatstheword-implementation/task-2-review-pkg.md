@@ -1,0 +1,7670 @@
+# Task 2 Review Package
+
+## Commits
+35028bd feat(engine): implement game engine, word bank, and fuzzy matcher
+
+
+## Diff Stat
+ .../progress.md                                    |    1 +
+ .../task-1-review-pkg.md                           | 6260 ++++++++++++++++++++
+ .../task-2-brief.md                                |   27 +
+ client/src/data/defaultWordPacks.ts                |  145 +
+ client/src/utils/fuzzyMatcher.ts                   |  114 +
+ client/src/utils/gameEngine.ts                     |  207 +
+ server/src/data/defaultWordPacks.ts                |  145 +
+ server/src/engine/FuzzyMatcher.ts                  |  115 +
+ server/src/engine/GameEngine.ts                    |  207 +
+ server/tests/FuzzyMatcher.test.ts                  |  102 +
+ server/tests/GameEngine.test.ts                    |  256 +
+ 11 files changed, 7579 insertions(+)
+
+
+## Diff
+```diff
+diff --git a/.superpowers/sdd/2026-09-02-whatstheword-implementation/progress.md b/.superpowers/sdd/2026-09-02-whatstheword-implementation/progress.md
+index ddfc1c9..95a5492 100644
+--- a/.superpowers/sdd/2026-09-02-whatstheword-implementation/progress.md
++++ b/.superpowers/sdd/2026-09-02-whatstheword-implementation/progress.md
+@@ -1 +1,2 @@
+ ﻿# SDD ledger — plan: docs/superpowers/plans/2026-09-02-whatstheword-implementation.md
++Task 1: complete (commits 42efb7b..c0735b0, review clean)
+diff --git a/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-review-pkg.md b/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-review-pkg.md
+new file mode 100644
+index 0000000..e199914
+--- /dev/null
++++ b/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-review-pkg.md
+@@ -0,0 +1,6260 @@
++# Task 1 Review Package
++
++## Commits
++c0735b0 docs: add task 1 completion report
++2a57ee3 chore: setup monorepo workspace tooling and types
++
++
++## Diff Stat
++ .env.example                                       |    6 +
++ .../progress.md                                    |    1 +
++ .../task-1-brief.md                                |   73 +
++ .../task-1-report.md                               |   27 +
++ client/index.html                                  |   17 +
++ client/package.json                                |   33 +
++ client/postcss.config.js                           |    6 +
++ client/src/App.tsx                                 |   27 +
++ client/src/index.css                               |   55 +
++ client/src/main.tsx                                |   13 +
++ client/src/types/game.types.ts                     |   68 +
++ client/src/vite-env.d.ts                           |   10 +
++ client/tailwind.config.js                          |   37 +
++ client/tsconfig.json                               |   25 +
++ client/tsconfig.node.json                          |   10 +
++ client/vite.config.ts                              |   25 +
++ package-lock.json                                  | 5445 ++++++++++++++++++++
++ package.json                                       |   24 +
++ server/package.json                                |   28 +
++ server/src/server.ts                               |   51 +
++ server/src/types/game.types.ts                     |   68 +
++ server/tsconfig.json                               |   21 +
++ server/vitest.config.ts                            |   14 +
++ 23 files changed, 6084 insertions(+)
++
++
++## Diff
++```diff
++diff --git a/.env.example b/.env.example
++new file mode 100644
++index 0000000..763ad8c
++--- /dev/null
+++++ b/.env.example
++@@ -0,0 +1,6 @@
+++# Supabase Configuration
+++VITE_SUPABASE_URL=https://rmsvxhoblwdhhdjpgjdn.supabase.co
+++VITE_SUPABASE_ANON_KEY=sb_publishable_2Mli4l2s2k_On3ZkRz5VhQ_RewKXkfK
+++
+++# Server Configuration
+++PORT=3001
++diff --git a/.superpowers/sdd/2026-09-02-whatstheword-implementation/progress.md b/.superpowers/sdd/2026-09-02-whatstheword-implementation/progress.md
++new file mode 100644
++index 0000000..ddfc1c9
++--- /dev/null
+++++ b/.superpowers/sdd/2026-09-02-whatstheword-implementation/progress.md
++@@ -0,0 +1 @@
+++﻿# SDD ledger — plan: docs/superpowers/plans/2026-09-02-whatstheword-implementation.md
++diff --git a/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-brief.md b/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-brief.md
++new file mode 100644
++index 0000000..383f759
++--- /dev/null
+++++ b/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-brief.md
++@@ -0,0 +1,73 @@
+++﻿# Task 1 Brief: Monorepo Root, Workspace Tooling, Shared Types & Env Configuration
+++
+++## Goal
+++Setup the monorepo workspace for What's The Word in C:\Users\ASUS\Documents\ALIFKA\PROJECT\whatstheword:
+++- Root package.json with concurrently to run client and server
+++- client/ setup: React 18, Vite, TypeScript, Tailwind CSS, Lucide React, motion, @supabase/supabase-js, socket.io-client
+++- client/src/index.css with dark cyber styling & Outfit/Cabinet Grotesk/JetBrains Mono fonts
+++- client/src/types/game.types.ts
+++- server/ setup: Node.js, Express, Socket.io, TypeScript, Vitest, cors, dotenv
+++- server/src/types/game.types.ts
+++- .env.example & .env with Supabase URL and keys
+++- Verify build & typecheck passes.
+++
+++## Exact Types Specification (game.types.ts in client and server):
+++`	ypescript
+++export type PlayerRole = 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE';
+++
+++export type GamePhase =
+++  | 'LOBBY'
+++  | 'ROLE_REVEAL'
+++  | 'TURN_PHASE'
+++  | 'VOTING'
+++  | 'MR_WHITE_GUESS'
+++  | 'GAME_OVER';
+++
+++export interface Player {
+++  id: string;
+++  name: string;
+++  avatar: string;
+++  isHost: boolean;
+++  role?: PlayerRole;
+++  word?: string;
+++  isAlive: boolean;
+++  hasVoted: boolean;
+++  votedTargetId?: string;
+++  isSpeaking?: boolean;
+++}
+++
+++export interface WordPair {
+++  id?: string;
+++  category: string;
+++  civilianWord: string;
+++  undercoverWord: string;
+++}
+++
+++export interface GameSettings {
+++  category: string;
+++  civilianCount: number;
+++  undercoverCount: number;
+++  mrWhiteCount: number;
+++  turnDurationSeconds: number;
+++  enableMrWhite: boolean;
+++  customWordPair?: WordPair;
+++}
+++
+++export interface RoomState {
+++  roomId: string;
+++  phase: GamePhase;
+++  round: number;
+++  players: Player[];
+++  speakingOrder: string[];
+++  currentSpeakerIndex: number;
+++  activeTurnRemainingSeconds: number;
+++  settings: GameSettings;
+++  winningRole?: 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE';
+++  eliminatedPlayer?: Player;
+++  wordPair?: WordPair;
+++}
+++`
+++
+++## Report Contract
+++Write report to: .superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-report.md
+++Return: status (DONE / BLOCKED), commits, one-line test summary.
++diff --git a/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-report.md b/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-report.md
++new file mode 100644
++index 0000000..95a37d2
++--- /dev/null
+++++ b/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-1-report.md
++@@ -0,0 +1,27 @@
+++# Task 1 Report: Monorepo Root, Workspace Tooling, Shared Types & Env Configuration
+++
+++## Status
+++DONE
+++
+++## Summary
+++Successfully configured the monorepo workspace for What's The Word (Undercover) game:
+++- **Root**: `package.json` with npm workspaces (`client`, `server`) and concurrent orchestration scripts (`dev`, `build`, `test`, `typecheck`).
+++- **Environment**: `.env.example` and `.env` configured with Supabase project endpoint (`https://rmsvxhoblwdhhdjpgjdn.supabase.co`), publishable key, and default backend port (`3001`).
+++- **Client (`client/`)**:
+++  - React 18, Vite 6, TypeScript 5, Tailwind CSS 3, Motion (`motion`), Lucide React, Supabase Client, Socket.io Client.
+++  - Dark cyber design tokens & styling in `index.css` and `tailwind.config.js` (`#080c16`, `#06b6d4`, `#f43f5e`, `#a855f7`, `#f59e0b`).
+++  - Google Fonts configured for `Outfit` and `JetBrains Mono`.
+++  - Initial `App.tsx` and `main.tsx` entrypoint.
+++  - Complete shared types in `client/src/types/game.types.ts`.
+++- **Server (`server/`)**:
+++  - Node.js, Express, Socket.io, Vitest, TypeScript, CORS, Dotenv.
+++  - `server/src/server.ts` with HTTP server, Socket.io connection handlers, CORS, and `/health` REST endpoint.
+++  - Complete shared types in `server/src/types/game.types.ts`.
+++  - `vitest.config.ts` setup for unit tests.
+++
+++## Verification
+++- `npm run typecheck`: Passed with 0 errors across client and server workspaces.
+++- `npm run build`: Vite production bundle and TypeScript server compilation succeeded with 0 errors.
+++
+++## Git Commit
+++- `2a57ee3`: `chore: setup monorepo workspace tooling and types`
++diff --git a/client/index.html b/client/index.html
++new file mode 100644
++index 0000000..3143db3
++--- /dev/null
+++++ b/client/index.html
++@@ -0,0 +1,17 @@
+++<!doctype html>
+++<html lang="id" class="dark">
+++  <head>
+++    <meta charset="UTF-8" />
+++    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+++    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+++    <meta name="theme-color" content="#080c16" />
+++    <title>What's The Word - Undercover Deduction Game</title>
+++    <link rel="preconnect" href="https://fonts.googleapis.com">
+++    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+++    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+++  </head>
+++  <body class="bg-[#080c16] text-slate-100 antialiased selection:bg-cyan-500/30 selection:text-cyan-200 min-h-[100dvh]">
+++    <div id="root" class="min-h-[100dvh] flex flex-col"></div>
+++    <script type="module" src="/src/main.tsx"></script>
+++  </body>
+++</html>
++diff --git a/client/package.json b/client/package.json
++new file mode 100644
++index 0000000..8900956
++--- /dev/null
+++++ b/client/package.json
++@@ -0,0 +1,33 @@
+++{
+++  "name": "whatstheword-client",
+++  "private": true,
+++  "version": "1.0.0",
+++  "type": "module",
+++  "scripts": {
+++    "dev": "vite",
+++    "build": "tsc && vite build",
+++    "preview": "vite preview",
+++    "typecheck": "tsc --noEmit"
+++  },
+++  "dependencies": {
+++    "@supabase/supabase-js": "^2.49.1",
+++    "clsx": "^2.1.1",
+++    "lucide-react": "^1.16.0",
+++    "motion": "^12.4.10",
+++    "react": "^18.3.1",
+++    "react-dom": "^18.3.1",
+++    "socket.io-client": "^4.8.1",
+++    "tailwind-merge": "^3.0.2"
+++  },
+++  "devDependencies": {
+++    "@types/node": "^22.13.9",
+++    "@types/react": "^18.3.18",
+++    "@types/react-dom": "^18.3.5",
+++    "@vitejs/plugin-react": "^4.3.4",
+++    "autoprefixer": "^10.4.20",
+++    "postcss": "^8.5.3",
+++    "tailwindcss": "^3.4.17",
+++    "typescript": "^5.7.3",
+++    "vite": "^6.2.0"
+++  }
+++}
++diff --git a/client/postcss.config.js b/client/postcss.config.js
++new file mode 100644
++index 0000000..2e7af2b
++--- /dev/null
+++++ b/client/postcss.config.js
++@@ -0,0 +1,6 @@
+++export default {
+++  plugins: {
+++    tailwindcss: {},
+++    autoprefixer: {},
+++  },
+++}
++diff --git a/client/src/App.tsx b/client/src/App.tsx
++new file mode 100644
++index 0000000..28f7840
++--- /dev/null
+++++ b/client/src/App.tsx
++@@ -0,0 +1,27 @@
+++import React from 'react';
+++
+++export const App: React.FC = () => {
+++  return (
+++    <main className="min-h-[100dvh] flex flex-col items-center justify-center p-4 bg-[#080c16] text-slate-100 selection:bg-cyan-500/30 selection:text-cyan-200">
+++      <div className="w-full max-w-md p-6 rounded-2xl glass-panel shadow-2xl text-center space-y-4">
+++        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 mb-2">
+++          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+++            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+++          </svg>
+++        </div>
+++        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-violet-400 to-rose-400 bg-clip-text text-transparent font-display">
+++          What's The Word
+++        </h1>
+++        <p className="text-sm text-slate-400 font-sans">
+++          Undercover Word Deduction Game Monorepo Initialized.
+++        </p>
+++        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono">
+++          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+++          Ready for Task 2
+++        </div>
+++      </div>
+++    </main>
+++  );
+++};
+++
+++export default App;
++diff --git a/client/src/index.css b/client/src/index.css
++new file mode 100644
++index 0000000..d62f43d
++--- /dev/null
+++++ b/client/src/index.css
++@@ -0,0 +1,55 @@
+++@tailwind base;
+++@tailwind components;
+++@tailwind utilities;
+++
+++@layer base {
+++  :root {
+++    color-scheme: dark;
+++  }
+++  
+++  html, body {
+++    margin: 0;
+++    padding: 0;
+++    background-color: #080c16;
+++    color: #f8fafc;
+++    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+++    min-height: 100dvh;
+++    overflow-x: hidden;
+++    -webkit-font-smoothing: antialiased;
+++    -moz-osx-font-smoothing: grayscale;
+++  }
+++}
+++
+++/* Glassmorphism utility helpers */
+++.glass-panel {
+++  background: rgba(15, 23, 42, 0.82);
+++  backdrop-filter: blur(12px);
+++  -webkit-backdrop-filter: blur(12px);
+++  border: 1px solid rgba(255, 255, 255, 0.08);
+++}
+++
+++.glass-card {
+++  background: rgba(30, 41, 59, 0.7);
+++  backdrop-filter: blur(8px);
+++  -webkit-backdrop-filter: blur(8px);
+++  border: 1px solid rgba(255, 255, 255, 0.06);
+++}
+++
+++/* Custom scrollbar */
+++::-webkit-scrollbar {
+++  width: 6px;
+++  height: 6px;
+++}
+++
+++::-webkit-scrollbar-track {
+++  background: rgba(15, 23, 42, 0.6);
+++}
+++
+++::-webkit-scrollbar-thumb {
+++  background: rgba(255, 255, 255, 0.15);
+++  border-radius: 9999px;
+++}
+++
+++::-webkit-scrollbar-thumb:hover {
+++  background: rgba(255, 255, 255, 0.25);
+++}
++diff --git a/client/src/main.tsx b/client/src/main.tsx
++new file mode 100644
++index 0000000..5d0d6ca
++--- /dev/null
+++++ b/client/src/main.tsx
++@@ -0,0 +1,13 @@
+++import React from 'react';
+++import ReactDOM from 'react-dom/client';
+++import App from './App';
+++import './index.css';
+++
+++const rootElement = document.getElementById('root');
+++if (rootElement) {
+++  ReactDOM.createRoot(rootElement).render(
+++    <React.StrictMode>
+++      <App />
+++    </React.StrictMode>
+++  );
+++}
++diff --git a/client/src/types/game.types.ts b/client/src/types/game.types.ts
++new file mode 100644
++index 0000000..b000cc6
++--- /dev/null
+++++ b/client/src/types/game.types.ts
++@@ -0,0 +1,68 @@
+++export type PlayerRole = 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE';
+++
+++export type GamePhase =
+++  | 'LOBBY'
+++  | 'ROLE_REVEAL'
+++  | 'TURN_PHASE'
+++  | 'VOTING'
+++  | 'MR_WHITE_GUESS'
+++  | 'GAME_OVER';
+++
+++export interface Player {
+++  id: string;
+++  name: string;
+++  avatar: string;
+++  isHost: boolean;
+++  role?: PlayerRole;
+++  word?: string;
+++  isAlive: boolean;
+++  hasVoted: boolean;
+++  votedTargetId?: string;
+++  isSpeaking?: boolean;
+++}
+++
+++export interface WordPair {
+++  id?: string;
+++  category: string;
+++  civilianWord: string;
+++  undercoverWord: string;
+++}
+++
+++export interface GameSettings {
+++  category: string;
+++  civilianCount: number;
+++  undercoverCount: number;
+++  mrWhiteCount: number;
+++  turnDurationSeconds: number;
+++  enableMrWhite: boolean;
+++  customWordPair?: WordPair;
+++}
+++
+++export interface RoomState {
+++  roomId: string;
+++  phase: GamePhase;
+++  round: number;
+++  players: Player[];
+++  speakingOrder: string[];
+++  currentSpeakerIndex: number;
+++  activeTurnRemainingSeconds: number;
+++  settings: GameSettings;
+++  winningRole?: 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE';
+++  eliminatedPlayer?: Player;
+++  wordPair?: WordPair;
+++}
+++
+++export interface VoteRecord {
+++  voterId: string;
+++  targetId: string;
+++}
+++
+++export interface WordPack {
+++  id: string;
+++  name: string;
+++  category: string;
+++  description?: string;
+++  isOfficial: boolean;
+++  wordPairs: WordPair[];
+++  createdAt?: string;
+++}
++diff --git a/client/src/vite-env.d.ts b/client/src/vite-env.d.ts
++new file mode 100644
++index 0000000..4a7a149
++--- /dev/null
+++++ b/client/src/vite-env.d.ts
++@@ -0,0 +1,10 @@
+++/// <reference types="vite/client" />
+++
+++interface ImportMetaEnv {
+++  readonly VITE_SUPABASE_URL: string;
+++  readonly VITE_SUPABASE_ANON_KEY: string;
+++}
+++
+++interface ImportMeta {
+++  readonly env: ImportMetaEnv;
+++}
++diff --git a/client/tailwind.config.js b/client/tailwind.config.js
++new file mode 100644
++index 0000000..471d5fe
++--- /dev/null
+++++ b/client/tailwind.config.js
++@@ -0,0 +1,37 @@
+++/** @type {import('tailwindcss').Config} */
+++export default {
+++  content: [
+++    "./index.html",
+++    "./src/**/*.{js,ts,jsx,tsx}",
+++  ],
+++  darkMode: 'class',
+++  theme: {
+++    extend: {
+++      colors: {
+++        void: '#080c16',
+++        surface: {
+++          DEFAULT: 'rgba(15, 23, 42, 0.82)',
+++          glass: 'rgba(15, 23, 42, 0.82)',
+++          border: 'rgba(255, 255, 255, 0.08)',
+++        },
+++        cyber: {
+++          cyan: '#06b6d4',
+++          crimson: '#f43f5e',
+++          violet: '#a855f7',
+++          amber: '#f59e0b',
+++        },
+++      },
+++      fontFamily: {
+++        sans: ['Outfit', 'Cabinet Grotesk', 'Inter', 'sans-serif'],
+++        mono: ['JetBrains Mono', 'Geist Mono', 'monospace'],
+++        display: ['Outfit', 'Cabinet Grotesk', 'sans-serif'],
+++      },
+++      boxShadow: {
+++        'glow-cyan': '0 0 20px -5px rgba(6, 182, 212, 0.5)',
+++        'glow-crimson': '0 0 20px -5px rgba(244, 63, 94, 0.5)',
+++        'glow-violet': '0 0 20px -5px rgba(168, 85, 247, 0.5)',
+++      },
+++    },
+++  },
+++  plugins: [],
+++}
++diff --git a/client/tsconfig.json b/client/tsconfig.json
++new file mode 100644
++index 0000000..b377ea7
++--- /dev/null
+++++ b/client/tsconfig.json
++@@ -0,0 +1,25 @@
+++{
+++  "compilerOptions": {
+++    "target": "ES2020",
+++    "useDefineForClassFields": true,
+++    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+++    "module": "ESNext",
+++    "skipLibCheck": true,
+++    "moduleResolution": "bundler",
+++    "allowImportingTsExtensions": false,
+++    "resolveJsonModule": true,
+++    "isolatedModules": true,
+++    "noEmit": true,
+++    "jsx": "react-jsx",
+++    "strict": true,
+++    "noUnusedLocals": true,
+++    "noUnusedParameters": true,
+++    "noFallthroughCasesInSwitch": true,
+++    "baseUrl": ".",
+++    "paths": {
+++      "@/*": ["src/*"]
+++    }
+++  },
+++  "include": ["src"],
+++  "references": [{ "path": "./tsconfig.node.json" }]
+++}
++diff --git a/client/tsconfig.node.json b/client/tsconfig.node.json
++new file mode 100644
++index 0000000..e8a6a45
++--- /dev/null
+++++ b/client/tsconfig.node.json
++@@ -0,0 +1,10 @@
+++{
+++  "compilerOptions": {
+++    "composite": true,
+++    "skipLibCheck": true,
+++    "module": "ESNext",
+++    "moduleResolution": "bundler",
+++    "allowSyntheticDefaultImports": true
+++  },
+++  "include": ["vite.config.ts", "tailwind.config.js", "postcss.config.js"]
+++}
++diff --git a/client/vite.config.ts b/client/vite.config.ts
++new file mode 100644
++index 0000000..467bed1
++--- /dev/null
+++++ b/client/vite.config.ts
++@@ -0,0 +1,25 @@
+++import { defineConfig } from 'vite';
+++import react from '@vitejs/plugin-react';
+++import path from 'path';
+++
+++// https://vitejs.dev/config/
+++export default defineConfig({
+++  plugins: [react()],
+++  resolve: {
+++    alias: {
+++      '@': path.resolve(__dirname, './src'),
+++    },
+++  },
+++  server: {
+++    port: 5173,
+++    proxy: {
+++      '/socket.io': {
+++        target: 'http://localhost:3001',
+++        ws: true,
+++      },
+++      '/api': {
+++        target: 'http://localhost:3001',
+++      },
+++    },
+++  },
+++});
++diff --git a/package-lock.json b/package-lock.json
++new file mode 100644
++index 0000000..88cfbef
++--- /dev/null
+++++ b/package-lock.json
++@@ -0,0 +1,5445 @@
+++{
+++  "name": "whatstheword-monorepo",
+++  "version": "1.0.0",
+++  "lockfileVersion": 3,
+++  "requires": true,
+++  "packages": {
+++    "": {
+++      "name": "whatstheword-monorepo",
+++      "version": "1.0.0",
+++      "workspaces": [
+++        "client",
+++        "server"
+++      ],
+++      "devDependencies": {
+++        "concurrently": "^9.1.2"
+++      }
+++    },
+++    "client": {
+++      "name": "whatstheword-client",
+++      "version": "1.0.0",
+++      "dependencies": {
+++        "@supabase/supabase-js": "^2.49.1",
+++        "clsx": "^2.1.1",
+++        "lucide-react": "^1.16.0",
+++        "motion": "^12.4.10",
+++        "react": "^18.3.1",
+++        "react-dom": "^18.3.1",
+++        "socket.io-client": "^4.8.1",
+++        "tailwind-merge": "^3.0.2"
+++      },
+++      "devDependencies": {
+++        "@types/node": "^22.13.9",
+++        "@types/react": "^18.3.18",
+++        "@types/react-dom": "^18.3.5",
+++        "@vitejs/plugin-react": "^4.3.4",
+++        "autoprefixer": "^10.4.20",
+++        "postcss": "^8.5.3",
+++        "tailwindcss": "^3.4.17",
+++        "typescript": "^5.7.3",
+++        "vite": "^6.2.0"
+++      }
+++    },
+++    "node_modules/@alloc/quick-lru": {
+++      "version": "5.3.0",
+++      "resolved": "https://registry.npmjs.org/@alloc/quick-lru/-/quick-lru-5.3.0.tgz",
+++      "integrity": "sha512-U4+70Pc5ZS9osnCBCE5Jha/ciHM+Yp+CNMNC/7HvYbNRk1Ldd+f7qO65W5qfhu/TCv+/ozljlXXe9Nj8419DMA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=10"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/sindresorhus"
+++      }
+++    },
+++    "node_modules/@babel/code-frame": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.29.7.tgz",
+++      "integrity": "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/helper-validator-identifier": "^7.29.7",
+++        "js-tokens": "^4.0.0",
+++        "picocolors": "^1.1.1"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/compat-data": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/compat-data/-/compat-data-7.29.7.tgz",
+++      "integrity": "sha512-locTkQyKvwIEgBzVrn8693ebc97F2U8ZHjbXwDXJ5Fn2TCpNwTlKcaKLkdHop5c/icOFE7qt7Q9JC5hnKNa6Gg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/core": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/core/-/core-7.29.7.tgz",
+++      "integrity": "sha512-RgHBCvtjbOK2gXSNBNIkNoEc9qoVEtau3hj8gEqKQuL3HZAibKarWFEI3Lfm6EYKkLalOh8eSrj9b+ch9H/VBA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/code-frame": "^7.29.7",
+++        "@babel/generator": "^7.29.7",
+++        "@babel/helper-compilation-targets": "^7.29.7",
+++        "@babel/helper-module-transforms": "^7.29.7",
+++        "@babel/helpers": "^7.29.7",
+++        "@babel/parser": "^7.29.7",
+++        "@babel/template": "^7.29.7",
+++        "@babel/traverse": "^7.29.7",
+++        "@babel/types": "^7.29.7",
+++        "@jridgewell/remapping": "^2.3.5",
+++        "convert-source-map": "^2.0.0",
+++        "debug": "^4.1.0",
+++        "gensync": "^1.0.0-beta.2",
+++        "json5": "^2.2.3",
+++        "semver": "^6.3.1"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      },
+++      "funding": {
+++        "type": "opencollective",
+++        "url": "https://opencollective.com/babel"
+++      }
+++    },
+++    "node_modules/@babel/generator": {
+++      "version": "7.29.8",
+++      "resolved": "https://registry.npmjs.org/@babel/generator/-/generator-7.29.8.tgz",
+++      "integrity": "sha512-gZbepsdh3WDtgZKWL+vTPh71LSBrm/Y4/QDZBVCcYfmeTEEuoOYwlSy+G1StfJg+/Zy550u/3TATbm7qDbbMtg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/parser": "^7.29.8",
+++        "@babel/types": "^7.29.8",
+++        "@jridgewell/gen-mapping": "^0.3.12",
+++        "@jridgewell/trace-mapping": "^0.3.28",
+++        "jsesc": "^3.0.2"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/helper-compilation-targets": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/helper-compilation-targets/-/helper-compilation-targets-7.29.7.tgz",
+++      "integrity": "sha512-wem6WaBj4NaVYVdNhLPPVacES6ZJ+KBBfSkTMD3YZxbP3rm3Di85tJU5ljaUNhaOynt+Aj0xruhYuzQBt8n71g==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/compat-data": "^7.29.7",
+++        "@babel/helper-validator-option": "^7.29.7",
+++        "browserslist": "^4.24.0",
+++        "lru-cache": "^5.1.1",
+++        "semver": "^6.3.1"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/helper-globals": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/helper-globals/-/helper-globals-7.29.7.tgz",
+++      "integrity": "sha512-3nQVUAtvkKH9zahfWgw96Jc/uFOmjACE1kQz82E2lqWmHBgjzbNlsC22nuQTfahmWeQtTq5nQ/4Nnd2A1wj4zA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/helper-module-imports": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/helper-module-imports/-/helper-module-imports-7.29.7.tgz",
+++      "integrity": "sha512-ejHwrQQYcm9xnTivShn2IDOlIzInN34AXskvq9QicvCtEzq1Vzclu/tKF8Jq1Cg8JG2GL6/EmjgsCT7lXepE3g==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/traverse": "^7.29.7",
+++        "@babel/types": "^7.29.7"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/helper-module-transforms": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/helper-module-transforms/-/helper-module-transforms-7.29.7.tgz",
+++      "integrity": "sha512-UPUVSyXbOh627KiCIGQSgwWzGeBKLkaJ9PJEdrngIwMSzxLR4jS4+f1f1jb7VzBbg8nFLaYotvVPFCTqdrmTAg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/helper-module-imports": "^7.29.7",
+++        "@babel/helper-validator-identifier": "^7.29.7",
+++        "@babel/traverse": "^7.29.7"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      },
+++      "peerDependencies": {
+++        "@babel/core": "^7.0.0"
+++      }
+++    },
+++    "node_modules/@babel/helper-plugin-utils": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/helper-plugin-utils/-/helper-plugin-utils-7.29.7.tgz",
+++      "integrity": "sha512-G7sHYigPY17oO5SYWnfD/0MTBwVR781S/JI643e/JhUYgVgWE/61SoW3NH9KWUKyKq5LVh3npif99Wkt6j86Jw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/helper-string-parser": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.29.7.tgz",
+++      "integrity": "sha512-Pb5ijPrZ89GDH8223L4UP8i6QApWxs04RbPQJTeWDV0/keR2E36MeKnyr6LYmUUvqRRI+Iv87SuF1W6ErINzYw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/helper-validator-identifier": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.29.7.tgz",
+++      "integrity": "sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/helper-validator-option": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/helper-validator-option/-/helper-validator-option-7.29.7.tgz",
+++      "integrity": "sha512-N9ZErrD+yW5geCDtBqnOoxmR8+tNKiGuxKlDpuJxfsqpa2dFcexaziGAE/qoHLiDDreVNMupxGmSoNlyvsA3gw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/helpers": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/helpers/-/helpers-7.29.7.tgz",
+++      "integrity": "sha512-1k2lAGRMfHTcwuNYcCNUmaUffmQv8KWMfh2iJUUeRlwlwH4FdNG7mfPI10NPfLHJFThE4Tyr4mv7kTNZOiPuBg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/template": "^7.29.7",
+++        "@babel/types": "^7.29.7"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/parser": {
+++      "version": "7.29.8",
+++      "resolved": "https://registry.npmjs.org/@babel/parser/-/parser-7.29.8.tgz",
+++      "integrity": "sha512-E8lTAYNB1KW+FH+VGJuZM1ioAx2E6oVlvQFRrf5P8ZZmsiJXYAD9vTFV7yyEURNzgh1dFqMZuO6tUwcARbqFCA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/types": "^7.29.8"
+++      },
+++      "bin": {
+++        "parser": "bin/babel-parser.js"
+++      },
+++      "engines": {
+++        "node": ">=6.0.0"
+++      }
+++    },
+++    "node_modules/@babel/plugin-transform-react-jsx-self": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/plugin-transform-react-jsx-self/-/plugin-transform-react-jsx-self-7.29.7.tgz",
+++      "integrity": "sha512-TL0hMc9xzy86VD31nUiwzd5otRAcyEPcsegCxolO0PvcXuH1v0kECe/UIznYFihpkvU5wg/jk4v0TTEFfm53fw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/helper-plugin-utils": "^7.29.7"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      },
+++      "peerDependencies": {
+++        "@babel/core": "^7.0.0-0"
+++      }
+++    },
+++    "node_modules/@babel/plugin-transform-react-jsx-source": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/plugin-transform-react-jsx-source/-/plugin-transform-react-jsx-source-7.29.7.tgz",
+++      "integrity": "sha512-06IyK09H3wi4cGbhDBwp5gUGo0IKtnYa8tyTiephirPCK6fbobVGiXMMI5zLQ4aKEYP3wZ3ArU44o+8KMrSG/Q==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/helper-plugin-utils": "^7.29.7"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      },
+++      "peerDependencies": {
+++        "@babel/core": "^7.0.0-0"
+++      }
+++    },
+++    "node_modules/@babel/template": {
+++      "version": "7.29.7",
+++      "resolved": "https://registry.npmjs.org/@babel/template/-/template-7.29.7.tgz",
+++      "integrity": "sha512-puq+Gf35oI24FeN11LkoUQFqv9uwNeWpxXZi/Ji3rRIoKAzKnxRaZ+Gkj0vKS9ZCiTESfng1N9LyOyXvo+m+Gg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/code-frame": "^7.29.7",
+++        "@babel/parser": "^7.29.7",
+++        "@babel/types": "^7.29.7"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/traverse": {
+++      "version": "7.29.8",
+++      "resolved": "https://registry.npmjs.org/@babel/traverse/-/traverse-7.29.8.tgz",
+++      "integrity": "sha512-I5z7H3bf/41ktsNVLtpN0wAa336HkqIHQ5BuPLEhTkt1jVSyZpeNKIzTgEWmlxjdg81R0IgUCcaE+Ok3NvrfZg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/code-frame": "^7.29.7",
+++        "@babel/generator": "^7.29.8",
+++        "@babel/helper-globals": "^7.29.7",
+++        "@babel/parser": "^7.29.8",
+++        "@babel/template": "^7.29.7",
+++        "@babel/types": "^7.29.8",
+++        "debug": "^4.3.1"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@babel/types": {
+++      "version": "7.29.8",
+++      "resolved": "https://registry.npmjs.org/@babel/types/-/types-7.29.8.tgz",
+++      "integrity": "sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/helper-string-parser": "^7.29.7",
+++        "@babel/helper-validator-identifier": "^7.29.7"
+++      },
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/@esbuild/aix-ppc64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/aix-ppc64/-/aix-ppc64-0.28.2.tgz",
+++      "integrity": "sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==",
+++      "cpu": [
+++        "ppc64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "aix"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/android-arm": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm/-/android-arm-0.28.2.tgz",
+++      "integrity": "sha512-kXXoiPVVGQcnIYGOeaovwOURpniDBpSq4A03qkQ+BMQqtGG6HYap3xne9C1O1yo4TR3qxlCX5IqqmX6fFo2Lqg==",
+++      "cpu": [
+++        "arm"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "android"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/android-arm64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm64/-/android-arm64-0.28.2.tgz",
+++      "integrity": "sha512-5YfKeeI8qWfBZIX+u2xZC3Zlb3Os/gLS2sbEKM+I4ZOcsWmHS2WLysCcQZDAFRslDUU5Oiq44gf6PYN1vGwG5A==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "android"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/android-x64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/android-x64/-/android-x64-0.28.2.tgz",
+++      "integrity": "sha512-O387ite7SzUyCcy3JQX4P4bLtEA7bLLkx+esve5JHnyYfNTxcVpXZo9jhdB0lTKN44gztELTdU7nS8Nr16Fs1Q==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "android"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/darwin-arm64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.28.2.tgz",
+++      "integrity": "sha512-n4KqkOQrraxHJcgjM1RvwbigfQKIKJVpM7xp+KsxiyUSrRdIXnt73VhrPAx0fV44hgfmIVKjxMN9J1t5jySVkw==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "darwin"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/darwin-x64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-x64/-/darwin-x64-0.28.2.tgz",
+++      "integrity": "sha512-uq6suIWYP37qzGddBKPw5QEQPi6HiLGsO7UmkpfyaYNQ3D+rN6w6WfwH+nuqcGXWvawGwxOEroO4YGnFh95azw==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "darwin"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/freebsd-arm64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-arm64/-/freebsd-arm64-0.28.2.tgz",
+++      "integrity": "sha512-n+I0BTSRIoy+d6RPKnEVwql5UwBJolytvY4mAOIEJorKlqgPII8ix6slVVrfZ5Tnj7glIZvloylbB/EJPMWEXw==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "freebsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/freebsd-x64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-x64/-/freebsd-x64-0.28.2.tgz",
+++      "integrity": "sha512-78XJTJkvPs0kz2w61301PJjXl4g7q3JqiYMZ/M/yVI73EHBrCRTgkhu9oqG7vPqq+a/yadEW8aD+agKlk5xrmg==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "freebsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/linux-arm": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm/-/linux-arm-0.28.2.tgz",
+++      "integrity": "sha512-XlDnu2q5yoqems+xay6wSAcg9DDD7K9RLKZEBOMZm3ckNpJBvOX20tSfby8KfrrhINDyv9V2YVZKY/SpoGJI8w==",
+++      "cpu": [
+++        "arm"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/linux-arm64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.28.2.tgz",
+++      "integrity": "sha512-pW4AC0P3it8c7do9MVM4p51FzHzdM/TZrerurgRcHJ2WTa1VQ1CIq18xncfpBJw4ojkiZZrKW2yIBWBP92j6Ug==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/linux-ia32": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ia32/-/linux-ia32-0.28.2.tgz",
+++      "integrity": "sha512-CYbnj78HsIeA+DhgUKgFCfvNsTHFhMMrinUrMZpDXJXKN8T3XViTZ/+wtHeVxEWY8ewSzTFN+nRmSwO2tZaLUQ==",
+++      "cpu": [
+++        "ia32"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/linux-loong64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-loong64/-/linux-loong64-0.28.2.tgz",
+++      "integrity": "sha512-buwkd8nsph4R+ajRvw0qM5Hja/TXQow3ptzWO2EbG/cqcIkHloRrdlBtQlshyYGTNFvfkfJ5tpPLVkY4DtsPfQ==",
+++      "cpu": [
+++        "loong64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/linux-mips64el": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-mips64el/-/linux-mips64el-0.28.2.tgz",
+++      "integrity": "sha512-ZVykbDyk7519VwiNb9Lcj9m8XM6v5V9uKPvrEMkkEedVewf+0itkhahp4HDpgERXhwLRpWFypsGbG/J8s0QjJA==",
+++      "cpu": [
+++        "mips64el"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/linux-ppc64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ppc64/-/linux-ppc64-0.28.2.tgz",
+++      "integrity": "sha512-CAXl+Dtd9UUuJd8pKKdwh6MLm3MUMiqMPmhZ3tTSXPqfyQ3vDl6R5hZdZ/kYojK4ofXtdfSv1tFq8XzWx3heNQ==",
+++      "cpu": [
+++        "ppc64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/linux-riscv64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-riscv64/-/linux-riscv64-0.28.2.tgz",
+++      "integrity": "sha512-GeXCej4IQtU1B+QlDV8W/RRvbzI3O/Stss+/bCXv4lZls5WGRtu2a+3JkA3i4qIUlMXpcHebWpF8AkJhATowuA==",
+++      "cpu": [
+++        "riscv64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/linux-s390x": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-s390x/-/linux-s390x-0.28.2.tgz",
+++      "integrity": "sha512-3H1weTYZPxt/WOhByszQZybS9w5lKzUn1FDMsgEChbHWQwHYQQRfBxgCcZvPhjHfKyJjIievvMmEUawJrdY9Dg==",
+++      "cpu": [
+++        "s390x"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/linux-x64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.28.2.tgz",
+++      "integrity": "sha512-4xTZr1FUmSoQW4XIWmit3tzQrUTZM+N3P0XV8xROKYF50XfI7xeO90+1bZvNwxIufQ9hDQVRJH5YhgPVF8A/HQ==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/netbsd-arm64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-arm64/-/netbsd-arm64-0.28.2.tgz",
+++      "integrity": "sha512-sSATRjPeDBg3pdgHoQfoYBob11Kk1FGa9lui5RIHZCoCkJa9QKlvl3/vKz2usCmYYjs7ymJR/2Nnsqe+Hjt5nw==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "netbsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/netbsd-x64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-x64/-/netbsd-x64-0.28.2.tgz",
+++      "integrity": "sha512-lqnzCV+mM0gIADaKihiCg6ifgfU2L3h5E33rNQBN1Y4MaVGnzryzmvvf7UHxprpQdE8hpqLolJ9Rl+SkIRDpyw==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "netbsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/openbsd-arm64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-arm64/-/openbsd-arm64-0.28.2.tgz",
+++      "integrity": "sha512-AL2qJILH7lNjrDmCQDvdxMfAUIv8KMNZOvrwAQ8i8//ntL9FflhOyMJ8OZSMBb8/AWXe3/5v5S20y3zCoZWKoQ==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "openbsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/openbsd-x64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-x64/-/openbsd-x64-0.28.2.tgz",
+++      "integrity": "sha512-QtiuPytchRyC4rwUKhexJdQKvDuZ6hWloi3igqPQNUJCS1/v9EiO3UTOXR6A3FoMo4fnAKbWJdqaIwhOzh8qEw==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "openbsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/openharmony-arm64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/openharmony-arm64/-/openharmony-arm64-0.28.2.tgz",
+++      "integrity": "sha512-WkhYDmpTjLvGlScA1rwjRUmhl4k8oXR3cIbtqWmELgU/dFeHHlEllxDvdWcNJV9rbzCexB5vz8gtNewWLgCT7Q==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "openharmony"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/sunos-x64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/sunos-x64/-/sunos-x64-0.28.2.tgz",
+++      "integrity": "sha512-GPMSkTOtMnv2U2F8gxe4Io6qmVs+YKyp832Etqqxr0hFngmXQ3rzwytelm3GIn7T4VviRUlf3sOgBOiTdvaf7g==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "sunos"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/win32-arm64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/win32-arm64/-/win32-arm64-0.28.2.tgz",
+++      "integrity": "sha512-PIhhEkE9uPBleRBrQEJpUn7MBnibZzbGzYWPmY3x+YoVg/95zbjB4CxPPOQ8l5tYYM4mMaCthF8/1DIfBQQyWQ==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/win32-ia32": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/win32-ia32/-/win32-ia32-0.28.2.tgz",
+++      "integrity": "sha512-YmJbfTlvU7Sdn9BB+4PRES4oB6pxgS37MAONj+hBr/cpXS1aBPKXxNnDbu+QCWPj0o9dgyxeq79g6c5P8KeuYA==",
+++      "cpu": [
+++        "ia32"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@esbuild/win32-x64": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.28.2.tgz",
+++      "integrity": "sha512-5ebpxr3nWMzrL/rnUI755Jkuee0bHL/Gq0WTF9lvcpv73wAp5eu8MfBUgWK9bhWvZjj7yX8etf/8tI8Ney695g==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/@jridgewell/gen-mapping": {
+++      "version": "0.3.13",
+++      "resolved": "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz",
+++      "integrity": "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@jridgewell/sourcemap-codec": "^1.5.0",
+++        "@jridgewell/trace-mapping": "^0.3.24"
+++      }
+++    },
+++    "node_modules/@jridgewell/remapping": {
+++      "version": "2.3.5",
+++      "resolved": "https://registry.npmjs.org/@jridgewell/remapping/-/remapping-2.3.5.tgz",
+++      "integrity": "sha512-LI9u/+laYG4Ds1TDKSJW2YPrIlcVYOwi2fUC6xB43lueCjgxV4lffOCZCtYFiH6TNOX+tQKXx97T4IKHbhyHEQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@jridgewell/gen-mapping": "^0.3.5",
+++        "@jridgewell/trace-mapping": "^0.3.24"
+++      }
+++    },
+++    "node_modules/@jridgewell/resolve-uri": {
+++      "version": "3.1.2",
+++      "resolved": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
+++      "integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6.0.0"
+++      }
+++    },
+++    "node_modules/@jridgewell/sourcemap-codec": {
+++      "version": "1.6.0",
+++      "resolved": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.6.0.tgz",
+++      "integrity": "sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/@jridgewell/trace-mapping": {
+++      "version": "0.3.31",
+++      "resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz",
+++      "integrity": "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@jridgewell/resolve-uri": "^3.1.0",
+++        "@jridgewell/sourcemap-codec": "^1.4.14"
+++      }
+++    },
+++    "node_modules/@napi-rs/lzma-linux-x64-gnu": {
+++      "version": "1.5.1",
+++      "resolved": "https://registry.npmjs.org/@napi-rs/lzma-linux-x64-gnu/-/lzma-linux-x64-gnu-1.5.1.tgz",
+++      "integrity": "sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "glibc"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": "^22.20 || ^24.12 || >=25"
+++      }
+++    },
+++    "node_modules/@nodelib/fs.scandir": {
+++      "version": "2.1.5",
+++      "resolved": "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz",
+++      "integrity": "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@nodelib/fs.stat": "2.0.5",
+++        "run-parallel": "^1.1.9"
+++      },
+++      "engines": {
+++        "node": ">= 8"
+++      }
+++    },
+++    "node_modules/@nodelib/fs.stat": {
+++      "version": "2.0.5",
+++      "resolved": "https://registry.npmjs.org/@nodelib/fs.stat/-/fs.stat-2.0.5.tgz",
+++      "integrity": "sha512-RkhPPp2zrqDAQA/2jNhnztcPAlv64XdhIp7a7454A5ovI7Bukxgt7MX7udwAu3zg1DcpPU0rz3VV1SeaqvY4+A==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 8"
+++      }
+++    },
+++    "node_modules/@nodelib/fs.walk": {
+++      "version": "1.2.8",
+++      "resolved": "https://registry.npmjs.org/@nodelib/fs.walk/-/fs.walk-1.2.8.tgz",
+++      "integrity": "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@nodelib/fs.scandir": "2.1.5",
+++        "fastq": "^1.6.0"
+++      },
+++      "engines": {
+++        "node": ">= 8"
+++      }
+++    },
+++    "node_modules/@rolldown/pluginutils": {
+++      "version": "1.0.0-beta.27",
+++      "resolved": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.0-beta.27.tgz",
+++      "integrity": "sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/@rollup/rollup-android-arm-eabi": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.63.1.tgz",
+++      "integrity": "sha512-UZ8sUxPTiHWYX9QNdJedb1kDZSpS1t/VPWBWGSgqHNi9w3Cu6IXvu2mzbhiTiPvtrqgTQJ+zqiAq2iPIPilpaQ==",
+++      "cpu": [
+++        "arm"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "android"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-android-arm64": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-android-arm64/-/rollup-android-arm64-4.63.1.tgz",
+++      "integrity": "sha512-cQ4nFQABN5cDvDpbvJ7bMStCpnaVxynZrRMfUJYgxcIk9Sh54FIO1vtfkg0B69REjER77ioZ/ov+eAApx/KmLQ==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "android"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-darwin-arm64": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.63.1.tgz",
+++      "integrity": "sha512-FQNqd1lRy/0QhDk3xeRIkSBiCpXCiDnZO3YLVdcDKN1UBiKToNftCzcXYNLshmPDUMlu2TdeS8tGcsU6f3YF1Q==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "darwin"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-darwin-x64": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.63.1.tgz",
+++      "integrity": "sha512-pvD16V939D3CloK0+qikpGaxiPrDUXTe7Y5cWOMkMSy7m1cawa8EGy/kXYi/G/cKAC4HDAbSnzCIk1WmsoOKXg==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "darwin"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-freebsd-arm64": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-freebsd-arm64/-/rollup-freebsd-arm64-4.63.1.tgz",
+++      "integrity": "sha512-pcFGeL2345VwdTnJhA6zLbew+YgWB0qBG2+dMtXjCicf6+rm6kO6cOoh5VnTe0ZMrMRgRyuHmCJxZWrIdzYuOw==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "freebsd"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-freebsd-x64": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-freebsd-x64/-/rollup-freebsd-x64-4.63.1.tgz",
+++      "integrity": "sha512-mRJlqSRulVzcKq/LKA6ICSIc3K/l4fzlVn/gePn2nXIHy8seRi5z/eeRE0d/XMBxcMldiXtQTSpRj0tkkC3g8Q==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "freebsd"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-arm-gnueabihf": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm-gnueabihf/-/rollup-linux-arm-gnueabihf-4.63.1.tgz",
+++      "integrity": "sha512-YDUNvVM85TI3g/1OpnqKP1h4NeW/j64DfWMf+G3M809xNk1bJSnpFp4sh83NpmVE5DXnkh8ULor4LTVZKoYLHw==",
+++      "cpu": [
+++        "arm"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "glibc"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-arm-musleabihf": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm-musleabihf/-/rollup-linux-arm-musleabihf-4.63.1.tgz",
+++      "integrity": "sha512-7Mcn71p9ZuQFAj+h+dhQXy/yeLePRS2yKRnmW1DijA9thKO5qap0GNOIQK4yQ6iP3SU0Mrb/yWo8h8vgRba8lw==",
+++      "cpu": [
+++        "arm"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "musl"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-arm64-gnu": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.63.1.tgz",
+++      "integrity": "sha512-4YiLQTX6U4CSl0L9cluep9A9W6UmTfqBDc2/CH6wlu54pl4E7Jn3cOD8oxzvBDEGk/JMKgJ47C8g+radF7mwvg==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "glibc"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-arm64-musl": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-arm64-musl/-/rollup-linux-arm64-musl-4.63.1.tgz",
+++      "integrity": "sha512-2ra8F7w8OquwZN9z2/fKFnli69wa8PLwaVzRMIPGb13ByMJwC28Fbp8YcVGoUhlYMTt7j5j9bNgpysrN2UM+vw==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "musl"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-loong64-gnu": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-loong64-gnu/-/rollup-linux-loong64-gnu-4.63.1.tgz",
+++      "integrity": "sha512-Sy20ncyhjmBP0Ml+UvQbimjlk6VFgjW5uNP+qqwHB00mTE8Bl2C1TuHTlRwK2YoXeZbee5lP2XevBWVkAQAtSQ==",
+++      "cpu": [
+++        "loong64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "glibc"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-loong64-musl": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-loong64-musl/-/rollup-linux-loong64-musl-4.63.1.tgz",
+++      "integrity": "sha512-noITLp8oNjYliPnGWmLyelIHwULGqbHloQHGw1rtxbWhTuWooRpnZarZQJ1y9EUC4szuCusCc+HEpUtxpIwYvA==",
+++      "cpu": [
+++        "loong64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "musl"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-ppc64-gnu": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-ppc64-gnu/-/rollup-linux-ppc64-gnu-4.63.1.tgz",
+++      "integrity": "sha512-hlxxXd+F1mWiAcaFR7Sv9ZQT6m6UfI8+Vy/kFJzztq2pDMU/0wZ9sish0iszNZvsQDo8Gc0i5yuFEOz5dDf6fA==",
+++      "cpu": [
+++        "ppc64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "glibc"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-ppc64-musl": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-ppc64-musl/-/rollup-linux-ppc64-musl-4.63.1.tgz",
+++      "integrity": "sha512-EF7OpqQTQ/BvGqLzUi4rEHuagCV9MugAUXSHemwPW5vxZ75RR+jxO/2j95Ph2dalMpFHSVECjRoioHZgA9zOYA==",
+++      "cpu": [
+++        "ppc64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "musl"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-riscv64-gnu": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-riscv64-gnu/-/rollup-linux-riscv64-gnu-4.63.1.tgz",
+++      "integrity": "sha512-wQO3JesW9PRkwlabQ27y7sPfVOOTLRG73I4F2UYHG5PXun3J9U3y+b7ezVKSYbsvSKGQ1k1cq8Qlun4C9kLt3w==",
+++      "cpu": [
+++        "riscv64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "glibc"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-riscv64-musl": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-riscv64-musl/-/rollup-linux-riscv64-musl-4.63.1.tgz",
+++      "integrity": "sha512-ouAGwhO6wHRXdnOVCOsB0tRFkA7nhNB2Nwax6oECXN0YiN8EYUTBAOudADOB1PI+yDL61TeNx/u7MVCzksNbkQ==",
+++      "cpu": [
+++        "riscv64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "musl"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-s390x-gnu": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-s390x-gnu/-/rollup-linux-s390x-gnu-4.63.1.tgz",
+++      "integrity": "sha512-q2R38Sn+1J8RxhfJ+T54wSWmyKXWec+9jgDfqO2AtArEqHO5R2aeayp5H5OYLr5UYDVGsVaZPEFUooMhYCdz5A==",
+++      "cpu": [
+++        "s390x"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "glibc"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-x64-gnu": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.63.1.tgz",
+++      "integrity": "sha512-gfI5T24WLLuFfSKw7Go/zDXjAAV0fny0swTaDv+WjK7vqcw4cRhFfdsyKL1n+ukI+ooBxn3bVQnyrn06WpI50w==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "glibc"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-linux-x64-musl": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.63.1.tgz",
+++      "integrity": "sha512-4h6XqthmB4Hspji84wvgk+ElodTsGj+dbZqHJHHtKxj4mYq0ANSEEPX9ys3moJueqsRjwpaJYH7874Itwnj2ow==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "libc": [
+++        "musl"
+++      ],
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-openbsd-x64": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-openbsd-x64/-/rollup-openbsd-x64-4.63.1.tgz",
+++      "integrity": "sha512-dlfCOa87o1VAYegLQ9EKilx2JCeRofiyPGhTCmqnuXZ6bMPiycO1rq1+sKoulAp7pGLIsTIw+1x5R+zgh5LhhA==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "openbsd"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-openharmony-arm64": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-openharmony-arm64/-/rollup-openharmony-arm64-4.63.1.tgz",
+++      "integrity": "sha512-cjkLbOlfcm3QGhMM1J5zaZjsw1GggbN6rw9UTSSRrPrR1KkcXnN7Uq9rPw34xImQ9VOY9GN+6u2Zj80B9ptkcw==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "openharmony"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-win32-arm64-msvc": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.63.1.tgz",
+++      "integrity": "sha512-Li1KdUnWGE4N3e1F/B4RTB1ms+nG4WBgjByO46pkeBVX/2UBsY53xf5vK9WygVmnH3RwncIST7lkSdLSY6P9lg==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-win32-ia32-msvc": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-ia32-msvc/-/rollup-win32-ia32-msvc-4.63.1.tgz",
+++      "integrity": "sha512-t4ZYOSoLTgwhuFMrmTMLx/+i1DQVK7HYqMc6kY46EApwi8X0nIVphzdNoThU3xt6n+N5urG1/gxBdCaKDLavfg==",
+++      "cpu": [
+++        "ia32"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-win32-x64-gnu": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.63.1.tgz",
+++      "integrity": "sha512-RgroPfMmKlD1RzSDxvwgcPiy2HNQKoYV7OmwIXDsk73uKW5t6B/V8KIy27SMv/FNXFo/oSBtWc9J0X7t91ezZg==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ]
+++    },
+++    "node_modules/@rollup/rollup-win32-x64-msvc": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.63.1.tgz",
+++      "integrity": "sha512-at8QVep6S3h5Y6gSbdGU06bRY5WJkf6WUduM9YtvYMbYhB1MOFfUgc6kehitQXzOtMSaT70q7f9ydPhpqu821w==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ]
+++    },
+++    "node_modules/@socket.io/component-emitter": {
+++      "version": "3.1.2",
+++      "resolved": "https://registry.npmjs.org/@socket.io/component-emitter/-/component-emitter-3.1.2.tgz",
+++      "integrity": "sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==",
+++      "license": "MIT"
+++    },
+++    "node_modules/@supabase/auth-js": {
+++      "version": "2.112.4",
+++      "resolved": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.112.4.tgz",
+++      "integrity": "sha512-z8DesgwLzKM5PiT0yNmJU8VJyh1zAhYi+20Z7drdJQLXg/wWW4yGt/un+He5ERYUo94Vz66t5aeyr1DIDemI5A==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "tslib": "2.8.1"
+++      },
+++      "engines": {
+++        "node": ">=22.0.0"
+++      }
+++    },
+++    "node_modules/@supabase/functions-js": {
+++      "version": "2.112.4",
+++      "resolved": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.112.4.tgz",
+++      "integrity": "sha512-DQ0aVH8wSQAccVqNoEkec62qCu2QRNyoGN53RqsVZ1k6F1zq4/v8scrlR6LNT2RJmT97apiTmORijPVhErCS2g==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "tslib": "2.8.1"
+++      },
+++      "engines": {
+++        "node": ">=22.0.0"
+++      }
+++    },
+++    "node_modules/@supabase/phoenix": {
+++      "version": "0.4.5",
+++      "resolved": "https://registry.npmjs.org/@supabase/phoenix/-/phoenix-0.4.5.tgz",
+++      "integrity": "sha512-aAn9H9ovVyeApKy11OWOrrOGq8DV68yWeH4ud2lN9fzn4aO8Zb5GLL9m1pUg9nLqIcT+ZDfAcsZe0E/nqdv2lw==",
+++      "license": "MIT"
+++    },
+++    "node_modules/@supabase/postgrest-js": {
+++      "version": "2.112.4",
+++      "resolved": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.112.4.tgz",
+++      "integrity": "sha512-uaubtPSeg2TR4wrtfQoQWgkTAe+a0qWX2KhmwvTfNl5mGN9+U7owiJt6abk3o/V6O899PSRD1yzxs5RlF4xTug==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "tslib": "2.8.1"
+++      },
+++      "engines": {
+++        "node": ">=22.0.0"
+++      }
+++    },
+++    "node_modules/@supabase/realtime-js": {
+++      "version": "2.112.4",
+++      "resolved": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.112.4.tgz",
+++      "integrity": "sha512-vZ+j079SKrM0Xiq7MJCvQKLDpaH2kfKfLY68xuQE1sqsCsMmx1CyrDBJHsxZ3cX01VOs5SI9igmoZAF3BmdZxw==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@supabase/phoenix": "0.4.5",
+++        "tslib": "2.8.1"
+++      },
+++      "engines": {
+++        "node": ">=22.0.0"
+++      }
+++    },
+++    "node_modules/@supabase/storage-js": {
+++      "version": "2.112.4",
+++      "resolved": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.112.4.tgz",
+++      "integrity": "sha512-lQ0JemuTlMIXVKgSci1qez8yPnM5hyDngeAfEBjZS2Om4D+Cus0EE5BE6glFobrxdyii1OF4UzWfF0zcQgDq5A==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "iceberg-js": "^0.8.1",
+++        "tslib": "2.8.1"
+++      },
+++      "engines": {
+++        "node": ">=22.0.0"
+++      }
+++    },
+++    "node_modules/@supabase/supabase-js": {
+++      "version": "2.112.4",
+++      "resolved": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.112.4.tgz",
+++      "integrity": "sha512-UiCX1udlFY1fQQrO7Z3GU7obQsju0w5Vk9mOOwalfo/+Gy+tahWVenSSuu5E/GTy/q//HxvGv2IrCdW66/61kw==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@supabase/auth-js": "2.112.4",
+++        "@supabase/functions-js": "2.112.4",
+++        "@supabase/postgrest-js": "2.112.4",
+++        "@supabase/realtime-js": "2.112.4",
+++        "@supabase/storage-js": "2.112.4"
+++      },
+++      "engines": {
+++        "node": ">=22.0.0"
+++      },
+++      "peerDependencies": {
+++        "@opentelemetry/api": ">=1.0.0"
+++      },
+++      "peerDependenciesMeta": {
+++        "@opentelemetry/api": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/@types/babel__core": {
+++      "version": "7.20.5",
+++      "resolved": "https://registry.npmjs.org/@types/babel__core/-/babel__core-7.20.5.tgz",
+++      "integrity": "sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/parser": "^7.20.7",
+++        "@babel/types": "^7.20.7",
+++        "@types/babel__generator": "*",
+++        "@types/babel__template": "*",
+++        "@types/babel__traverse": "*"
+++      }
+++    },
+++    "node_modules/@types/babel__generator": {
+++      "version": "7.27.0",
+++      "resolved": "https://registry.npmjs.org/@types/babel__generator/-/babel__generator-7.27.0.tgz",
+++      "integrity": "sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/types": "^7.0.0"
+++      }
+++    },
+++    "node_modules/@types/babel__template": {
+++      "version": "7.4.4",
+++      "resolved": "https://registry.npmjs.org/@types/babel__template/-/babel__template-7.4.4.tgz",
+++      "integrity": "sha512-h/NUaSyG5EyxBIp8YRxo4RMe2/qQgvyowRwVMzhYhBCONbW8PUsg4lkFMrhgZhUe5z3L3MiLDuvyJ/CaPa2A8A==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/parser": "^7.1.0",
+++        "@babel/types": "^7.0.0"
+++      }
+++    },
+++    "node_modules/@types/babel__traverse": {
+++      "version": "7.28.0",
+++      "resolved": "https://registry.npmjs.org/@types/babel__traverse/-/babel__traverse-7.28.0.tgz",
+++      "integrity": "sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/types": "^7.28.2"
+++      }
+++    },
+++    "node_modules/@types/body-parser": {
+++      "version": "1.19.6",
+++      "resolved": "https://registry.npmjs.org/@types/body-parser/-/body-parser-1.19.6.tgz",
+++      "integrity": "sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/connect": "*",
+++        "@types/node": "*"
+++      }
+++    },
+++    "node_modules/@types/chai": {
+++      "version": "5.2.3",
+++      "resolved": "https://registry.npmjs.org/@types/chai/-/chai-5.2.3.tgz",
+++      "integrity": "sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/deep-eql": "*",
+++        "assertion-error": "^2.0.1"
+++      }
+++    },
+++    "node_modules/@types/connect": {
+++      "version": "3.4.38",
+++      "resolved": "https://registry.npmjs.org/@types/connect/-/connect-3.4.38.tgz",
+++      "integrity": "sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/node": "*"
+++      }
+++    },
+++    "node_modules/@types/cors": {
+++      "version": "2.8.19",
+++      "resolved": "https://registry.npmjs.org/@types/cors/-/cors-2.8.19.tgz",
+++      "integrity": "sha512-mFNylyeyqN93lfe/9CSxOGREz8cpzAhH+E93xJ4xWQf62V8sQ/24reV2nyzUWM6H6Xji+GGHpkbLe7pVoUEskg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/node": "*"
+++      }
+++    },
+++    "node_modules/@types/deep-eql": {
+++      "version": "4.0.2",
+++      "resolved": "https://registry.npmjs.org/@types/deep-eql/-/deep-eql-4.0.2.tgz",
+++      "integrity": "sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/@types/estree": {
+++      "version": "1.0.9",
+++      "resolved": "https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz",
+++      "integrity": "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/@types/express": {
+++      "version": "5.0.6",
+++      "resolved": "https://registry.npmjs.org/@types/express/-/express-5.0.6.tgz",
+++      "integrity": "sha512-sKYVuV7Sv9fbPIt/442koC7+IIwK5olP1KWeD88e/idgoJqDm3JV/YUiPwkoKK92ylff2MGxSz1CSjsXelx0YA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/body-parser": "*",
+++        "@types/express-serve-static-core": "^5.0.0",
+++        "@types/serve-static": "^2"
+++      }
+++    },
+++    "node_modules/@types/express-serve-static-core": {
+++      "version": "5.1.3",
+++      "resolved": "https://registry.npmjs.org/@types/express-serve-static-core/-/express-serve-static-core-5.1.3.tgz",
+++      "integrity": "sha512-dPfW8NFiOF4wOHc7+N/QSxlY9cfSsenewGbAz8C8U/MULPd/YZ27LvJUIlzaXie7e6Ove9YunJGgC9tbHD2cKw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/node": "*",
+++        "@types/qs": "*",
+++        "@types/range-parser": "*",
+++        "@types/send": "*"
+++      }
+++    },
+++    "node_modules/@types/http-errors": {
+++      "version": "2.0.5",
+++      "resolved": "https://registry.npmjs.org/@types/http-errors/-/http-errors-2.0.5.tgz",
+++      "integrity": "sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/@types/node": {
+++      "version": "22.20.1",
+++      "resolved": "https://registry.npmjs.org/@types/node/-/node-22.20.1.tgz",
+++      "integrity": "sha512-EANqOCF9QFyra+4pfxUcX9STKJpCLjMbObVzljIJomAWSnuSIEAvyzEU53GaajbXJEgdh0iEcPL+DGvpUd4k1Q==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "undici-types": "~6.21.0"
+++      }
+++    },
+++    "node_modules/@types/prop-types": {
+++      "version": "15.7.15",
+++      "resolved": "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.15.tgz",
+++      "integrity": "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/@types/qs": {
+++      "version": "6.15.1",
+++      "resolved": "https://registry.npmjs.org/@types/qs/-/qs-6.15.1.tgz",
+++      "integrity": "sha512-GZHUBZR9hckSUhrxmp1nG6NwdpM9fCunJwyThLW1X3AyHgd9IlHb6VANpQQqDr2o/qQp6McZ3y/IA2rVzKzSbw==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/@types/range-parser": {
+++      "version": "1.2.7",
+++      "resolved": "https://registry.npmjs.org/@types/range-parser/-/range-parser-1.2.7.tgz",
+++      "integrity": "sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/@types/react": {
+++      "version": "18.3.31",
+++      "resolved": "https://registry.npmjs.org/@types/react/-/react-18.3.31.tgz",
+++      "integrity": "sha512-vfEqpXTvwT91yhmwdfouStN2hSKwTvyRs8qpLfADyrq/kxDw0hZM7Wk9Ug1FELj8hIby+S/+kQCSRFF32nv2Qw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/prop-types": "*",
+++        "csstype": "^3.2.2"
+++      }
+++    },
+++    "node_modules/@types/react-dom": {
+++      "version": "18.3.7",
+++      "resolved": "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.3.7.tgz",
+++      "integrity": "sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "peerDependencies": {
+++        "@types/react": "^18.0.0"
+++      }
+++    },
+++    "node_modules/@types/send": {
+++      "version": "1.2.1",
+++      "resolved": "https://registry.npmjs.org/@types/send/-/send-1.2.1.tgz",
+++      "integrity": "sha512-arsCikDvlU99zl1g69TcAB3mzZPpxgw0UQnaHeC1Nwb015xp8bknZv5rIfri9xTOcMuaVgvabfIRA7PSZVuZIQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/node": "*"
+++      }
+++    },
+++    "node_modules/@types/serve-static": {
+++      "version": "2.2.0",
+++      "resolved": "https://registry.npmjs.org/@types/serve-static/-/serve-static-2.2.0.tgz",
+++      "integrity": "sha512-8mam4H1NHLtu7nmtalF7eyBH14QyOASmcxHhSfEoRyr0nP/YdoesEtU+uSRvMe96TW/HPTtkoKqQLl53N7UXMQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/http-errors": "*",
+++        "@types/node": "*"
+++      }
+++    },
+++    "node_modules/@types/ws": {
+++      "version": "8.18.1",
+++      "resolved": "https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz",
+++      "integrity": "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/node": "*"
+++      }
+++    },
+++    "node_modules/@vitejs/plugin-react": {
+++      "version": "4.7.0",
+++      "resolved": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-4.7.0.tgz",
+++      "integrity": "sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@babel/core": "^7.28.0",
+++        "@babel/plugin-transform-react-jsx-self": "^7.27.1",
+++        "@babel/plugin-transform-react-jsx-source": "^7.27.1",
+++        "@rolldown/pluginutils": "1.0.0-beta.27",
+++        "@types/babel__core": "^7.20.5",
+++        "react-refresh": "^0.17.0"
+++      },
+++      "engines": {
+++        "node": "^14.18.0 || >=16.0.0"
+++      },
+++      "peerDependencies": {
+++        "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
+++      }
+++    },
+++    "node_modules/@vitest/expect": {
+++      "version": "3.2.7",
+++      "resolved": "https://registry.npmjs.org/@vitest/expect/-/expect-3.2.7.tgz",
+++      "integrity": "sha512-E8eBXaKibuvH2pSZErOjdVb5vF4PbKYcrnluBTYxEk1l/VhhwZg1kZQsdtjq+CsF5CFydf2Rdkz7jDHKSisi3w==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/chai": "^5.2.2",
+++        "@vitest/spy": "3.2.7",
+++        "@vitest/utils": "3.2.7",
+++        "chai": "^5.2.0",
+++        "tinyrainbow": "^2.0.0"
+++      },
+++      "funding": {
+++        "url": "https://opencollective.com/vitest"
+++      }
+++    },
+++    "node_modules/@vitest/mocker": {
+++      "version": "3.2.7",
+++      "resolved": "https://registry.npmjs.org/@vitest/mocker/-/mocker-3.2.7.tgz",
+++      "integrity": "sha512-Trr0hYO9CM3Wj6ksWHRhK9IZpIY6wTMO5u/MqXurMxT57sWBaOPEtP3Oq60ihZuh5JsiagKfz95OcxdEP6dBrA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@vitest/spy": "3.2.7",
+++        "estree-walker": "^3.0.3",
+++        "magic-string": "^0.30.17"
+++      },
+++      "funding": {
+++        "url": "https://opencollective.com/vitest"
+++      },
+++      "peerDependencies": {
+++        "msw": "^2.4.9",
+++        "vite": "^5.0.0 || ^6.0.0 || ^7.0.0-0"
+++      },
+++      "peerDependenciesMeta": {
+++        "msw": {
+++          "optional": true
+++        },
+++        "vite": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/@vitest/pretty-format": {
+++      "version": "3.2.7",
+++      "resolved": "https://registry.npmjs.org/@vitest/pretty-format/-/pretty-format-3.2.7.tgz",
+++      "integrity": "sha512-KUHlwqVu0sRlhCdyPdQ/wBoTfRahjUky1MubOmYw9fWfIZy1gNoHpuaaQBPAaMaVYdQYHJLurzj8ECCj5OwTqA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "tinyrainbow": "^2.0.0"
+++      },
+++      "funding": {
+++        "url": "https://opencollective.com/vitest"
+++      }
+++    },
+++    "node_modules/@vitest/runner": {
+++      "version": "3.2.7",
+++      "resolved": "https://registry.npmjs.org/@vitest/runner/-/runner-3.2.7.tgz",
+++      "integrity": "sha512-sB9y4ovltoQP+WaUPwmSxO9WIg9Ig694Di5PalVPsYHklAdE027mehpWF2SQSVq+k6sFgaivbTjTJwZLSHbedA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@vitest/utils": "3.2.7",
+++        "pathe": "^2.0.3",
+++        "strip-literal": "^3.0.0"
+++      },
+++      "funding": {
+++        "url": "https://opencollective.com/vitest"
+++      }
+++    },
+++    "node_modules/@vitest/snapshot": {
+++      "version": "3.2.7",
+++      "resolved": "https://registry.npmjs.org/@vitest/snapshot/-/snapshot-3.2.7.tgz",
+++      "integrity": "sha512-7C+MwShwtBSI5Buwoyg3s/iY1eHL9PKAf+O1wVh/TdnjXUtkoL/9YQtre90i4MtNXM6edP1wJ2zOBpfCyhIS7g==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@vitest/pretty-format": "3.2.7",
+++        "magic-string": "^0.30.17",
+++        "pathe": "^2.0.3"
+++      },
+++      "funding": {
+++        "url": "https://opencollective.com/vitest"
+++      }
+++    },
+++    "node_modules/@vitest/spy": {
+++      "version": "3.2.7",
+++      "resolved": "https://registry.npmjs.org/@vitest/spy/-/spy-3.2.7.tgz",
+++      "integrity": "sha512-Q2eQGI6d2L/hBtZ0qNuKcAGid68XK6cv1xsoaIma6PaJhHPoqcEJhYpXZ/5myCMqkNgtP6UKuBhbc0nHKnrkuQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "tinyspy": "^4.0.3"
+++      },
+++      "funding": {
+++        "url": "https://opencollective.com/vitest"
+++      }
+++    },
+++    "node_modules/@vitest/utils": {
+++      "version": "3.2.7",
+++      "resolved": "https://registry.npmjs.org/@vitest/utils/-/utils-3.2.7.tgz",
+++      "integrity": "sha512-x6BDOd7dyo3PFLY3I9/HJ25X/6OurhGXk2/B9gOZNPF7XDVjeBK4k01lQE5uvDpbuheErh91qYuE1E2OEjK3Rw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@vitest/pretty-format": "3.2.7",
+++        "loupe": "^3.1.4",
+++        "tinyrainbow": "^2.0.0"
+++      },
+++      "funding": {
+++        "url": "https://opencollective.com/vitest"
+++      }
+++    },
+++    "node_modules/accepts": {
+++      "version": "1.3.8",
+++      "resolved": "https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz",
+++      "integrity": "sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "mime-types": "~2.1.34",
+++        "negotiator": "0.6.3"
+++      },
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/ansi-regex": {
+++      "version": "5.0.1",
+++      "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
+++      "integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/ansi-styles": {
+++      "version": "4.3.0",
+++      "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-4.3.0.tgz",
+++      "integrity": "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "color-convert": "^2.0.1"
+++      },
+++      "engines": {
+++        "node": ">=8"
+++      },
+++      "funding": {
+++        "url": "https://github.com/chalk/ansi-styles?sponsor=1"
+++      }
+++    },
+++    "node_modules/any-promise": {
+++      "version": "1.3.0",
+++      "resolved": "https://registry.npmjs.org/any-promise/-/any-promise-1.3.0.tgz",
+++      "integrity": "sha512-7UvmKalWRt1wgjL1RrGxoSJW/0QZFIegpeGvZG9kjp8vrRu55XTHbwnqq2GpXm9uLbcuhxm3IqX9OB4MZR1b2A==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/anymatch": {
+++      "version": "3.1.3",
+++      "resolved": "https://registry.npmjs.org/anymatch/-/anymatch-3.1.3.tgz",
+++      "integrity": "sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==",
+++      "dev": true,
+++      "license": "ISC",
+++      "dependencies": {
+++        "normalize-path": "^3.0.0",
+++        "picomatch": "^2.0.4"
+++      },
+++      "engines": {
+++        "node": ">= 8"
+++      }
+++    },
+++    "node_modules/arg": {
+++      "version": "5.0.2",
+++      "resolved": "https://registry.npmjs.org/arg/-/arg-5.0.2.tgz",
+++      "integrity": "sha512-PYjyFOLKQ9y57JvQ6QLo8dAgNqswh8M1RMJYdQduT6xbWSgK36P/Z/v+p888pM69jMMfS8Xd8F6I1kQ/I9HUGg==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/array-flatten": {
+++      "version": "1.1.1",
+++      "resolved": "https://registry.npmjs.org/array-flatten/-/array-flatten-1.1.1.tgz",
+++      "integrity": "sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==",
+++      "license": "MIT"
+++    },
+++    "node_modules/assertion-error": {
+++      "version": "2.0.1",
+++      "resolved": "https://registry.npmjs.org/assertion-error/-/assertion-error-2.0.1.tgz",
+++      "integrity": "sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=12"
+++      }
+++    },
+++    "node_modules/autoprefixer": {
+++      "version": "10.5.4",
+++      "resolved": "https://registry.npmjs.org/autoprefixer/-/autoprefixer-10.5.4.tgz",
+++      "integrity": "sha512-MaU0U/za7N3r6brxD4YB/l4NSrFzLPlANv6wEuQVaIPlD3L4W9rFcQPbL/EilY9BHhHvhfcz3gInDLrEtWT4EA==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "opencollective",
+++          "url": "https://opencollective.com/postcss/"
+++        },
+++        {
+++          "type": "tidelift",
+++          "url": "https://tidelift.com/funding/github/npm/autoprefixer"
+++        },
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/ai"
+++        }
+++      ],
+++      "license": "MIT",
+++      "dependencies": {
+++        "browserslist": "^4.28.6",
+++        "caniuse-lite": "^1.0.30001806",
+++        "fraction.js": "^5.3.4",
+++        "picocolors": "^1.1.1",
+++        "postcss-value-parser": "^4.2.0"
+++      },
+++      "bin": {
+++        "autoprefixer": "bin/autoprefixer"
+++      },
+++      "engines": {
+++        "node": "^10 || ^12 || >=14"
+++      },
+++      "peerDependencies": {
+++        "postcss": "^8.1.0"
+++      }
+++    },
+++    "node_modules/base64id": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/base64id/-/base64id-2.0.0.tgz",
+++      "integrity": "sha512-lGe34o6EHj9y3Kts9R4ZYs/Gr+6N7MCaMlIFA3F1R2O5/m7K06AxfSeO5530PEERE6/WyEg3lsuyw4GHlPZHog==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": "^4.5.0 || >= 5.9"
+++      }
+++    },
+++    "node_modules/baseline-browser-mapping": {
+++      "version": "2.11.20",
+++      "resolved": "https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.11.20.tgz",
+++      "integrity": "sha512-H0ulySigv6icDJ1F7SjtdCD6PrhTpdYCmP0CactWy1+ekh0AFd0o1Wn5T8b+hnTmdBx19u9yhL6wvCylXMY7zw==",
+++      "dev": true,
+++      "license": "Apache-2.0",
+++      "bin": {
+++        "baseline-browser-mapping": "dist/cli.cjs"
+++      },
+++      "engines": {
+++        "node": ">=6.0.0"
+++      }
+++    },
+++    "node_modules/binary-extensions": {
+++      "version": "2.3.0",
+++      "resolved": "https://registry.npmjs.org/binary-extensions/-/binary-extensions-2.3.0.tgz",
+++      "integrity": "sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=8"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/sindresorhus"
+++      }
+++    },
+++    "node_modules/body-parser": {
+++      "version": "1.20.6",
+++      "resolved": "https://registry.npmjs.org/body-parser/-/body-parser-1.20.6.tgz",
+++      "integrity": "sha512-p5tAzS57i5MV9fZFDj9LeIiTZEufbSe2eDozP+ElheSUq1m74CRq1jI4mYNDdVs9vQztXFLuk/Gd6BWTdwRJ5g==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "bytes": "~3.1.2",
+++        "content-type": "~1.0.5",
+++        "debug": "2.6.9",
+++        "depd": "2.0.0",
+++        "destroy": "~1.2.0",
+++        "http-errors": "~2.0.1",
+++        "iconv-lite": "~0.4.24",
+++        "on-finished": "~2.4.1",
+++        "qs": "~6.15.1",
+++        "raw-body": "~2.5.3",
+++        "type-is": "~1.6.18",
+++        "unpipe": "~1.0.0"
+++      },
+++      "engines": {
+++        "node": ">= 0.8",
+++        "npm": "1.2.8000 || >= 1.4.16"
+++      }
+++    },
+++    "node_modules/body-parser/node_modules/debug": {
+++      "version": "2.6.9",
+++      "resolved": "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz",
+++      "integrity": "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "ms": "2.0.0"
+++      }
+++    },
+++    "node_modules/body-parser/node_modules/ms": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
+++      "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==",
+++      "license": "MIT"
+++    },
+++    "node_modules/braces": {
+++      "version": "3.0.3",
+++      "resolved": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+++      "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "fill-range": "^7.1.1"
+++      },
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/browserslist": {
+++      "version": "4.28.8",
+++      "resolved": "https://registry.npmjs.org/browserslist/-/browserslist-4.28.8.tgz",
+++      "integrity": "sha512-V2NpofLblG64mfOtSgDhOJESZEGogzDMBv/q+W6oc4LXWP/q75eOXoOaaOu1EOadB9U4Bwx/e0yzbvwKH8zalA==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "opencollective",
+++          "url": "https://opencollective.com/browserslist"
+++        },
+++        {
+++          "type": "tidelift",
+++          "url": "https://tidelift.com/funding/github/npm/browserslist"
+++        },
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/ai"
+++        }
+++      ],
+++      "license": "MIT",
+++      "dependencies": {
+++        "baseline-browser-mapping": "^2.11.12",
+++        "caniuse-lite": "^1.0.30001809",
+++        "electron-to-chromium": "^1.5.402",
+++        "node-releases": "^2.0.53",
+++        "update-browserslist-db": "^1.3.0"
+++      },
+++      "bin": {
+++        "browserslist": "cli.js"
+++      },
+++      "engines": {
+++        "node": "^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7"
+++      }
+++    },
+++    "node_modules/bytes": {
+++      "version": "3.1.2",
+++      "resolved": "https://registry.npmjs.org/bytes/-/bytes-3.1.2.tgz",
+++      "integrity": "sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/cac": {
+++      "version": "6.7.14",
+++      "resolved": "https://registry.npmjs.org/cac/-/cac-6.7.14.tgz",
+++      "integrity": "sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/call-bind-apply-helpers": {
+++      "version": "1.0.2",
+++      "resolved": "https://registry.npmjs.org/call-bind-apply-helpers/-/call-bind-apply-helpers-1.0.2.tgz",
+++      "integrity": "sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "es-errors": "^1.3.0",
+++        "function-bind": "^1.1.2"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      }
+++    },
+++    "node_modules/call-bound": {
+++      "version": "1.0.4",
+++      "resolved": "https://registry.npmjs.org/call-bound/-/call-bound-1.0.4.tgz",
+++      "integrity": "sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "call-bind-apply-helpers": "^1.0.2",
+++        "get-intrinsic": "^1.3.0"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/camelcase-css": {
+++      "version": "2.0.1",
+++      "resolved": "https://registry.npmjs.org/camelcase-css/-/camelcase-css-2.0.1.tgz",
+++      "integrity": "sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 6"
+++      }
+++    },
+++    "node_modules/caniuse-lite": {
+++      "version": "1.0.30001810",
+++      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001810.tgz",
+++      "integrity": "sha512-TITQPUkaz+aVk5GL6NhOdwk1aEaNTSDPsGFWrTuhKGtjTF70jL/Oht2W4c6rXUe5fu7Ie19VIahAXHIIiWWNeg==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "opencollective",
+++          "url": "https://opencollective.com/browserslist"
+++        },
+++        {
+++          "type": "tidelift",
+++          "url": "https://tidelift.com/funding/github/npm/caniuse-lite"
+++        },
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/ai"
+++        }
+++      ],
+++      "license": "CC-BY-4.0"
+++    },
+++    "node_modules/chai": {
+++      "version": "5.3.3",
+++      "resolved": "https://registry.npmjs.org/chai/-/chai-5.3.3.tgz",
+++      "integrity": "sha512-4zNhdJD/iOjSH0A05ea+Ke6MU5mmpQcbQsSOkgdaUMJ9zTlDTD/GYlwohmIE2u0gaxHYiVHEn1Fw9mZ/ktJWgw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "assertion-error": "^2.0.1",
+++        "check-error": "^2.1.1",
+++        "deep-eql": "^5.0.1",
+++        "loupe": "^3.1.0",
+++        "pathval": "^2.0.0"
+++      },
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/chalk": {
+++      "version": "4.1.2",
+++      "resolved": "https://registry.npmjs.org/chalk/-/chalk-4.1.2.tgz",
+++      "integrity": "sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "ansi-styles": "^4.1.0",
+++        "supports-color": "^7.1.0"
+++      },
+++      "engines": {
+++        "node": ">=10"
+++      },
+++      "funding": {
+++        "url": "https://github.com/chalk/chalk?sponsor=1"
+++      }
+++    },
+++    "node_modules/chalk/node_modules/supports-color": {
+++      "version": "7.2.0",
+++      "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-7.2.0.tgz",
+++      "integrity": "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "has-flag": "^4.0.0"
+++      },
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/check-error": {
+++      "version": "2.1.3",
+++      "resolved": "https://registry.npmjs.org/check-error/-/check-error-2.1.3.tgz",
+++      "integrity": "sha512-PAJdDJusoxnwm1VwW07VWwUN1sl7smmC3OKggvndJFadxxDRyFJBX/ggnu/KE4kQAB7a3Dp8f/YXC1FlUprWmA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 16"
+++      }
+++    },
+++    "node_modules/chokidar": {
+++      "version": "3.6.0",
+++      "resolved": "https://registry.npmjs.org/chokidar/-/chokidar-3.6.0.tgz",
+++      "integrity": "sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "anymatch": "~3.1.2",
+++        "braces": "~3.0.2",
+++        "glob-parent": "~5.1.2",
+++        "is-binary-path": "~2.1.0",
+++        "is-glob": "~4.0.1",
+++        "normalize-path": "~3.0.0",
+++        "readdirp": "~3.6.0"
+++      },
+++      "engines": {
+++        "node": ">= 8.10.0"
+++      },
+++      "funding": {
+++        "url": "https://paulmillr.com/funding/"
+++      },
+++      "optionalDependencies": {
+++        "fsevents": "~2.3.2"
+++      }
+++    },
+++    "node_modules/chokidar/node_modules/glob-parent": {
+++      "version": "5.1.2",
+++      "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-5.1.2.tgz",
+++      "integrity": "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==",
+++      "dev": true,
+++      "license": "ISC",
+++      "dependencies": {
+++        "is-glob": "^4.0.1"
+++      },
+++      "engines": {
+++        "node": ">= 6"
+++      }
+++    },
+++    "node_modules/cliui": {
+++      "version": "8.0.1",
+++      "resolved": "https://registry.npmjs.org/cliui/-/cliui-8.0.1.tgz",
+++      "integrity": "sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==",
+++      "dev": true,
+++      "license": "ISC",
+++      "dependencies": {
+++        "string-width": "^4.2.0",
+++        "strip-ansi": "^6.0.1",
+++        "wrap-ansi": "^7.0.0"
+++      },
+++      "engines": {
+++        "node": ">=12"
+++      }
+++    },
+++    "node_modules/clsx": {
+++      "version": "2.1.1",
+++      "resolved": "https://registry.npmjs.org/clsx/-/clsx-2.1.1.tgz",
+++      "integrity": "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6"
+++      }
+++    },
+++    "node_modules/color-convert": {
+++      "version": "2.0.1",
+++      "resolved": "https://registry.npmjs.org/color-convert/-/color-convert-2.0.1.tgz",
+++      "integrity": "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "color-name": "~1.1.4"
+++      },
+++      "engines": {
+++        "node": ">=7.0.0"
+++      }
+++    },
+++    "node_modules/color-name": {
+++      "version": "1.1.4",
+++      "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
+++      "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/commander": {
+++      "version": "4.1.1",
+++      "resolved": "https://registry.npmjs.org/commander/-/commander-4.1.1.tgz",
+++      "integrity": "sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 6"
+++      }
+++    },
+++    "node_modules/concurrently": {
+++      "version": "9.2.4",
+++      "resolved": "https://registry.npmjs.org/concurrently/-/concurrently-9.2.4.tgz",
+++      "integrity": "sha512-TZ0CEhyzvFjgtAvHTusDMgj7wNdihCh7LLLrzdUOXIhdlnL2JBBGA9eJxR24rtqgmdjh3OA3hrN1rCHj6HM8qA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "chalk": "4.1.2",
+++        "rxjs": "7.8.2",
+++        "shell-quote": "1.9.0",
+++        "supports-color": "8.1.1",
+++        "tree-kill": "1.2.2",
+++        "yargs": "17.7.2"
+++      },
+++      "bin": {
+++        "conc": "dist/bin/concurrently.js",
+++        "concurrently": "dist/bin/concurrently.js"
+++      },
+++      "engines": {
+++        "node": ">=18"
+++      },
+++      "funding": {
+++        "url": "https://github.com/open-cli-tools/concurrently?sponsor=1"
+++      }
+++    },
+++    "node_modules/content-disposition": {
+++      "version": "0.5.4",
+++      "resolved": "https://registry.npmjs.org/content-disposition/-/content-disposition-0.5.4.tgz",
+++      "integrity": "sha512-FveZTNuGw04cxlAiWbzi6zTAL/lhehaWbTtgluJh4/E95DqMwTmha3KZN1aAWA8cFIhHzMZUvLevkw5Rqk+tSQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "safe-buffer": "5.2.1"
+++      },
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/content-type": {
+++      "version": "1.0.5",
+++      "resolved": "https://registry.npmjs.org/content-type/-/content-type-1.0.5.tgz",
+++      "integrity": "sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/convert-source-map": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz",
+++      "integrity": "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/cookie": {
+++      "version": "0.7.2",
+++      "resolved": "https://registry.npmjs.org/cookie/-/cookie-0.7.2.tgz",
+++      "integrity": "sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/cookie-signature": {
+++      "version": "1.0.7",
+++      "resolved": "https://registry.npmjs.org/cookie-signature/-/cookie-signature-1.0.7.tgz",
+++      "integrity": "sha512-NXdYc3dLr47pBkpUCHtKSwIOQXLVn8dZEuywboCOJY/osA0wFSLlSawr3KN8qXJEyX66FcONTH8EIlVuK0yyFA==",
+++      "license": "MIT"
+++    },
+++    "node_modules/cors": {
+++      "version": "2.8.6",
+++      "resolved": "https://registry.npmjs.org/cors/-/cors-2.8.6.tgz",
+++      "integrity": "sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "object-assign": "^4",
+++        "vary": "^1"
+++      },
+++      "engines": {
+++        "node": ">= 0.10"
+++      },
+++      "funding": {
+++        "type": "opencollective",
+++        "url": "https://opencollective.com/express"
+++      }
+++    },
+++    "node_modules/cssesc": {
+++      "version": "3.0.0",
+++      "resolved": "https://registry.npmjs.org/cssesc/-/cssesc-3.0.0.tgz",
+++      "integrity": "sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "bin": {
+++        "cssesc": "bin/cssesc"
+++      },
+++      "engines": {
+++        "node": ">=4"
+++      }
+++    },
+++    "node_modules/csstype": {
+++      "version": "3.2.3",
+++      "resolved": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
+++      "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/debug": {
+++      "version": "4.4.3",
+++      "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+++      "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "ms": "^2.1.3"
+++      },
+++      "engines": {
+++        "node": ">=6.0"
+++      },
+++      "peerDependenciesMeta": {
+++        "supports-color": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/deep-eql": {
+++      "version": "5.0.2",
+++      "resolved": "https://registry.npmjs.org/deep-eql/-/deep-eql-5.0.2.tgz",
+++      "integrity": "sha512-h5k/5U50IJJFpzfL6nO9jaaumfjO/f2NjK/oYB2Djzm4p9L+3T9qWpZqZ2hAbLPuuYq9wrU08WQyBTL5GbPk5Q==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6"
+++      }
+++    },
+++    "node_modules/depd": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/depd/-/depd-2.0.0.tgz",
+++      "integrity": "sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/destroy": {
+++      "version": "1.2.0",
+++      "resolved": "https://registry.npmjs.org/destroy/-/destroy-1.2.0.tgz",
+++      "integrity": "sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.8",
+++        "npm": "1.2.8000 || >= 1.4.16"
+++      }
+++    },
+++    "node_modules/didyoumean": {
+++      "version": "1.2.2",
+++      "resolved": "https://registry.npmjs.org/didyoumean/-/didyoumean-1.2.2.tgz",
+++      "integrity": "sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==",
+++      "dev": true,
+++      "license": "Apache-2.0"
+++    },
+++    "node_modules/dlv": {
+++      "version": "1.1.3",
+++      "resolved": "https://registry.npmjs.org/dlv/-/dlv-1.1.3.tgz",
+++      "integrity": "sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/dotenv": {
+++      "version": "16.6.1",
+++      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-16.6.1.tgz",
+++      "integrity": "sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==",
+++      "license": "BSD-2-Clause",
+++      "engines": {
+++        "node": ">=12"
+++      },
+++      "funding": {
+++        "url": "https://dotenvx.com"
+++      }
+++    },
+++    "node_modules/dunder-proto": {
+++      "version": "1.0.1",
+++      "resolved": "https://registry.npmjs.org/dunder-proto/-/dunder-proto-1.0.1.tgz",
+++      "integrity": "sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "call-bind-apply-helpers": "^1.0.1",
+++        "es-errors": "^1.3.0",
+++        "gopd": "^1.2.0"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      }
+++    },
+++    "node_modules/ee-first": {
+++      "version": "1.1.1",
+++      "resolved": "https://registry.npmjs.org/ee-first/-/ee-first-1.1.1.tgz",
+++      "integrity": "sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==",
+++      "license": "MIT"
+++    },
+++    "node_modules/electron-to-chromium": {
+++      "version": "1.5.420",
+++      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.420.tgz",
+++      "integrity": "sha512-2yD6XreGusOfNV+dUcvipJEXc3n/n7fgr7996aszTG+YY5E4mqM4tOq/3uhP129cazL9YHbVWSpc79ePotWtPA==",
+++      "dev": true,
+++      "license": "ISC"
+++    },
+++    "node_modules/emoji-regex": {
+++      "version": "8.0.0",
+++      "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-8.0.0.tgz",
+++      "integrity": "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/encodeurl": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/encodeurl/-/encodeurl-2.0.0.tgz",
+++      "integrity": "sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/engine.io": {
+++      "version": "6.6.9",
+++      "resolved": "https://registry.npmjs.org/engine.io/-/engine.io-6.6.9.tgz",
+++      "integrity": "sha512-clKkw4C7nJ22mGgoVcCg6V/W/TxdNyIOTr89k2ONZu81qqkddPFDF0LXcbAwhzPD8DjkiRCjzuiO6Y+fkpD4vg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/cors": "^2.8.12",
+++        "@types/node": ">=10.0.0",
+++        "@types/ws": "^8.5.12",
+++        "accepts": "~1.3.4",
+++        "base64id": "2.0.0",
+++        "cookie": "~0.7.2",
+++        "cors": "~2.8.5",
+++        "debug": "~4.4.1",
+++        "engine.io-parser": "~5.2.1",
+++        "ws": "~8.21.0"
+++      },
+++      "engines": {
+++        "node": ">=10.2.0"
+++      }
+++    },
+++    "node_modules/engine.io-client": {
+++      "version": "6.6.6",
+++      "resolved": "https://registry.npmjs.org/engine.io-client/-/engine.io-client-6.6.6.tgz",
+++      "integrity": "sha512-iY6QdftLQ9pyiPoX082bpf/u1UewnOaJrtJIF9T0++QB34lZrj0uP+Q/bj8AlUsAxqhnkTV2BS8SBZSxOmoV5Q==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@socket.io/component-emitter": "~3.1.0",
+++        "debug": "~4.4.1",
+++        "engine.io-parser": "~5.2.1",
+++        "ws": "~8.21.0",
+++        "xmlhttprequest-ssl": "~2.1.1"
+++      }
+++    },
+++    "node_modules/engine.io-parser": {
+++      "version": "5.2.3",
+++      "resolved": "https://registry.npmjs.org/engine.io-parser/-/engine.io-parser-5.2.3.tgz",
+++      "integrity": "sha512-HqD3yTBfnBxIrbnM1DoD6Pcq8NECnh8d4As1Qgh0z5Gg3jRRIqijury0CL3ghu/edArpUYiYqQiDUQBIs4np3Q==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=10.0.0"
+++      }
+++    },
+++    "node_modules/es-define-property": {
+++      "version": "1.0.1",
+++      "resolved": "https://registry.npmjs.org/es-define-property/-/es-define-property-1.0.1.tgz",
+++      "integrity": "sha512-e3nRfgfUZ4rNGL232gUgX06QNyyez04KdjFrF+LTRoOXmrOgFKDg4BCdsjW8EnT69eqdYGmRpJwiPVYNrCaW3g==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.4"
+++      }
+++    },
+++    "node_modules/es-errors": {
+++      "version": "1.3.0",
+++      "resolved": "https://registry.npmjs.org/es-errors/-/es-errors-1.3.0.tgz",
+++      "integrity": "sha512-Zf5H2Kxt2xjTvbJvP2ZWLEICxA6j+hAmMzIlypy4xcBg1vKVnx89Wy0GbS+kf5cwCVFFzdCFh2XSCFNULS6csw==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.4"
+++      }
+++    },
+++    "node_modules/es-module-lexer": {
+++      "version": "1.7.0",
+++      "resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-1.7.0.tgz",
+++      "integrity": "sha512-jEQoCwk8hyb2AZziIOLhDqpm5+2ww5uIE6lkO/6jcOCusfk6LhMHpXXfBLXTZ7Ydyt0j4VoUQv6uGNYbdW+kBA==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/es-object-atoms": {
+++      "version": "1.1.2",
+++      "resolved": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.1.2.tgz",
+++      "integrity": "sha512-HWcBoN6NileqtSydK2FqHbS/LoDd2pqrnQHLyJzBj4kOp/ky2MWMN694xOfkK8/SnUsW2DH7EfyVlydKCsm1Zw==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "es-errors": "^1.3.0"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      }
+++    },
+++    "node_modules/esbuild": {
+++      "version": "0.28.2",
+++      "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.28.2.tgz",
+++      "integrity": "sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA==",
+++      "dev": true,
+++      "hasInstallScript": true,
+++      "license": "MIT",
+++      "bin": {
+++        "esbuild": "bin/esbuild"
+++      },
+++      "engines": {
+++        "node": ">=18"
+++      },
+++      "optionalDependencies": {
+++        "@esbuild/aix-ppc64": "0.28.2",
+++        "@esbuild/android-arm": "0.28.2",
+++        "@esbuild/android-arm64": "0.28.2",
+++        "@esbuild/android-x64": "0.28.2",
+++        "@esbuild/darwin-arm64": "0.28.2",
+++        "@esbuild/darwin-x64": "0.28.2",
+++        "@esbuild/freebsd-arm64": "0.28.2",
+++        "@esbuild/freebsd-x64": "0.28.2",
+++        "@esbuild/linux-arm": "0.28.2",
+++        "@esbuild/linux-arm64": "0.28.2",
+++        "@esbuild/linux-ia32": "0.28.2",
+++        "@esbuild/linux-loong64": "0.28.2",
+++        "@esbuild/linux-mips64el": "0.28.2",
+++        "@esbuild/linux-ppc64": "0.28.2",
+++        "@esbuild/linux-riscv64": "0.28.2",
+++        "@esbuild/linux-s390x": "0.28.2",
+++        "@esbuild/linux-x64": "0.28.2",
+++        "@esbuild/netbsd-arm64": "0.28.2",
+++        "@esbuild/netbsd-x64": "0.28.2",
+++        "@esbuild/openbsd-arm64": "0.28.2",
+++        "@esbuild/openbsd-x64": "0.28.2",
+++        "@esbuild/openharmony-arm64": "0.28.2",
+++        "@esbuild/sunos-x64": "0.28.2",
+++        "@esbuild/win32-arm64": "0.28.2",
+++        "@esbuild/win32-ia32": "0.28.2",
+++        "@esbuild/win32-x64": "0.28.2"
+++      }
+++    },
+++    "node_modules/escalade": {
+++      "version": "3.2.0",
+++      "resolved": "https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz",
+++      "integrity": "sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6"
+++      }
+++    },
+++    "node_modules/escape-html": {
+++      "version": "1.0.3",
+++      "resolved": "https://registry.npmjs.org/escape-html/-/escape-html-1.0.3.tgz",
+++      "integrity": "sha512-NiSupZ4OeuGwr68lGIeym/ksIZMJodUGOSCZ/FSnTxcrekbvqrgdUxlJOMpijaKZVjAJrWrGs/6Jy8OMuyj9ow==",
+++      "license": "MIT"
+++    },
+++    "node_modules/estree-walker": {
+++      "version": "3.0.3",
+++      "resolved": "https://registry.npmjs.org/estree-walker/-/estree-walker-3.0.3.tgz",
+++      "integrity": "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/estree": "^1.0.0"
+++      }
+++    },
+++    "node_modules/etag": {
+++      "version": "1.8.1",
+++      "resolved": "https://registry.npmjs.org/etag/-/etag-1.8.1.tgz",
+++      "integrity": "sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/expect-type": {
+++      "version": "1.4.0",
+++      "resolved": "https://registry.npmjs.org/expect-type/-/expect-type-1.4.0.tgz",
+++      "integrity": "sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==",
+++      "dev": true,
+++      "license": "Apache-2.0",
+++      "engines": {
+++        "node": ">=12.0.0"
+++      }
+++    },
+++    "node_modules/express": {
+++      "version": "4.22.2",
+++      "resolved": "https://registry.npmjs.org/express/-/express-4.22.2.tgz",
+++      "integrity": "sha512-IuL+Elrou2ZvCFHs18/CIzy2Nzvo25nZ1/D2eIZlz7c+QUayAcYoiM2BthCjs+EBHVpjYjcuLDAiCWgeIX3X1Q==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "accepts": "~1.3.8",
+++        "array-flatten": "1.1.1",
+++        "body-parser": "~1.20.5",
+++        "content-disposition": "~0.5.4",
+++        "content-type": "~1.0.4",
+++        "cookie": "~0.7.1",
+++        "cookie-signature": "~1.0.6",
+++        "debug": "2.6.9",
+++        "depd": "2.0.0",
+++        "encodeurl": "~2.0.0",
+++        "escape-html": "~1.0.3",
+++        "etag": "~1.8.1",
+++        "finalhandler": "~1.3.1",
+++        "fresh": "~0.5.2",
+++        "http-errors": "~2.0.0",
+++        "merge-descriptors": "1.0.3",
+++        "methods": "~1.1.2",
+++        "on-finished": "~2.4.1",
+++        "parseurl": "~1.3.3",
+++        "path-to-regexp": "~0.1.12",
+++        "proxy-addr": "~2.0.7",
+++        "qs": "~6.15.1",
+++        "range-parser": "~1.2.1",
+++        "safe-buffer": "5.2.1",
+++        "send": "~0.19.0",
+++        "serve-static": "~1.16.2",
+++        "setprototypeof": "1.2.0",
+++        "statuses": "~2.0.1",
+++        "type-is": "~1.6.18",
+++        "utils-merge": "1.0.1",
+++        "vary": "~1.1.2"
+++      },
+++      "engines": {
+++        "node": ">= 0.10.0"
+++      },
+++      "funding": {
+++        "type": "opencollective",
+++        "url": "https://opencollective.com/express"
+++      }
+++    },
+++    "node_modules/express/node_modules/debug": {
+++      "version": "2.6.9",
+++      "resolved": "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz",
+++      "integrity": "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "ms": "2.0.0"
+++      }
+++    },
+++    "node_modules/express/node_modules/ms": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
+++      "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==",
+++      "license": "MIT"
+++    },
+++    "node_modules/fast-glob": {
+++      "version": "3.3.3",
+++      "resolved": "https://registry.npmjs.org/fast-glob/-/fast-glob-3.3.3.tgz",
+++      "integrity": "sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@nodelib/fs.stat": "^2.0.2",
+++        "@nodelib/fs.walk": "^1.2.3",
+++        "glob-parent": "^5.1.2",
+++        "merge2": "^1.3.0",
+++        "micromatch": "^4.0.8"
+++      },
+++      "engines": {
+++        "node": ">=8.6.0"
+++      }
+++    },
+++    "node_modules/fast-glob/node_modules/glob-parent": {
+++      "version": "5.1.2",
+++      "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-5.1.2.tgz",
+++      "integrity": "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==",
+++      "dev": true,
+++      "license": "ISC",
+++      "dependencies": {
+++        "is-glob": "^4.0.1"
+++      },
+++      "engines": {
+++        "node": ">= 6"
+++      }
+++    },
+++    "node_modules/fastq": {
+++      "version": "1.20.3",
+++      "resolved": "https://registry.npmjs.org/fastq/-/fastq-1.20.3.tgz",
+++      "integrity": "sha512-XKv5nnLs6nLF71NgiKJLIZFLkPyIEuOselLG7ujZnGrRfQK8HpvY+WqKhAJUAdLomwVHErVS4LfxFlPq0/FTAw==",
+++      "dev": true,
+++      "license": "ISC",
+++      "dependencies": {
+++        "reusify": "^1.0.4"
+++      }
+++    },
+++    "node_modules/fill-range": {
+++      "version": "7.1.1",
+++      "resolved": "https://registry.npmjs.org/fill-range/-/fill-range-7.1.1.tgz",
+++      "integrity": "sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "to-regex-range": "^5.0.1"
+++      },
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/finalhandler": {
+++      "version": "1.3.2",
+++      "resolved": "https://registry.npmjs.org/finalhandler/-/finalhandler-1.3.2.tgz",
+++      "integrity": "sha512-aA4RyPcd3badbdABGDuTXCMTtOneUCAYH/gxoYRTZlIJdF0YPWuGqiAsIrhNnnqdXGswYk6dGujem4w80UJFhg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "debug": "2.6.9",
+++        "encodeurl": "~2.0.0",
+++        "escape-html": "~1.0.3",
+++        "on-finished": "~2.4.1",
+++        "parseurl": "~1.3.3",
+++        "statuses": "~2.0.2",
+++        "unpipe": "~1.0.0"
+++      },
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/finalhandler/node_modules/debug": {
+++      "version": "2.6.9",
+++      "resolved": "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz",
+++      "integrity": "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "ms": "2.0.0"
+++      }
+++    },
+++    "node_modules/finalhandler/node_modules/ms": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
+++      "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==",
+++      "license": "MIT"
+++    },
+++    "node_modules/forwarded": {
+++      "version": "0.2.0",
+++      "resolved": "https://registry.npmjs.org/forwarded/-/forwarded-0.2.0.tgz",
+++      "integrity": "sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/fraction.js": {
+++      "version": "5.3.4",
+++      "resolved": "https://registry.npmjs.org/fraction.js/-/fraction.js-5.3.4.tgz",
+++      "integrity": "sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": "*"
+++      },
+++      "funding": {
+++        "type": "github",
+++        "url": "https://github.com/sponsors/rawify"
+++      }
+++    },
+++    "node_modules/framer-motion": {
+++      "version": "12.43.0",
+++      "resolved": "https://registry.npmjs.org/framer-motion/-/framer-motion-12.43.0.tgz",
+++      "integrity": "sha512-1eaL3RvR/kAlbG7UYcpMptEyzPoENO0c6w7ZnB3/hh2vSAz/6uGAFn6fdoqTBguNstf3MsFhJHsD/0DHiclG+g==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "motion-dom": "^12.43.0",
+++        "motion-utils": "^12.39.0",
+++        "tslib": "^2.4.0"
+++      },
+++      "peerDependencies": {
+++        "@emotion/is-prop-valid": "*",
+++        "react": "^18.0.0 || ^19.0.0",
+++        "react-dom": "^18.0.0 || ^19.0.0"
+++      },
+++      "peerDependenciesMeta": {
+++        "@emotion/is-prop-valid": {
+++          "optional": true
+++        },
+++        "react": {
+++          "optional": true
+++        },
+++        "react-dom": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/fresh": {
+++      "version": "0.5.2",
+++      "resolved": "https://registry.npmjs.org/fresh/-/fresh-0.5.2.tgz",
+++      "integrity": "sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/fsevents": {
+++      "version": "2.3.3",
+++      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
+++      "integrity": "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==",
+++      "dev": true,
+++      "hasInstallScript": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "darwin"
+++      ],
+++      "engines": {
+++        "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
+++      }
+++    },
+++    "node_modules/function-bind": {
+++      "version": "1.1.2",
+++      "resolved": "https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz",
+++      "integrity": "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==",
+++      "license": "MIT",
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/gensync": {
+++      "version": "1.0.0-beta.2",
+++      "resolved": "https://registry.npmjs.org/gensync/-/gensync-1.0.0-beta.2.tgz",
+++      "integrity": "sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=6.9.0"
+++      }
+++    },
+++    "node_modules/get-caller-file": {
+++      "version": "2.0.5",
+++      "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-2.0.5.tgz",
+++      "integrity": "sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==",
+++      "dev": true,
+++      "license": "ISC",
+++      "engines": {
+++        "node": "6.* || 8.* || >= 10.*"
+++      }
+++    },
+++    "node_modules/get-intrinsic": {
+++      "version": "1.3.0",
+++      "resolved": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.3.0.tgz",
+++      "integrity": "sha512-9fSjSaos/fRIVIp+xSJlE6lfwhES7LNtKaCBIamHsjr2na1BiABJPo0mOjjz8GJDURarmCPGqaiVg5mfjb98CQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "call-bind-apply-helpers": "^1.0.2",
+++        "es-define-property": "^1.0.1",
+++        "es-errors": "^1.3.0",
+++        "es-object-atoms": "^1.1.1",
+++        "function-bind": "^1.1.2",
+++        "get-proto": "^1.0.1",
+++        "gopd": "^1.2.0",
+++        "has-symbols": "^1.1.0",
+++        "hasown": "^2.0.2",
+++        "math-intrinsics": "^1.1.0"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/get-proto": {
+++      "version": "1.0.1",
+++      "resolved": "https://registry.npmjs.org/get-proto/-/get-proto-1.0.1.tgz",
+++      "integrity": "sha512-sTSfBjoXBp89JvIKIefqw7U2CCebsc74kiY6awiGogKtoSGbgjYE/G/+l9sF3MWFPNc9IcoOC4ODfKHfxFmp0g==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "dunder-proto": "^1.0.1",
+++        "es-object-atoms": "^1.0.0"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      }
+++    },
+++    "node_modules/glob-parent": {
+++      "version": "6.0.2",
+++      "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-6.0.2.tgz",
+++      "integrity": "sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==",
+++      "dev": true,
+++      "license": "ISC",
+++      "dependencies": {
+++        "is-glob": "^4.0.3"
+++      },
+++      "engines": {
+++        "node": ">=10.13.0"
+++      }
+++    },
+++    "node_modules/gopd": {
+++      "version": "1.2.0",
+++      "resolved": "https://registry.npmjs.org/gopd/-/gopd-1.2.0.tgz",
+++      "integrity": "sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/has-flag": {
+++      "version": "4.0.0",
+++      "resolved": "https://registry.npmjs.org/has-flag/-/has-flag-4.0.0.tgz",
+++      "integrity": "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/has-symbols": {
+++      "version": "1.1.0",
+++      "resolved": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.1.0.tgz",
+++      "integrity": "sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/hasown": {
+++      "version": "2.0.4",
+++      "resolved": "https://registry.npmjs.org/hasown/-/hasown-2.0.4.tgz",
+++      "integrity": "sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "function-bind": "^1.1.2"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      }
+++    },
+++    "node_modules/http-errors": {
+++      "version": "2.0.1",
+++      "resolved": "https://registry.npmjs.org/http-errors/-/http-errors-2.0.1.tgz",
+++      "integrity": "sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "depd": "~2.0.0",
+++        "inherits": "~2.0.4",
+++        "setprototypeof": "~1.2.0",
+++        "statuses": "~2.0.2",
+++        "toidentifier": "~1.0.1"
+++      },
+++      "engines": {
+++        "node": ">= 0.8"
+++      },
+++      "funding": {
+++        "type": "opencollective",
+++        "url": "https://opencollective.com/express"
+++      }
+++    },
+++    "node_modules/iceberg-js": {
+++      "version": "0.8.1",
+++      "resolved": "https://registry.npmjs.org/iceberg-js/-/iceberg-js-0.8.1.tgz",
+++      "integrity": "sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=20.0.0"
+++      }
+++    },
+++    "node_modules/iconv-lite": {
+++      "version": "0.4.24",
+++      "resolved": "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.24.tgz",
+++      "integrity": "sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "safer-buffer": ">= 2.1.2 < 3"
+++      },
+++      "engines": {
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/inherits": {
+++      "version": "2.0.4",
+++      "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.4.tgz",
+++      "integrity": "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==",
+++      "license": "ISC"
+++    },
+++    "node_modules/ipaddr.js": {
+++      "version": "1.9.1",
+++      "resolved": "https://registry.npmjs.org/ipaddr.js/-/ipaddr.js-1.9.1.tgz",
+++      "integrity": "sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.10"
+++      }
+++    },
+++    "node_modules/is-binary-path": {
+++      "version": "2.1.0",
+++      "resolved": "https://registry.npmjs.org/is-binary-path/-/is-binary-path-2.1.0.tgz",
+++      "integrity": "sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "binary-extensions": "^2.0.0"
+++      },
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/is-core-module": {
+++      "version": "2.16.2",
+++      "resolved": "https://registry.npmjs.org/is-core-module/-/is-core-module-2.16.2.tgz",
+++      "integrity": "sha512-evOr8xfXKxE6qSR0hSXL2r3sd7ALj8+7jQEUvPYcm5sgZFdJ+AYzT6yNmJenvIYQBgIGwfwz08sL8zoL7yq2BA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "hasown": "^2.0.3"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/is-extglob": {
+++      "version": "2.1.1",
+++      "resolved": "https://registry.npmjs.org/is-extglob/-/is-extglob-2.1.1.tgz",
+++      "integrity": "sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/is-fullwidth-code-point": {
+++      "version": "3.0.0",
+++      "resolved": "https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz",
+++      "integrity": "sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/is-glob": {
+++      "version": "4.0.3",
+++      "resolved": "https://registry.npmjs.org/is-glob/-/is-glob-4.0.3.tgz",
+++      "integrity": "sha512-xelSayHH36ZgE7ZWhli7pW34hNbNl8Ojv5KVmkJD4hBdD3th8Tfk9vYasLM+mXWOZhFkgZfxhLSnrwRr4elSSg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "is-extglob": "^2.1.1"
+++      },
+++      "engines": {
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/is-number": {
+++      "version": "7.0.0",
+++      "resolved": "https://registry.npmjs.org/is-number/-/is-number-7.0.0.tgz",
+++      "integrity": "sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=0.12.0"
+++      }
+++    },
+++    "node_modules/jiti": {
+++      "version": "1.21.7",
+++      "resolved": "https://registry.npmjs.org/jiti/-/jiti-1.21.7.tgz",
+++      "integrity": "sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==",
+++      "dev": true,
+++      "license": "MIT",
+++      "bin": {
+++        "jiti": "bin/jiti.js"
+++      }
+++    },
+++    "node_modules/js-tokens": {
+++      "version": "4.0.0",
+++      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz",
+++      "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==",
+++      "license": "MIT"
+++    },
+++    "node_modules/jsesc": {
+++      "version": "3.1.0",
+++      "resolved": "https://registry.npmjs.org/jsesc/-/jsesc-3.1.0.tgz",
+++      "integrity": "sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "bin": {
+++        "jsesc": "bin/jsesc"
+++      },
+++      "engines": {
+++        "node": ">=6"
+++      }
+++    },
+++    "node_modules/json5": {
+++      "version": "2.2.3",
+++      "resolved": "https://registry.npmjs.org/json5/-/json5-2.2.3.tgz",
+++      "integrity": "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "bin": {
+++        "json5": "lib/cli.js"
+++      },
+++      "engines": {
+++        "node": ">=6"
+++      }
+++    },
+++    "node_modules/lilconfig": {
+++      "version": "3.1.3",
+++      "resolved": "https://registry.npmjs.org/lilconfig/-/lilconfig-3.1.3.tgz",
+++      "integrity": "sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=14"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/antonk52"
+++      }
+++    },
+++    "node_modules/lines-and-columns": {
+++      "version": "1.2.4",
+++      "resolved": "https://registry.npmjs.org/lines-and-columns/-/lines-and-columns-1.2.4.tgz",
+++      "integrity": "sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/loose-envify": {
+++      "version": "1.4.0",
+++      "resolved": "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz",
+++      "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "js-tokens": "^3.0.0 || ^4.0.0"
+++      },
+++      "bin": {
+++        "loose-envify": "cli.js"
+++      }
+++    },
+++    "node_modules/loupe": {
+++      "version": "3.2.1",
+++      "resolved": "https://registry.npmjs.org/loupe/-/loupe-3.2.1.tgz",
+++      "integrity": "sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/lru-cache": {
+++      "version": "5.1.1",
+++      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-5.1.1.tgz",
+++      "integrity": "sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==",
+++      "dev": true,
+++      "license": "ISC",
+++      "dependencies": {
+++        "yallist": "^3.0.2"
+++      }
+++    },
+++    "node_modules/lucide-react": {
+++      "version": "1.39.0",
+++      "resolved": "https://registry.npmjs.org/lucide-react/-/lucide-react-1.39.0.tgz",
+++      "integrity": "sha512-y8nXoEwvqqIsF927NBWXODa4bfMrcUeEb/9sgpwFqg0gUjgn3j5Hznk+v7STmPgZ2iQ11JKlbQGdFRuTOwvYkA==",
+++      "license": "ISC",
+++      "peerDependencies": {
+++        "react": "^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+++      }
+++    },
+++    "node_modules/magic-string": {
+++      "version": "0.30.21",
+++      "resolved": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
+++      "integrity": "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@jridgewell/sourcemap-codec": "^1.5.5"
+++      }
+++    },
+++    "node_modules/math-intrinsics": {
+++      "version": "1.1.0",
+++      "resolved": "https://registry.npmjs.org/math-intrinsics/-/math-intrinsics-1.1.0.tgz",
+++      "integrity": "sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.4"
+++      }
+++    },
+++    "node_modules/media-typer": {
+++      "version": "0.3.0",
+++      "resolved": "https://registry.npmjs.org/media-typer/-/media-typer-0.3.0.tgz",
+++      "integrity": "sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/merge-descriptors": {
+++      "version": "1.0.3",
+++      "resolved": "https://registry.npmjs.org/merge-descriptors/-/merge-descriptors-1.0.3.tgz",
+++      "integrity": "sha512-gaNvAS7TZ897/rVaZ0nMtAyxNyi/pdbjbAwUpFQpN70GqnVfOiXpeUUMKRBmzXaSQ8DdTX4/0ms62r2K+hE6mQ==",
+++      "license": "MIT",
+++      "funding": {
+++        "url": "https://github.com/sponsors/sindresorhus"
+++      }
+++    },
+++    "node_modules/merge2": {
+++      "version": "1.4.1",
+++      "resolved": "https://registry.npmjs.org/merge2/-/merge2-1.4.1.tgz",
+++      "integrity": "sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 8"
+++      }
+++    },
+++    "node_modules/methods": {
+++      "version": "1.1.2",
+++      "resolved": "https://registry.npmjs.org/methods/-/methods-1.1.2.tgz",
+++      "integrity": "sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/micromatch": {
+++      "version": "4.0.8",
+++      "resolved": "https://registry.npmjs.org/micromatch/-/micromatch-4.0.8.tgz",
+++      "integrity": "sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "braces": "^3.0.3",
+++        "picomatch": "^2.3.1"
+++      },
+++      "engines": {
+++        "node": ">=8.6"
+++      }
+++    },
+++    "node_modules/mime": {
+++      "version": "1.6.0",
+++      "resolved": "https://registry.npmjs.org/mime/-/mime-1.6.0.tgz",
+++      "integrity": "sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==",
+++      "license": "MIT",
+++      "bin": {
+++        "mime": "cli.js"
+++      },
+++      "engines": {
+++        "node": ">=4"
+++      }
+++    },
+++    "node_modules/mime-db": {
+++      "version": "1.52.0",
+++      "resolved": "https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz",
+++      "integrity": "sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/mime-types": {
+++      "version": "2.1.35",
+++      "resolved": "https://registry.npmjs.org/mime-types/-/mime-types-2.1.35.tgz",
+++      "integrity": "sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "mime-db": "1.52.0"
+++      },
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/motion": {
+++      "version": "12.43.0",
+++      "resolved": "https://registry.npmjs.org/motion/-/motion-12.43.0.tgz",
+++      "integrity": "sha512-BQgQbSa9Hn3/mtbib0MK53y6JSANa+YKUKlaYnWzAVDH424RYQ5LVpV3pNiWH00BA2z4ojsSdMzqT7g2FQwjuQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "framer-motion": "^12.43.0",
+++        "tslib": "^2.4.0"
+++      },
+++      "peerDependencies": {
+++        "@emotion/is-prop-valid": "*",
+++        "react": "^18.0.0 || ^19.0.0",
+++        "react-dom": "^18.0.0 || ^19.0.0"
+++      },
+++      "peerDependenciesMeta": {
+++        "@emotion/is-prop-valid": {
+++          "optional": true
+++        },
+++        "react": {
+++          "optional": true
+++        },
+++        "react-dom": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/motion-dom": {
+++      "version": "12.43.0",
+++      "resolved": "https://registry.npmjs.org/motion-dom/-/motion-dom-12.43.0.tgz",
+++      "integrity": "sha512-azKON4d9S65PEoFUiQTMTgPheEmzf2QngdRc50AKfJp9Q9mmcBVw22c8eMq9k8kxOFHdL7+WZY7N/5F/lwiDag==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "motion-utils": "^12.39.0"
+++      }
+++    },
+++    "node_modules/motion-utils": {
+++      "version": "12.39.0",
+++      "resolved": "https://registry.npmjs.org/motion-utils/-/motion-utils-12.39.0.tgz",
+++      "integrity": "sha512-8nadJAJjTtqRkmRF36FoJTrywK9nnFmnPwnSMyxaOCU7GDjN9RTMJIxx9De8ErM+vpPhMccr/6fo5WciyQLnMQ==",
+++      "license": "MIT"
+++    },
+++    "node_modules/ms": {
+++      "version": "2.1.3",
+++      "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+++      "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+++      "license": "MIT"
+++    },
+++    "node_modules/mz": {
+++      "version": "2.7.0",
+++      "resolved": "https://registry.npmjs.org/mz/-/mz-2.7.0.tgz",
+++      "integrity": "sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "any-promise": "^1.0.0",
+++        "object-assign": "^4.0.1",
+++        "thenify-all": "^1.0.0"
+++      }
+++    },
+++    "node_modules/nanoid": {
+++      "version": "3.3.18",
+++      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz",
+++      "integrity": "sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/ai"
+++        }
+++      ],
+++      "license": "MIT",
+++      "bin": {
+++        "nanoid": "bin/nanoid.cjs"
+++      },
+++      "engines": {
+++        "node": "^10 || ^12 || ^13.7 || ^14 || >=15.0.1"
+++      }
+++    },
+++    "node_modules/negotiator": {
+++      "version": "0.6.3",
+++      "resolved": "https://registry.npmjs.org/negotiator/-/negotiator-0.6.3.tgz",
+++      "integrity": "sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/node-releases": {
+++      "version": "2.0.54",
+++      "resolved": "https://registry.npmjs.org/node-releases/-/node-releases-2.0.54.tgz",
+++      "integrity": "sha512-YHs7BmmcsdAI5Ozuf8JZo6PT0mv2GIWC9vMfvUC3dp65M8hn7Ux8CPL+2oBI7juNuj9d0ndhTcznq2ODBps9cQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/normalize-path": {
+++      "version": "3.0.0",
+++      "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz",
+++      "integrity": "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/object-assign": {
+++      "version": "4.1.1",
+++      "resolved": "https://registry.npmjs.org/object-assign/-/object-assign-4.1.1.tgz",
+++      "integrity": "sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/object-hash": {
+++      "version": "3.0.0",
+++      "resolved": "https://registry.npmjs.org/object-hash/-/object-hash-3.0.0.tgz",
+++      "integrity": "sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 6"
+++      }
+++    },
+++    "node_modules/object-inspect": {
+++      "version": "1.13.4",
+++      "resolved": "https://registry.npmjs.org/object-inspect/-/object-inspect-1.13.4.tgz",
+++      "integrity": "sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/on-finished": {
+++      "version": "2.4.1",
+++      "resolved": "https://registry.npmjs.org/on-finished/-/on-finished-2.4.1.tgz",
+++      "integrity": "sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "ee-first": "1.1.1"
+++      },
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/parseurl": {
+++      "version": "1.3.3",
+++      "resolved": "https://registry.npmjs.org/parseurl/-/parseurl-1.3.3.tgz",
+++      "integrity": "sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/path-parse": {
+++      "version": "1.0.7",
+++      "resolved": "https://registry.npmjs.org/path-parse/-/path-parse-1.0.7.tgz",
+++      "integrity": "sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/path-to-regexp": {
+++      "version": "0.1.13",
+++      "resolved": "https://registry.npmjs.org/path-to-regexp/-/path-to-regexp-0.1.13.tgz",
+++      "integrity": "sha512-A/AGNMFN3c8bOlvV9RreMdrv7jsmF9XIfDeCd87+I8RNg6s78BhJxMu69NEMHBSJFxKidViTEdruRwEk/WIKqA==",
+++      "license": "MIT"
+++    },
+++    "node_modules/pathe": {
+++      "version": "2.0.3",
+++      "resolved": "https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz",
+++      "integrity": "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/pathval": {
+++      "version": "2.0.1",
+++      "resolved": "https://registry.npmjs.org/pathval/-/pathval-2.0.1.tgz",
+++      "integrity": "sha512-//nshmD55c46FuFw26xV/xFAaB5HF9Xdap7HJBBnrKdAd6/GxDBaNA1870O79+9ueg61cZLSVc+OaFlfmObYVQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 14.16"
+++      }
+++    },
+++    "node_modules/picocolors": {
+++      "version": "1.1.1",
+++      "resolved": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
+++      "integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==",
+++      "dev": true,
+++      "license": "ISC"
+++    },
+++    "node_modules/picomatch": {
+++      "version": "2.3.2",
+++      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-2.3.2.tgz",
+++      "integrity": "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=8.6"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/jonschlinkert"
+++      }
+++    },
+++    "node_modules/pirates": {
+++      "version": "4.0.7",
+++      "resolved": "https://registry.npmjs.org/pirates/-/pirates-4.0.7.tgz",
+++      "integrity": "sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 6"
+++      }
+++    },
+++    "node_modules/postcss": {
+++      "version": "8.5.26",
+++      "resolved": "https://registry.npmjs.org/postcss/-/postcss-8.5.26.tgz",
+++      "integrity": "sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "opencollective",
+++          "url": "https://opencollective.com/postcss/"
+++        },
+++        {
+++          "type": "tidelift",
+++          "url": "https://tidelift.com/funding/github/npm/postcss"
+++        },
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/ai"
+++        }
+++      ],
+++      "license": "MIT",
+++      "dependencies": {
+++        "nanoid": "^3.3.17",
+++        "picocolors": "^1.1.1",
+++        "source-map-js": "^1.2.1"
+++      },
+++      "engines": {
+++        "node": "^10 || ^12 || >=14"
+++      }
+++    },
+++    "node_modules/postcss-import": {
+++      "version": "15.1.0",
+++      "resolved": "https://registry.npmjs.org/postcss-import/-/postcss-import-15.1.0.tgz",
+++      "integrity": "sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "postcss-value-parser": "^4.0.0",
+++        "read-cache": "^1.0.0",
+++        "resolve": "^1.1.7"
+++      },
+++      "engines": {
+++        "node": ">=14.0.0"
+++      },
+++      "peerDependencies": {
+++        "postcss": "^8.0.0"
+++      }
+++    },
+++    "node_modules/postcss-js": {
+++      "version": "4.1.0",
+++      "resolved": "https://registry.npmjs.org/postcss-js/-/postcss-js-4.1.0.tgz",
+++      "integrity": "sha512-oIAOTqgIo7q2EOwbhb8UalYePMvYoIeRY2YKntdpFQXNosSu3vLrniGgmH9OKs/qAkfoj5oB3le/7mINW1LCfw==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "opencollective",
+++          "url": "https://opencollective.com/postcss/"
+++        },
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/ai"
+++        }
+++      ],
+++      "license": "MIT",
+++      "dependencies": {
+++        "camelcase-css": "^2.0.1"
+++      },
+++      "engines": {
+++        "node": "^12 || ^14 || >= 16"
+++      },
+++      "peerDependencies": {
+++        "postcss": "^8.4.21"
+++      }
+++    },
+++    "node_modules/postcss-load-config": {
+++      "version": "6.0.1",
+++      "resolved": "https://registry.npmjs.org/postcss-load-config/-/postcss-load-config-6.0.1.tgz",
+++      "integrity": "sha512-oPtTM4oerL+UXmx+93ytZVN82RrlY/wPUV8IeDxFrzIjXOLF1pN+EmKPLbubvKHT2HC20xXsCAH2Z+CKV6Oz/g==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "opencollective",
+++          "url": "https://opencollective.com/postcss/"
+++        },
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/ai"
+++        }
+++      ],
+++      "license": "MIT",
+++      "dependencies": {
+++        "lilconfig": "^3.1.1"
+++      },
+++      "engines": {
+++        "node": ">= 18"
+++      },
+++      "peerDependencies": {
+++        "jiti": ">=1.21.0",
+++        "postcss": ">=8.0.9",
+++        "tsx": "^4.8.1",
+++        "yaml": "^2.4.2"
+++      },
+++      "peerDependenciesMeta": {
+++        "jiti": {
+++          "optional": true
+++        },
+++        "postcss": {
+++          "optional": true
+++        },
+++        "tsx": {
+++          "optional": true
+++        },
+++        "yaml": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/postcss-nested": {
+++      "version": "6.2.0",
+++      "resolved": "https://registry.npmjs.org/postcss-nested/-/postcss-nested-6.2.0.tgz",
+++      "integrity": "sha512-HQbt28KulC5AJzG+cZtj9kvKB93CFCdLvog1WFLf1D+xmMvPGlBstkpTEZfK5+AN9hfJocyBFCNiqyS48bpgzQ==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "opencollective",
+++          "url": "https://opencollective.com/postcss/"
+++        },
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/ai"
+++        }
+++      ],
+++      "license": "MIT",
+++      "dependencies": {
+++        "postcss-selector-parser": "^6.1.1"
+++      },
+++      "engines": {
+++        "node": ">=12.0"
+++      },
+++      "peerDependencies": {
+++        "postcss": "^8.2.14"
+++      }
+++    },
+++    "node_modules/postcss-selector-parser": {
+++      "version": "6.1.4",
+++      "resolved": "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-6.1.4.tgz",
+++      "integrity": "sha512-bIoJLOmjCO1S9XdY/DcnR5hJxvrDir1PbGChrzXG3vw0/FOliy/fA3dmdhQ441kah4gKv+TwckGzex6wNS5cnQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "cssesc": "^3.0.0",
+++        "util-deprecate": "^1.0.2"
+++      },
+++      "engines": {
+++        "node": ">=4"
+++      }
+++    },
+++    "node_modules/postcss-value-parser": {
+++      "version": "4.2.0",
+++      "resolved": "https://registry.npmjs.org/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz",
+++      "integrity": "sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/proxy-addr": {
+++      "version": "2.0.7",
+++      "resolved": "https://registry.npmjs.org/proxy-addr/-/proxy-addr-2.0.7.tgz",
+++      "integrity": "sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "forwarded": "0.2.0",
+++        "ipaddr.js": "1.9.1"
+++      },
+++      "engines": {
+++        "node": ">= 0.10"
+++      }
+++    },
+++    "node_modules/qs": {
+++      "version": "6.15.3",
+++      "resolved": "https://registry.npmjs.org/qs/-/qs-6.15.3.tgz",
+++      "integrity": "sha512-O9gl3zCl5h5blw1KGUzQKhA5oUXSl8rwUIM5o0S3nCXMliSvy5Dzx7/DJcI+SwgICv+IneSZwhBh1oSyEHA71A==",
+++      "license": "BSD-3-Clause",
+++      "dependencies": {
+++        "es-define-property": "^1.0.1",
+++        "side-channel": "^1.1.1"
+++      },
+++      "engines": {
+++        "node": ">=0.6"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/queue-microtask": {
+++      "version": "1.2.3",
+++      "resolved": "https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz",
+++      "integrity": "sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/feross"
+++        },
+++        {
+++          "type": "patreon",
+++          "url": "https://www.patreon.com/feross"
+++        },
+++        {
+++          "type": "consulting",
+++          "url": "https://feross.org/support"
+++        }
+++      ],
+++      "license": "MIT"
+++    },
+++    "node_modules/range-parser": {
+++      "version": "1.2.1",
+++      "resolved": "https://registry.npmjs.org/range-parser/-/range-parser-1.2.1.tgz",
+++      "integrity": "sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/raw-body": {
+++      "version": "2.5.3",
+++      "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-2.5.3.tgz",
+++      "integrity": "sha512-s4VSOf6yN0rvbRZGxs8Om5CWj6seneMwK3oDb4lWDH0UPhWcxwOWw5+qk24bxq87szX1ydrwylIOp2uG1ojUpA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "bytes": "~3.1.2",
+++        "http-errors": "~2.0.1",
+++        "iconv-lite": "~0.4.24",
+++        "unpipe": "~1.0.0"
+++      },
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/react": {
+++      "version": "18.3.1",
+++      "resolved": "https://registry.npmjs.org/react/-/react-18.3.1.tgz",
+++      "integrity": "sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "loose-envify": "^1.1.0"
+++      },
+++      "engines": {
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/react-dom": {
+++      "version": "18.3.1",
+++      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-18.3.1.tgz",
+++      "integrity": "sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "loose-envify": "^1.1.0",
+++        "scheduler": "^0.23.2"
+++      },
+++      "peerDependencies": {
+++        "react": "^18.3.1"
+++      }
+++    },
+++    "node_modules/react-refresh": {
+++      "version": "0.17.0",
+++      "resolved": "https://registry.npmjs.org/react-refresh/-/react-refresh-0.17.0.tgz",
+++      "integrity": "sha512-z6F7K9bV85EfseRCp2bzrpyQ0Gkw1uLoCel9XBVWPg/TjRj94SkJzUTGfOa4bs7iJvBWtQG0Wq7wnI0syw3EBQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/read-cache": {
+++      "version": "1.0.2",
+++      "resolved": "https://registry.npmjs.org/read-cache/-/read-cache-1.0.2.tgz",
+++      "integrity": "sha512-/peqiBB/n07gQGLsWaHho3WfvUyRscw0gYTsEFMhrIe/nWLkYaf5SbKYjGYqtRV3aPwykJgF2VEMo1ac4bnsGA==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/readdirp": {
+++      "version": "3.6.0",
+++      "resolved": "https://registry.npmjs.org/readdirp/-/readdirp-3.6.0.tgz",
+++      "integrity": "sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "picomatch": "^2.2.1"
+++      },
+++      "engines": {
+++        "node": ">=8.10.0"
+++      }
+++    },
+++    "node_modules/require-directory": {
+++      "version": "2.1.1",
+++      "resolved": "https://registry.npmjs.org/require-directory/-/require-directory-2.1.1.tgz",
+++      "integrity": "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/resolve": {
+++      "version": "1.22.12",
+++      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.22.12.tgz",
+++      "integrity": "sha512-TyeJ1zif53BPfHootBGwPRYT1RUt6oGWsaQr8UyZW/eAm9bKoijtvruSDEmZHm92CwS9nj7/fWttqPCgzep8CA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "es-errors": "^1.3.0",
+++        "is-core-module": "^2.16.1",
+++        "path-parse": "^1.0.7",
+++        "supports-preserve-symlinks-flag": "^1.0.0"
+++      },
+++      "bin": {
+++        "resolve": "bin/resolve"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/reusify": {
+++      "version": "1.1.0",
+++      "resolved": "https://registry.npmjs.org/reusify/-/reusify-1.1.0.tgz",
+++      "integrity": "sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "iojs": ">=1.0.0",
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/rollup": {
+++      "version": "4.63.1",
+++      "resolved": "https://registry.npmjs.org/rollup/-/rollup-4.63.1.tgz",
+++      "integrity": "sha512-3Df9jsstwhccuEfmAMi9l8XUh/GOkVObmFTU7CCVBysEbcOZLl84jCtaAZMcPiMz2EGKsATzQcU+Xr3n/wU6cg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/estree": "1.0.9"
+++      },
+++      "bin": {
+++        "rollup": "dist/bin/rollup"
+++      },
+++      "engines": {
+++        "node": ">=18.0.0",
+++        "npm": ">=8.0.0"
+++      },
+++      "optionalDependencies": {
+++        "@napi-rs/lzma-linux-x64-gnu": "1.5.1",
+++        "@rollup/rollup-android-arm-eabi": "4.63.1",
+++        "@rollup/rollup-android-arm64": "4.63.1",
+++        "@rollup/rollup-darwin-arm64": "4.63.1",
+++        "@rollup/rollup-darwin-x64": "4.63.1",
+++        "@rollup/rollup-freebsd-arm64": "4.63.1",
+++        "@rollup/rollup-freebsd-x64": "4.63.1",
+++        "@rollup/rollup-linux-arm-gnueabihf": "4.63.1",
+++        "@rollup/rollup-linux-arm-musleabihf": "4.63.1",
+++        "@rollup/rollup-linux-arm64-gnu": "4.63.1",
+++        "@rollup/rollup-linux-arm64-musl": "4.63.1",
+++        "@rollup/rollup-linux-loong64-gnu": "4.63.1",
+++        "@rollup/rollup-linux-loong64-musl": "4.63.1",
+++        "@rollup/rollup-linux-ppc64-gnu": "4.63.1",
+++        "@rollup/rollup-linux-ppc64-musl": "4.63.1",
+++        "@rollup/rollup-linux-riscv64-gnu": "4.63.1",
+++        "@rollup/rollup-linux-riscv64-musl": "4.63.1",
+++        "@rollup/rollup-linux-s390x-gnu": "4.63.1",
+++        "@rollup/rollup-linux-x64-gnu": "4.63.1",
+++        "@rollup/rollup-linux-x64-musl": "4.63.1",
+++        "@rollup/rollup-openbsd-x64": "4.63.1",
+++        "@rollup/rollup-openharmony-arm64": "4.63.1",
+++        "@rollup/rollup-win32-arm64-msvc": "4.63.1",
+++        "@rollup/rollup-win32-ia32-msvc": "4.63.1",
+++        "@rollup/rollup-win32-x64-gnu": "4.63.1",
+++        "@rollup/rollup-win32-x64-msvc": "4.63.1",
+++        "fsevents": "~2.3.2"
+++      }
+++    },
+++    "node_modules/run-parallel": {
+++      "version": "1.2.0",
+++      "resolved": "https://registry.npmjs.org/run-parallel/-/run-parallel-1.2.0.tgz",
+++      "integrity": "sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/feross"
+++        },
+++        {
+++          "type": "patreon",
+++          "url": "https://www.patreon.com/feross"
+++        },
+++        {
+++          "type": "consulting",
+++          "url": "https://feross.org/support"
+++        }
+++      ],
+++      "license": "MIT",
+++      "dependencies": {
+++        "queue-microtask": "^1.2.2"
+++      }
+++    },
+++    "node_modules/rxjs": {
+++      "version": "7.8.2",
+++      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-7.8.2.tgz",
+++      "integrity": "sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==",
+++      "dev": true,
+++      "license": "Apache-2.0",
+++      "dependencies": {
+++        "tslib": "^2.1.0"
+++      }
+++    },
+++    "node_modules/safe-buffer": {
+++      "version": "5.2.1",
+++      "resolved": "https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.2.1.tgz",
+++      "integrity": "sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==",
+++      "funding": [
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/feross"
+++        },
+++        {
+++          "type": "patreon",
+++          "url": "https://www.patreon.com/feross"
+++        },
+++        {
+++          "type": "consulting",
+++          "url": "https://feross.org/support"
+++        }
+++      ],
+++      "license": "MIT"
+++    },
+++    "node_modules/safer-buffer": {
+++      "version": "2.1.2",
+++      "resolved": "https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz",
+++      "integrity": "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==",
+++      "license": "MIT"
+++    },
+++    "node_modules/scheduler": {
+++      "version": "0.23.2",
+++      "resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.23.2.tgz",
+++      "integrity": "sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "loose-envify": "^1.1.0"
+++      }
+++    },
+++    "node_modules/semver": {
+++      "version": "6.3.1",
+++      "resolved": "https://registry.npmjs.org/semver/-/semver-6.3.1.tgz",
+++      "integrity": "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==",
+++      "dev": true,
+++      "license": "ISC",
+++      "bin": {
+++        "semver": "bin/semver.js"
+++      }
+++    },
+++    "node_modules/send": {
+++      "version": "0.19.2",
+++      "resolved": "https://registry.npmjs.org/send/-/send-0.19.2.tgz",
+++      "integrity": "sha512-VMbMxbDeehAxpOtWJXlcUS5E8iXh6QmN+BkRX1GARS3wRaXEEgzCcB10gTQazO42tpNIya8xIyNx8fll1OFPrg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "debug": "2.6.9",
+++        "depd": "2.0.0",
+++        "destroy": "1.2.0",
+++        "encodeurl": "~2.0.0",
+++        "escape-html": "~1.0.3",
+++        "etag": "~1.8.1",
+++        "fresh": "~0.5.2",
+++        "http-errors": "~2.0.1",
+++        "mime": "1.6.0",
+++        "ms": "2.1.3",
+++        "on-finished": "~2.4.1",
+++        "range-parser": "~1.2.1",
+++        "statuses": "~2.0.2"
+++      },
+++      "engines": {
+++        "node": ">= 0.8.0"
+++      }
+++    },
+++    "node_modules/send/node_modules/debug": {
+++      "version": "2.6.9",
+++      "resolved": "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz",
+++      "integrity": "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "ms": "2.0.0"
+++      }
+++    },
+++    "node_modules/send/node_modules/debug/node_modules/ms": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
+++      "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==",
+++      "license": "MIT"
+++    },
+++    "node_modules/serve-static": {
+++      "version": "1.16.3",
+++      "resolved": "https://registry.npmjs.org/serve-static/-/serve-static-1.16.3.tgz",
+++      "integrity": "sha512-x0RTqQel6g5SY7Lg6ZreMmsOzncHFU7nhnRWkKgWuMTu5NN0DR5oruckMqRvacAN9d5w6ARnRBXl9xhDCgfMeA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "encodeurl": "~2.0.0",
+++        "escape-html": "~1.0.3",
+++        "parseurl": "~1.3.3",
+++        "send": "~0.19.1"
+++      },
+++      "engines": {
+++        "node": ">= 0.8.0"
+++      }
+++    },
+++    "node_modules/setprototypeof": {
+++      "version": "1.2.0",
+++      "resolved": "https://registry.npmjs.org/setprototypeof/-/setprototypeof-1.2.0.tgz",
+++      "integrity": "sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==",
+++      "license": "ISC"
+++    },
+++    "node_modules/shell-quote": {
+++      "version": "1.9.0",
+++      "resolved": "https://registry.npmjs.org/shell-quote/-/shell-quote-1.9.0.tgz",
+++      "integrity": "sha512-Iov+JwFv/2HcTpcwNMKd8+IWNb8tboQJNQTkAY/LLVK7gGH9jy+LGkVqPxfekHl+yMmiqXszdGWXgkfml7hjqA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/side-channel": {
+++      "version": "1.1.1",
+++      "resolved": "https://registry.npmjs.org/side-channel/-/side-channel-1.1.1.tgz",
+++      "integrity": "sha512-6x6dK6zJdpTzF4sQeNYxwtvBzf6Eg4GtlesS94HOvTudUeyK2WXAaIfmDgsyslYrRBeFIlsi54AYsFGUuhmvrQ==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "es-errors": "^1.3.0",
+++        "object-inspect": "^1.13.4",
+++        "side-channel-list": "^1.0.1",
+++        "side-channel-map": "^1.0.1",
+++        "side-channel-weakmap": "^1.0.2"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/side-channel-list": {
+++      "version": "1.0.1",
+++      "resolved": "https://registry.npmjs.org/side-channel-list/-/side-channel-list-1.0.1.tgz",
+++      "integrity": "sha512-mjn/0bi/oUURjc5Xl7IaWi/OJJJumuoJFQJfDDyO46+hBWsfaVM65TBHq2eoZBhzl9EchxOijpkbRC8SVBQU0w==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "es-errors": "^1.3.0",
+++        "object-inspect": "^1.13.4"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/side-channel-map": {
+++      "version": "1.0.1",
+++      "resolved": "https://registry.npmjs.org/side-channel-map/-/side-channel-map-1.0.1.tgz",
+++      "integrity": "sha512-VCjCNfgMsby3tTdo02nbjtM/ewra6jPHmpThenkTYh8pG9ucZ/1P8So4u4FGBek/BjpOVsDCMoLA/iuBKIFXRA==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "call-bound": "^1.0.2",
+++        "es-errors": "^1.3.0",
+++        "get-intrinsic": "^1.2.5",
+++        "object-inspect": "^1.13.3"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/side-channel-weakmap": {
+++      "version": "1.0.2",
+++      "resolved": "https://registry.npmjs.org/side-channel-weakmap/-/side-channel-weakmap-1.0.2.tgz",
+++      "integrity": "sha512-WPS/HvHQTYnHisLo9McqBHOJk2FkHO/tlpvldyrnem4aeQp4hai3gythswg6p01oSoTl58rcpiFAjF2br2Ak2A==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "call-bound": "^1.0.2",
+++        "es-errors": "^1.3.0",
+++        "get-intrinsic": "^1.2.5",
+++        "object-inspect": "^1.13.3",
+++        "side-channel-map": "^1.0.1"
+++      },
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/siginfo": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/siginfo/-/siginfo-2.0.0.tgz",
+++      "integrity": "sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==",
+++      "dev": true,
+++      "license": "ISC"
+++    },
+++    "node_modules/socket.io": {
+++      "version": "4.8.3",
+++      "resolved": "https://registry.npmjs.org/socket.io/-/socket.io-4.8.3.tgz",
+++      "integrity": "sha512-2Dd78bqzzjE6KPkD5fHZmDAKRNe3J15q+YHDrIsy9WEkqttc7GY+kT9OBLSMaPbQaEd0x1BjcmtMtXkfpc+T5A==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "accepts": "~1.3.4",
+++        "base64id": "~2.0.0",
+++        "cors": "~2.8.5",
+++        "debug": "~4.4.1",
+++        "engine.io": "~6.6.0",
+++        "socket.io-adapter": "~2.5.2",
+++        "socket.io-parser": "~4.2.4"
+++      },
+++      "engines": {
+++        "node": ">=10.2.0"
+++      }
+++    },
+++    "node_modules/socket.io-adapter": {
+++      "version": "2.5.8",
+++      "resolved": "https://registry.npmjs.org/socket.io-adapter/-/socket.io-adapter-2.5.8.tgz",
+++      "integrity": "sha512-6Oy52pbg+kvdCVvjcN+FnY7BvxZ7cIHNScbvztT/It5d0vbwoJoVZmF2gjJmnV0/4WlXRfG15zc45ySk9Ah8bw==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "debug": "~4.4.1",
+++        "ws": "~8.21.0"
+++      }
+++    },
+++    "node_modules/socket.io-client": {
+++      "version": "4.8.3",
+++      "resolved": "https://registry.npmjs.org/socket.io-client/-/socket.io-client-4.8.3.tgz",
+++      "integrity": "sha512-uP0bpjWrjQmUt5DTHq9RuoCBdFJF10cdX9X+a368j/Ft0wmaVgxlrjvK3kjvgCODOMMOz9lcaRzxmso0bTWZ/g==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@socket.io/component-emitter": "~3.1.0",
+++        "debug": "~4.4.1",
+++        "engine.io-client": "~6.6.1",
+++        "socket.io-parser": "~4.2.4"
+++      },
+++      "engines": {
+++        "node": ">=10.0.0"
+++      }
+++    },
+++    "node_modules/socket.io-parser": {
+++      "version": "4.2.7",
+++      "resolved": "https://registry.npmjs.org/socket.io-parser/-/socket.io-parser-4.2.7.tgz",
+++      "integrity": "sha512-IH/iSeO9T6gz1KkFleGDWkG9N3dl4jXVYUtMhIqH10Md0ttMer8nUNWiP1DKuNrybD2xBrixLJdCC9J6ECoYkg==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "@socket.io/component-emitter": "~3.1.0",
+++        "debug": "~4.4.1"
+++      },
+++      "engines": {
+++        "node": ">=10.0.0"
+++      }
+++    },
+++    "node_modules/source-map-js": {
+++      "version": "1.2.1",
+++      "resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
+++      "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==",
+++      "dev": true,
+++      "license": "BSD-3-Clause",
+++      "engines": {
+++        "node": ">=0.10.0"
+++      }
+++    },
+++    "node_modules/stackback": {
+++      "version": "0.0.2",
+++      "resolved": "https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz",
+++      "integrity": "sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/statuses": {
+++      "version": "2.0.2",
+++      "resolved": "https://registry.npmjs.org/statuses/-/statuses-2.0.2.tgz",
+++      "integrity": "sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/std-env": {
+++      "version": "3.10.0",
+++      "resolved": "https://registry.npmjs.org/std-env/-/std-env-3.10.0.tgz",
+++      "integrity": "sha512-5GS12FdOZNliM5mAOxFRg7Ir0pWz8MdpYm6AY6VPkGpbA7ZzmbzNcBJQ0GPvvyWgcY7QAhCgf9Uy89I03faLkg==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/string-width": {
+++      "version": "4.2.3",
+++      "resolved": "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz",
+++      "integrity": "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "emoji-regex": "^8.0.0",
+++        "is-fullwidth-code-point": "^3.0.0",
+++        "strip-ansi": "^6.0.1"
+++      },
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/strip-ansi": {
+++      "version": "6.0.1",
+++      "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+++      "integrity": "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "ansi-regex": "^5.0.1"
+++      },
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/strip-literal": {
+++      "version": "3.1.0",
+++      "resolved": "https://registry.npmjs.org/strip-literal/-/strip-literal-3.1.0.tgz",
+++      "integrity": "sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "js-tokens": "^9.0.1"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/antfu"
+++      }
+++    },
+++    "node_modules/strip-literal/node_modules/js-tokens": {
+++      "version": "9.0.1",
+++      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-9.0.1.tgz",
+++      "integrity": "sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/sucrase": {
+++      "version": "3.35.1",
+++      "resolved": "https://registry.npmjs.org/sucrase/-/sucrase-3.35.1.tgz",
+++      "integrity": "sha512-DhuTmvZWux4H1UOnWMB3sk0sbaCVOoQZjv8u1rDoTV0HTdGem9hkAZtl4JZy8P2z4Bg0nT+YMeOFyVr4zcG5Tw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@jridgewell/gen-mapping": "^0.3.2",
+++        "commander": "^4.0.0",
+++        "lines-and-columns": "^1.1.6",
+++        "mz": "^2.7.0",
+++        "pirates": "^4.0.1",
+++        "tinyglobby": "^0.2.11",
+++        "ts-interface-checker": "^0.1.9"
+++      },
+++      "bin": {
+++        "sucrase": "bin/sucrase",
+++        "sucrase-node": "bin/sucrase-node"
+++      },
+++      "engines": {
+++        "node": ">=16 || 14 >=14.17"
+++      }
+++    },
+++    "node_modules/supports-color": {
+++      "version": "8.1.1",
+++      "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-8.1.1.tgz",
+++      "integrity": "sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "has-flag": "^4.0.0"
+++      },
+++      "engines": {
+++        "node": ">=10"
+++      },
+++      "funding": {
+++        "url": "https://github.com/chalk/supports-color?sponsor=1"
+++      }
+++    },
+++    "node_modules/supports-preserve-symlinks-flag": {
+++      "version": "1.0.0",
+++      "resolved": "https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz",
+++      "integrity": "sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.4"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/ljharb"
+++      }
+++    },
+++    "node_modules/tailwind-merge": {
+++      "version": "3.6.0",
+++      "resolved": "https://registry.npmjs.org/tailwind-merge/-/tailwind-merge-3.6.0.tgz",
+++      "integrity": "sha512-uxL7qAVQriqRQPAyK3pj66VqskWqoZ37PW94jwOTwNfq/z9oyu1V+eqrZqtR2+fCiXdYOZe/Modt8GtvqNzu+w==",
+++      "license": "MIT",
+++      "funding": {
+++        "type": "github",
+++        "url": "https://github.com/sponsors/dcastil"
+++      }
+++    },
+++    "node_modules/tailwindcss": {
+++      "version": "3.4.19",
+++      "resolved": "https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.4.19.tgz",
+++      "integrity": "sha512-3ofp+LL8E+pK/JuPLPggVAIaEuhvIz4qNcf3nA1Xn2o/7fb7s/TYpHhwGDv1ZU3PkBluUVaF8PyCHcm48cKLWQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@alloc/quick-lru": "^5.2.0",
+++        "arg": "^5.0.2",
+++        "chokidar": "^3.6.0",
+++        "didyoumean": "^1.2.2",
+++        "dlv": "^1.1.3",
+++        "fast-glob": "^3.3.2",
+++        "glob-parent": "^6.0.2",
+++        "is-glob": "^4.0.3",
+++        "jiti": "^1.21.7",
+++        "lilconfig": "^3.1.3",
+++        "micromatch": "^4.0.8",
+++        "normalize-path": "^3.0.0",
+++        "object-hash": "^3.0.0",
+++        "picocolors": "^1.1.1",
+++        "postcss": "^8.4.47",
+++        "postcss-import": "^15.1.0",
+++        "postcss-js": "^4.0.1",
+++        "postcss-load-config": "^4.0.2 || ^5.0 || ^6.0",
+++        "postcss-nested": "^6.2.0",
+++        "postcss-selector-parser": "^6.1.2",
+++        "resolve": "^1.22.8",
+++        "sucrase": "^3.35.0"
+++      },
+++      "bin": {
+++        "tailwind": "lib/cli.js",
+++        "tailwindcss": "lib/cli.js"
+++      },
+++      "engines": {
+++        "node": ">=14.0.0"
+++      }
+++    },
+++    "node_modules/thenify": {
+++      "version": "3.3.1",
+++      "resolved": "https://registry.npmjs.org/thenify/-/thenify-3.3.1.tgz",
+++      "integrity": "sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "any-promise": "^1.0.0"
+++      }
+++    },
+++    "node_modules/thenify-all": {
+++      "version": "1.6.0",
+++      "resolved": "https://registry.npmjs.org/thenify-all/-/thenify-all-1.6.0.tgz",
+++      "integrity": "sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "thenify": ">= 3.1.0 < 4"
+++      },
+++      "engines": {
+++        "node": ">=0.8"
+++      }
+++    },
+++    "node_modules/tinybench": {
+++      "version": "2.9.0",
+++      "resolved": "https://registry.npmjs.org/tinybench/-/tinybench-2.9.0.tgz",
+++      "integrity": "sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/tinyexec": {
+++      "version": "0.3.2",
+++      "resolved": "https://registry.npmjs.org/tinyexec/-/tinyexec-0.3.2.tgz",
+++      "integrity": "sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/tinyglobby": {
+++      "version": "0.2.17",
+++      "resolved": "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.17.tgz",
+++      "integrity": "sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "fdir": "^6.5.0",
+++        "picomatch": "^4.0.4"
+++      },
+++      "engines": {
+++        "node": ">=12.0.0"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/SuperchupuDev"
+++      }
+++    },
+++    "node_modules/tinyglobby/node_modules/fdir": {
+++      "version": "6.5.0",
+++      "resolved": "https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz",
+++      "integrity": "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=12.0.0"
+++      },
+++      "peerDependencies": {
+++        "picomatch": "^3 || ^4"
+++      },
+++      "peerDependenciesMeta": {
+++        "picomatch": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/tinyglobby/node_modules/picomatch": {
+++      "version": "4.0.7",
+++      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz",
+++      "integrity": "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=12"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/jonschlinkert"
+++      }
+++    },
+++    "node_modules/tinypool": {
+++      "version": "1.1.1",
+++      "resolved": "https://registry.npmjs.org/tinypool/-/tinypool-1.1.1.tgz",
+++      "integrity": "sha512-Zba82s87IFq9A9XmjiX5uZA/ARWDrB03OHlq+Vw1fSdt0I+4/Kutwy8BP4Y/y/aORMo61FQ0vIb5j44vSo5Pkg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": "^18.0.0 || >=20.0.0"
+++      }
+++    },
+++    "node_modules/tinyrainbow": {
+++      "version": "2.0.0",
+++      "resolved": "https://registry.npmjs.org/tinyrainbow/-/tinyrainbow-2.0.0.tgz",
+++      "integrity": "sha512-op4nsTR47R6p0vMUUoYl/a+ljLFVtlfaXkLQmqfLR1qHma1h/ysYk4hEXZ880bf2CYgTskvTa/e196Vd5dDQXw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=14.0.0"
+++      }
+++    },
+++    "node_modules/tinyspy": {
+++      "version": "4.0.4",
+++      "resolved": "https://registry.npmjs.org/tinyspy/-/tinyspy-4.0.4.tgz",
+++      "integrity": "sha512-azl+t0z7pw/z958Gy9svOTuzqIk6xq+NSheJzn5MMWtWTFywIacg2wUlzKFGtt3cthx0r2SxMK0yzJOR0IES7Q==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=14.0.0"
+++      }
+++    },
+++    "node_modules/to-regex-range": {
+++      "version": "5.0.1",
+++      "resolved": "https://registry.npmjs.org/to-regex-range/-/to-regex-range-5.0.1.tgz",
+++      "integrity": "sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "is-number": "^7.0.0"
+++      },
+++      "engines": {
+++        "node": ">=8.0"
+++      }
+++    },
+++    "node_modules/toidentifier": {
+++      "version": "1.0.1",
+++      "resolved": "https://registry.npmjs.org/toidentifier/-/toidentifier-1.0.1.tgz",
+++      "integrity": "sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=0.6"
+++      }
+++    },
+++    "node_modules/tree-kill": {
+++      "version": "1.2.2",
+++      "resolved": "https://registry.npmjs.org/tree-kill/-/tree-kill-1.2.2.tgz",
+++      "integrity": "sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==",
+++      "dev": true,
+++      "license": "MIT",
+++      "bin": {
+++        "tree-kill": "cli.js"
+++      }
+++    },
+++    "node_modules/ts-interface-checker": {
+++      "version": "0.1.13",
+++      "resolved": "https://registry.npmjs.org/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz",
+++      "integrity": "sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==",
+++      "dev": true,
+++      "license": "Apache-2.0"
+++    },
+++    "node_modules/tslib": {
+++      "version": "2.8.1",
+++      "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
+++      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==",
+++      "license": "0BSD"
+++    },
+++    "node_modules/tsx": {
+++      "version": "4.23.13",
+++      "resolved": "https://registry.npmjs.org/tsx/-/tsx-4.23.13.tgz",
+++      "integrity": "sha512-BL5MGkRln6aDYhb0xbQlEAGw743BaZYWdbWtdJOBriYJboKgUUYCadFp2/FpBBZquBC/ezNBn7wMMPx7FDZUDw==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "esbuild": "~0.28.0"
+++      },
+++      "bin": {
+++        "tsx": "dist/cli.mjs"
+++      },
+++      "engines": {
+++        "node": ">=18.0.0"
+++      },
+++      "optionalDependencies": {
+++        "fsevents": "~2.3.3"
+++      }
+++    },
+++    "node_modules/type-is": {
+++      "version": "1.6.18",
+++      "resolved": "https://registry.npmjs.org/type-is/-/type-is-1.6.18.tgz",
+++      "integrity": "sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==",
+++      "license": "MIT",
+++      "dependencies": {
+++        "media-typer": "0.3.0",
+++        "mime-types": "~2.1.24"
+++      },
+++      "engines": {
+++        "node": ">= 0.6"
+++      }
+++    },
+++    "node_modules/typescript": {
+++      "version": "5.9.3",
+++      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+++      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+++      "dev": true,
+++      "license": "Apache-2.0",
+++      "bin": {
+++        "tsc": "bin/tsc",
+++        "tsserver": "bin/tsserver"
+++      },
+++      "engines": {
+++        "node": ">=14.17"
+++      }
+++    },
+++    "node_modules/undici-types": {
+++      "version": "6.21.0",
+++      "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz",
+++      "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==",
+++      "license": "MIT"
+++    },
+++    "node_modules/unpipe": {
+++      "version": "1.0.0",
+++      "resolved": "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz",
+++      "integrity": "sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/update-browserslist-db": {
+++      "version": "1.3.2",
+++      "resolved": "https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.3.2.tgz",
+++      "integrity": "sha512-UQ+MSxlhRm1bzjhU+DcuXfjFO1FzNtqhK5+9Yvlp90ItDLk5vT932A0rFu619nf7RVS+Y/VeaUW1jaRDqZ8VJw==",
+++      "dev": true,
+++      "funding": [
+++        {
+++          "type": "opencollective",
+++          "url": "https://opencollective.com/browserslist"
+++        },
+++        {
+++          "type": "tidelift",
+++          "url": "https://tidelift.com/funding/github/npm/browserslist"
+++        },
+++        {
+++          "type": "github",
+++          "url": "https://github.com/sponsors/ai"
+++        }
+++      ],
+++      "license": "MIT",
+++      "dependencies": {
+++        "escalade": "^3.2.0",
+++        "picocolors": "^1.1.1"
+++      },
+++      "bin": {
+++        "update-browserslist-db": "cli.js"
+++      },
+++      "peerDependencies": {
+++        "browserslist": ">= 4.21.0"
+++      }
+++    },
+++    "node_modules/util-deprecate": {
+++      "version": "1.0.2",
+++      "resolved": "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz",
+++      "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==",
+++      "dev": true,
+++      "license": "MIT"
+++    },
+++    "node_modules/utils-merge": {
+++      "version": "1.0.1",
+++      "resolved": "https://registry.npmjs.org/utils-merge/-/utils-merge-1.0.1.tgz",
+++      "integrity": "sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.4.0"
+++      }
+++    },
+++    "node_modules/vary": {
+++      "version": "1.1.2",
+++      "resolved": "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz",
+++      "integrity": "sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">= 0.8"
+++      }
+++    },
+++    "node_modules/vite": {
+++      "version": "6.4.3",
+++      "resolved": "https://registry.npmjs.org/vite/-/vite-6.4.3.tgz",
+++      "integrity": "sha512-NTKlcQjlAK7MlQoyb6LgaqHc8sso/pVyUJYWMws3jg21uTJw/LddqIFPcPqP6PzpgbIcZyKI85sFE4HBrQDA8A==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "esbuild": "^0.25.0",
+++        "fdir": "^6.4.4",
+++        "picomatch": "^4.0.2",
+++        "postcss": "^8.5.3",
+++        "rollup": "^4.34.9",
+++        "tinyglobby": "^0.2.13"
+++      },
+++      "bin": {
+++        "vite": "bin/vite.js"
+++      },
+++      "engines": {
+++        "node": "^18.0.0 || ^20.0.0 || >=22.0.0"
+++      },
+++      "funding": {
+++        "url": "https://github.com/vitejs/vite?sponsor=1"
+++      },
+++      "optionalDependencies": {
+++        "fsevents": "~2.3.3"
+++      },
+++      "peerDependencies": {
+++        "@types/node": "^18.0.0 || ^20.0.0 || >=22.0.0",
+++        "jiti": ">=1.21.0",
+++        "less": "*",
+++        "lightningcss": "^1.21.0",
+++        "sass": "*",
+++        "sass-embedded": "*",
+++        "stylus": "*",
+++        "sugarss": "*",
+++        "terser": "^5.16.0",
+++        "tsx": "^4.8.1",
+++        "yaml": "^2.4.2"
+++      },
+++      "peerDependenciesMeta": {
+++        "@types/node": {
+++          "optional": true
+++        },
+++        "jiti": {
+++          "optional": true
+++        },
+++        "less": {
+++          "optional": true
+++        },
+++        "lightningcss": {
+++          "optional": true
+++        },
+++        "sass": {
+++          "optional": true
+++        },
+++        "sass-embedded": {
+++          "optional": true
+++        },
+++        "stylus": {
+++          "optional": true
+++        },
+++        "sugarss": {
+++          "optional": true
+++        },
+++        "terser": {
+++          "optional": true
+++        },
+++        "tsx": {
+++          "optional": true
+++        },
+++        "yaml": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/vite-node": {
+++      "version": "3.2.4",
+++      "resolved": "https://registry.npmjs.org/vite-node/-/vite-node-3.2.4.tgz",
+++      "integrity": "sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "cac": "^6.7.14",
+++        "debug": "^4.4.1",
+++        "es-module-lexer": "^1.7.0",
+++        "pathe": "^2.0.3",
+++        "vite": "^5.0.0 || ^6.0.0 || ^7.0.0-0"
+++      },
+++      "bin": {
+++        "vite-node": "vite-node.mjs"
+++      },
+++      "engines": {
+++        "node": "^18.0.0 || ^20.0.0 || >=22.0.0"
+++      },
+++      "funding": {
+++        "url": "https://opencollective.com/vitest"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/aix-ppc64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/aix-ppc64/-/aix-ppc64-0.25.12.tgz",
+++      "integrity": "sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA==",
+++      "cpu": [
+++        "ppc64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "aix"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/android-arm": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm/-/android-arm-0.25.12.tgz",
+++      "integrity": "sha512-VJ+sKvNA/GE7Ccacc9Cha7bpS8nyzVv0jdVgwNDaR4gDMC/2TTRc33Ip8qrNYUcpkOHUT5OZ0bUcNNVZQ9RLlg==",
+++      "cpu": [
+++        "arm"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "android"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/android-arm64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm64/-/android-arm64-0.25.12.tgz",
+++      "integrity": "sha512-6AAmLG7zwD1Z159jCKPvAxZd4y/VTO0VkprYy+3N2FtJ8+BQWFXU+OxARIwA46c5tdD9SsKGZ/1ocqBS/gAKHg==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "android"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/android-x64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/android-x64/-/android-x64-0.25.12.tgz",
+++      "integrity": "sha512-5jbb+2hhDHx5phYR2By8GTWEzn6I9UqR11Kwf22iKbNpYrsmRB18aX/9ivc5cabcUiAT/wM+YIZ6SG9QO6a8kg==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "android"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/darwin-arm64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.12.tgz",
+++      "integrity": "sha512-N3zl+lxHCifgIlcMUP5016ESkeQjLj/959RxxNYIthIg+CQHInujFuXeWbWMgnTo4cp5XVHqFPmpyu9J65C1Yg==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "darwin"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/darwin-x64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-x64/-/darwin-x64-0.25.12.tgz",
+++      "integrity": "sha512-HQ9ka4Kx21qHXwtlTUVbKJOAnmG1ipXhdWTmNXiPzPfWKpXqASVcWdnf2bnL73wgjNrFXAa3yYvBSd9pzfEIpA==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "darwin"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/freebsd-arm64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-arm64/-/freebsd-arm64-0.25.12.tgz",
+++      "integrity": "sha512-gA0Bx759+7Jve03K1S0vkOu5Lg/85dou3EseOGUes8flVOGxbhDDh/iZaoek11Y8mtyKPGF3vP8XhnkDEAmzeg==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "freebsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/freebsd-x64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-x64/-/freebsd-x64-0.25.12.tgz",
+++      "integrity": "sha512-TGbO26Yw2xsHzxtbVFGEXBFH0FRAP7gtcPE7P5yP7wGy7cXK2oO7RyOhL5NLiqTlBh47XhmIUXuGciXEqYFfBQ==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "freebsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/linux-arm": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm/-/linux-arm-0.25.12.tgz",
+++      "integrity": "sha512-lPDGyC1JPDou8kGcywY0YILzWlhhnRjdof3UlcoqYmS9El818LLfJJc3PXXgZHrHCAKs/Z2SeZtDJr5MrkxtOw==",
+++      "cpu": [
+++        "arm"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/linux-arm64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.25.12.tgz",
+++      "integrity": "sha512-8bwX7a8FghIgrupcxb4aUmYDLp8pX06rGh5HqDT7bB+8Rdells6mHvrFHHW2JAOPZUbnjUpKTLg6ECyzvas2AQ==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/linux-ia32": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ia32/-/linux-ia32-0.25.12.tgz",
+++      "integrity": "sha512-0y9KrdVnbMM2/vG8KfU0byhUN+EFCny9+8g202gYqSSVMonbsCfLjUO+rCci7pM0WBEtz+oK/PIwHkzxkyharA==",
+++      "cpu": [
+++        "ia32"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/linux-loong64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-loong64/-/linux-loong64-0.25.12.tgz",
+++      "integrity": "sha512-h///Lr5a9rib/v1GGqXVGzjL4TMvVTv+s1DPoxQdz7l/AYv6LDSxdIwzxkrPW438oUXiDtwM10o9PmwS/6Z0Ng==",
+++      "cpu": [
+++        "loong64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/linux-mips64el": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-mips64el/-/linux-mips64el-0.25.12.tgz",
+++      "integrity": "sha512-iyRrM1Pzy9GFMDLsXn1iHUm18nhKnNMWscjmp4+hpafcZjrr2WbT//d20xaGljXDBYHqRcl8HnxbX6uaA/eGVw==",
+++      "cpu": [
+++        "mips64el"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/linux-ppc64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ppc64/-/linux-ppc64-0.25.12.tgz",
+++      "integrity": "sha512-9meM/lRXxMi5PSUqEXRCtVjEZBGwB7P/D4yT8UG/mwIdze2aV4Vo6U5gD3+RsoHXKkHCfSxZKzmDssVlRj1QQA==",
+++      "cpu": [
+++        "ppc64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/linux-riscv64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-riscv64/-/linux-riscv64-0.25.12.tgz",
+++      "integrity": "sha512-Zr7KR4hgKUpWAwb1f3o5ygT04MzqVrGEGXGLnj15YQDJErYu/BGg+wmFlIDOdJp0PmB0lLvxFIOXZgFRrdjR0w==",
+++      "cpu": [
+++        "riscv64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/linux-s390x": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-s390x/-/linux-s390x-0.25.12.tgz",
+++      "integrity": "sha512-MsKncOcgTNvdtiISc/jZs/Zf8d0cl/t3gYWX8J9ubBnVOwlk65UIEEvgBORTiljloIWnBzLs4qhzPkJcitIzIg==",
+++      "cpu": [
+++        "s390x"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/linux-x64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.12.tgz",
+++      "integrity": "sha512-uqZMTLr/zR/ed4jIGnwSLkaHmPjOjJvnm6TVVitAa08SLS9Z0VM8wIRx7gWbJB5/J54YuIMInDquWyYvQLZkgw==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "linux"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/netbsd-arm64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-arm64/-/netbsd-arm64-0.25.12.tgz",
+++      "integrity": "sha512-xXwcTq4GhRM7J9A8Gv5boanHhRa/Q9KLVmcyXHCTaM4wKfIpWkdXiMog/KsnxzJ0A1+nD+zoecuzqPmCRyBGjg==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "netbsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/netbsd-x64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-x64/-/netbsd-x64-0.25.12.tgz",
+++      "integrity": "sha512-Ld5pTlzPy3YwGec4OuHh1aCVCRvOXdH8DgRjfDy/oumVovmuSzWfnSJg+VtakB9Cm0gxNO9BzWkj6mtO1FMXkQ==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "netbsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/openbsd-arm64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-arm64/-/openbsd-arm64-0.25.12.tgz",
+++      "integrity": "sha512-fF96T6KsBo/pkQI950FARU9apGNTSlZGsv1jZBAlcLL1MLjLNIWPBkj5NlSz8aAzYKg+eNqknrUJ24QBybeR5A==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "openbsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/openbsd-x64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-x64/-/openbsd-x64-0.25.12.tgz",
+++      "integrity": "sha512-MZyXUkZHjQxUvzK7rN8DJ3SRmrVrke8ZyRusHlP+kuwqTcfWLyqMOE3sScPPyeIXN/mDJIfGXvcMqCgYKekoQw==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "openbsd"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/openharmony-arm64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/openharmony-arm64/-/openharmony-arm64-0.25.12.tgz",
+++      "integrity": "sha512-rm0YWsqUSRrjncSXGA7Zv78Nbnw4XL6/dzr20cyrQf7ZmRcsovpcRBdhD43Nuk3y7XIoW2OxMVvwuRvk9XdASg==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "openharmony"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/sunos-x64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/sunos-x64/-/sunos-x64-0.25.12.tgz",
+++      "integrity": "sha512-3wGSCDyuTHQUzt0nV7bocDy72r2lI33QL3gkDNGkod22EsYl04sMf0qLb8luNKTOmgF/eDEDP5BFNwoBKH441w==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "sunos"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/win32-arm64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/win32-arm64/-/win32-arm64-0.25.12.tgz",
+++      "integrity": "sha512-rMmLrur64A7+DKlnSuwqUdRKyd3UE7oPJZmnljqEptesKM8wx9J8gx5u0+9Pq0fQQW8vqeKebwNXdfOyP+8Bsg==",
+++      "cpu": [
+++        "arm64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/win32-ia32": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/win32-ia32/-/win32-ia32-0.25.12.tgz",
+++      "integrity": "sha512-HkqnmmBoCbCwxUKKNPBixiWDGCpQGVsrQfJoVGYLPT41XWF8lHuE5N6WhVia2n4o5QK5M4tYr21827fNhi4byQ==",
+++      "cpu": [
+++        "ia32"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/@esbuild/win32-x64": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.25.12.tgz",
+++      "integrity": "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA==",
+++      "cpu": [
+++        "x64"
+++      ],
+++      "dev": true,
+++      "license": "MIT",
+++      "optional": true,
+++      "os": [
+++        "win32"
+++      ],
+++      "engines": {
+++        "node": ">=18"
+++      }
+++    },
+++    "node_modules/vite/node_modules/esbuild": {
+++      "version": "0.25.12",
+++      "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.12.tgz",
+++      "integrity": "sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg==",
+++      "dev": true,
+++      "hasInstallScript": true,
+++      "license": "MIT",
+++      "bin": {
+++        "esbuild": "bin/esbuild"
+++      },
+++      "engines": {
+++        "node": ">=18"
+++      },
+++      "optionalDependencies": {
+++        "@esbuild/aix-ppc64": "0.25.12",
+++        "@esbuild/android-arm": "0.25.12",
+++        "@esbuild/android-arm64": "0.25.12",
+++        "@esbuild/android-x64": "0.25.12",
+++        "@esbuild/darwin-arm64": "0.25.12",
+++        "@esbuild/darwin-x64": "0.25.12",
+++        "@esbuild/freebsd-arm64": "0.25.12",
+++        "@esbuild/freebsd-x64": "0.25.12",
+++        "@esbuild/linux-arm": "0.25.12",
+++        "@esbuild/linux-arm64": "0.25.12",
+++        "@esbuild/linux-ia32": "0.25.12",
+++        "@esbuild/linux-loong64": "0.25.12",
+++        "@esbuild/linux-mips64el": "0.25.12",
+++        "@esbuild/linux-ppc64": "0.25.12",
+++        "@esbuild/linux-riscv64": "0.25.12",
+++        "@esbuild/linux-s390x": "0.25.12",
+++        "@esbuild/linux-x64": "0.25.12",
+++        "@esbuild/netbsd-arm64": "0.25.12",
+++        "@esbuild/netbsd-x64": "0.25.12",
+++        "@esbuild/openbsd-arm64": "0.25.12",
+++        "@esbuild/openbsd-x64": "0.25.12",
+++        "@esbuild/openharmony-arm64": "0.25.12",
+++        "@esbuild/sunos-x64": "0.25.12",
+++        "@esbuild/win32-arm64": "0.25.12",
+++        "@esbuild/win32-ia32": "0.25.12",
+++        "@esbuild/win32-x64": "0.25.12"
+++      }
+++    },
+++    "node_modules/vite/node_modules/fdir": {
+++      "version": "6.5.0",
+++      "resolved": "https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz",
+++      "integrity": "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=12.0.0"
+++      },
+++      "peerDependencies": {
+++        "picomatch": "^3 || ^4"
+++      },
+++      "peerDependenciesMeta": {
+++        "picomatch": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/vite/node_modules/picomatch": {
+++      "version": "4.0.7",
+++      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz",
+++      "integrity": "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=12"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/jonschlinkert"
+++      }
+++    },
+++    "node_modules/vitest": {
+++      "version": "3.2.7",
+++      "resolved": "https://registry.npmjs.org/vitest/-/vitest-3.2.7.tgz",
+++      "integrity": "sha512-KrxIJ62Fd89gfysR4WotlgZABiz2dqFPgqGzX7s+CwsqLFomRH7777ZcrOD6+WVAh7khPQP41A+BKbpcJFrdEg==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "@types/chai": "^5.2.2",
+++        "@vitest/expect": "3.2.7",
+++        "@vitest/mocker": "3.2.7",
+++        "@vitest/pretty-format": "^3.2.7",
+++        "@vitest/runner": "3.2.7",
+++        "@vitest/snapshot": "3.2.7",
+++        "@vitest/spy": "3.2.7",
+++        "@vitest/utils": "3.2.7",
+++        "chai": "^5.2.0",
+++        "debug": "^4.4.1",
+++        "expect-type": "^1.2.1",
+++        "magic-string": "^0.30.17",
+++        "pathe": "^2.0.3",
+++        "picomatch": "^4.0.2",
+++        "std-env": "^3.9.0",
+++        "tinybench": "^2.9.0",
+++        "tinyexec": "^0.3.2",
+++        "tinyglobby": "^0.2.14",
+++        "tinypool": "^1.1.1",
+++        "tinyrainbow": "^2.0.0",
+++        "vite": "^5.0.0 || ^6.0.0 || ^7.0.0-0",
+++        "vite-node": "3.2.4",
+++        "why-is-node-running": "^2.3.0"
+++      },
+++      "bin": {
+++        "vitest": "vitest.mjs"
+++      },
+++      "engines": {
+++        "node": "^18.0.0 || ^20.0.0 || >=22.0.0"
+++      },
+++      "funding": {
+++        "url": "https://opencollective.com/vitest"
+++      },
+++      "peerDependencies": {
+++        "@edge-runtime/vm": "*",
+++        "@types/debug": "^4.1.12",
+++        "@types/node": "^18.0.0 || ^20.0.0 || >=22.0.0",
+++        "@vitest/browser": "3.2.7",
+++        "@vitest/ui": "3.2.7",
+++        "happy-dom": "*",
+++        "jsdom": "*"
+++      },
+++      "peerDependenciesMeta": {
+++        "@edge-runtime/vm": {
+++          "optional": true
+++        },
+++        "@types/debug": {
+++          "optional": true
+++        },
+++        "@types/node": {
+++          "optional": true
+++        },
+++        "@vitest/browser": {
+++          "optional": true
+++        },
+++        "@vitest/ui": {
+++          "optional": true
+++        },
+++        "happy-dom": {
+++          "optional": true
+++        },
+++        "jsdom": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/vitest/node_modules/picomatch": {
+++      "version": "4.0.7",
+++      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz",
+++      "integrity": "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==",
+++      "dev": true,
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=12"
+++      },
+++      "funding": {
+++        "url": "https://github.com/sponsors/jonschlinkert"
+++      }
+++    },
+++    "node_modules/whatstheword-client": {
+++      "resolved": "client",
+++      "link": true
+++    },
+++    "node_modules/whatstheword-server": {
+++      "resolved": "server",
+++      "link": true
+++    },
+++    "node_modules/why-is-node-running": {
+++      "version": "2.3.0",
+++      "resolved": "https://registry.npmjs.org/why-is-node-running/-/why-is-node-running-2.3.0.tgz",
+++      "integrity": "sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "siginfo": "^2.0.0",
+++        "stackback": "0.0.2"
+++      },
+++      "bin": {
+++        "why-is-node-running": "cli.js"
+++      },
+++      "engines": {
+++        "node": ">=8"
+++      }
+++    },
+++    "node_modules/wrap-ansi": {
+++      "version": "7.0.0",
+++      "resolved": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz",
+++      "integrity": "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "ansi-styles": "^4.0.0",
+++        "string-width": "^4.1.0",
+++        "strip-ansi": "^6.0.0"
+++      },
+++      "engines": {
+++        "node": ">=10"
+++      },
+++      "funding": {
+++        "url": "https://github.com/chalk/wrap-ansi?sponsor=1"
+++      }
+++    },
+++    "node_modules/ws": {
+++      "version": "8.21.3",
+++      "resolved": "https://registry.npmjs.org/ws/-/ws-8.21.3.tgz",
+++      "integrity": "sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==",
+++      "license": "MIT",
+++      "engines": {
+++        "node": ">=10.0.0"
+++      },
+++      "peerDependencies": {
+++        "bufferutil": "^4.0.1",
+++        "utf-8-validate": ">=5.0.2"
+++      },
+++      "peerDependenciesMeta": {
+++        "bufferutil": {
+++          "optional": true
+++        },
+++        "utf-8-validate": {
+++          "optional": true
+++        }
+++      }
+++    },
+++    "node_modules/xmlhttprequest-ssl": {
+++      "version": "2.1.2",
+++      "resolved": "https://registry.npmjs.org/xmlhttprequest-ssl/-/xmlhttprequest-ssl-2.1.2.tgz",
+++      "integrity": "sha512-TEU+nJVUUnA4CYJFLvK5X9AOeH4KvDvhIfm0vV1GaQRtchnG0hgK5p8hw/xjv8cunWYCsiPCSDzObPyhEwq3KQ==",
+++      "engines": {
+++        "node": ">=0.4.0"
+++      }
+++    },
+++    "node_modules/y18n": {
+++      "version": "5.0.8",
+++      "resolved": "https://registry.npmjs.org/y18n/-/y18n-5.0.8.tgz",
+++      "integrity": "sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==",
+++      "dev": true,
+++      "license": "ISC",
+++      "engines": {
+++        "node": ">=10"
+++      }
+++    },
+++    "node_modules/yallist": {
+++      "version": "3.1.1",
+++      "resolved": "https://registry.npmjs.org/yallist/-/yallist-3.1.1.tgz",
+++      "integrity": "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==",
+++      "dev": true,
+++      "license": "ISC"
+++    },
+++    "node_modules/yargs": {
+++      "version": "17.7.2",
+++      "resolved": "https://registry.npmjs.org/yargs/-/yargs-17.7.2.tgz",
+++      "integrity": "sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==",
+++      "dev": true,
+++      "license": "MIT",
+++      "dependencies": {
+++        "cliui": "^8.0.1",
+++        "escalade": "^3.1.1",
+++        "get-caller-file": "^2.0.5",
+++        "require-directory": "^2.1.1",
+++        "string-width": "^4.2.3",
+++        "y18n": "^5.0.5",
+++        "yargs-parser": "^21.1.1"
+++      },
+++      "engines": {
+++        "node": ">=12"
+++      }
+++    },
+++    "node_modules/yargs-parser": {
+++      "version": "21.1.1",
+++      "resolved": "https://registry.npmjs.org/yargs-parser/-/yargs-parser-21.1.1.tgz",
+++      "integrity": "sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==",
+++      "dev": true,
+++      "license": "ISC",
+++      "engines": {
+++        "node": ">=12"
+++      }
+++    },
+++    "server": {
+++      "name": "whatstheword-server",
+++      "version": "1.0.0",
+++      "dependencies": {
+++        "cors": "^2.8.5",
+++        "dotenv": "^16.4.7",
+++        "express": "^4.21.2",
+++        "socket.io": "^4.8.1"
+++      },
+++      "devDependencies": {
+++        "@types/cors": "^2.8.17",
+++        "@types/express": "^5.0.0",
+++        "@types/node": "^22.13.9",
+++        "tsx": "^4.19.3",
+++        "typescript": "^5.7.3",
+++        "vitest": "^3.0.7"
+++      }
+++    }
+++  }
+++}
++diff --git a/package.json b/package.json
++new file mode 100644
++index 0000000..17887bd
++--- /dev/null
+++++ b/package.json
++@@ -0,0 +1,24 @@
+++{
+++  "name": "whatstheword-monorepo",
+++  "version": "1.0.0",
+++  "private": true,
+++  "description": "What's The Word - Fullstack Undercover Word Deduction Game",
+++  "workspaces": [
+++    "client",
+++    "server"
+++  ],
+++  "scripts": {
+++    "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
+++    "dev:client": "npm run dev --workspace=client",
+++    "dev:server": "npm run dev --workspace=server",
+++    "build": "npm run build --workspace=client && npm run build --workspace=server",
+++    "build:client": "npm run build --workspace=client",
+++    "build:server": "npm run build --workspace=server",
+++    "test": "npm run test --workspace=server",
+++    "typecheck": "npm run typecheck --workspace=client && npm run typecheck --workspace=server",
+++    "install:all": "npm install"
+++  },
+++  "devDependencies": {
+++    "concurrently": "^9.1.2"
+++  }
+++}
++diff --git a/server/package.json b/server/package.json
++new file mode 100644
++index 0000000..3964094
++--- /dev/null
+++++ b/server/package.json
++@@ -0,0 +1,28 @@
+++{
+++  "name": "whatstheword-server",
+++  "private": true,
+++  "version": "1.0.0",
+++  "type": "module",
+++  "scripts": {
+++    "dev": "tsx watch src/server.ts",
+++    "build": "tsc",
+++    "start": "node dist/server.js",
+++    "test": "vitest run",
+++    "test:watch": "vitest",
+++    "typecheck": "tsc --noEmit"
+++  },
+++  "dependencies": {
+++    "cors": "^2.8.5",
+++    "dotenv": "^16.4.7",
+++    "express": "^4.21.2",
+++    "socket.io": "^4.8.1"
+++  },
+++  "devDependencies": {
+++    "@types/cors": "^2.8.17",
+++    "@types/express": "^5.0.0",
+++    "@types/node": "^22.13.9",
+++    "tsx": "^4.19.3",
+++    "typescript": "^5.7.3",
+++    "vitest": "^3.0.7"
+++  }
+++}
++diff --git a/server/src/server.ts b/server/src/server.ts
++new file mode 100644
++index 0000000..99a8a27
++--- /dev/null
+++++ b/server/src/server.ts
++@@ -0,0 +1,51 @@
+++import express, { Request, Response } from 'express';
+++import http from 'http';
+++import { Server } from 'socket.io';
+++import cors from 'cors';
+++import dotenv from 'dotenv';
+++
+++dotenv.config({ path: '../.env' });
+++dotenv.config();
+++
+++const app = express();
+++const server = http.createServer(app);
+++
+++const PORT = process.env.PORT || 3001;
+++
+++app.use(cors({
+++  origin: '*',
+++  methods: ['GET', 'POST'],
+++}));
+++
+++app.use(express.json());
+++
+++app.get('/health', (_req: Request, res: Response) => {
+++  res.status(200).json({
+++    status: 'ok',
+++    timestamp: new Date().toISOString(),
+++    service: 'whatstheword-server',
+++  });
+++});
+++
+++const io = new Server(server, {
+++  cors: {
+++    origin: '*',
+++    methods: ['GET', 'POST'],
+++  },
+++});
+++
+++io.on('connection', (socket) => {
+++  console.log(`[Socket.io] Client connected: ${socket.id}`);
+++
+++  socket.on('disconnect', () => {
+++    console.log(`[Socket.io] Client disconnected: ${socket.id}`);
+++  });
+++});
+++
+++if (process.env.NODE_ENV !== 'test') {
+++  server.listen(PORT, () => {
+++    console.log(`[Server] What's The Word server running on port ${PORT}`);
+++  });
+++}
+++
+++export { app, server, io };
++diff --git a/server/src/types/game.types.ts b/server/src/types/game.types.ts
++new file mode 100644
++index 0000000..b000cc6
++--- /dev/null
+++++ b/server/src/types/game.types.ts
++@@ -0,0 +1,68 @@
+++export type PlayerRole = 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE';
+++
+++export type GamePhase =
+++  | 'LOBBY'
+++  | 'ROLE_REVEAL'
+++  | 'TURN_PHASE'
+++  | 'VOTING'
+++  | 'MR_WHITE_GUESS'
+++  | 'GAME_OVER';
+++
+++export interface Player {
+++  id: string;
+++  name: string;
+++  avatar: string;
+++  isHost: boolean;
+++  role?: PlayerRole;
+++  word?: string;
+++  isAlive: boolean;
+++  hasVoted: boolean;
+++  votedTargetId?: string;
+++  isSpeaking?: boolean;
+++}
+++
+++export interface WordPair {
+++  id?: string;
+++  category: string;
+++  civilianWord: string;
+++  undercoverWord: string;
+++}
+++
+++export interface GameSettings {
+++  category: string;
+++  civilianCount: number;
+++  undercoverCount: number;
+++  mrWhiteCount: number;
+++  turnDurationSeconds: number;
+++  enableMrWhite: boolean;
+++  customWordPair?: WordPair;
+++}
+++
+++export interface RoomState {
+++  roomId: string;
+++  phase: GamePhase;
+++  round: number;
+++  players: Player[];
+++  speakingOrder: string[];
+++  currentSpeakerIndex: number;
+++  activeTurnRemainingSeconds: number;
+++  settings: GameSettings;
+++  winningRole?: 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE';
+++  eliminatedPlayer?: Player;
+++  wordPair?: WordPair;
+++}
+++
+++export interface VoteRecord {
+++  voterId: string;
+++  targetId: string;
+++}
+++
+++export interface WordPack {
+++  id: string;
+++  name: string;
+++  category: string;
+++  description?: string;
+++  isOfficial: boolean;
+++  wordPairs: WordPair[];
+++  createdAt?: string;
+++}
++diff --git a/server/tsconfig.json b/server/tsconfig.json
++new file mode 100644
++index 0000000..51ae7f1
++--- /dev/null
+++++ b/server/tsconfig.json
++@@ -0,0 +1,21 @@
+++{
+++  "compilerOptions": {
+++    "target": "ES2022",
+++    "module": "NodeNext",
+++    "moduleResolution": "NodeNext",
+++    "lib": ["ES2022"],
+++    "outDir": "dist",
+++    "rootDir": "src",
+++    "strict": true,
+++    "esModuleInterop": true,
+++    "skipLibCheck": true,
+++    "forceConsistentCasingInFileNames": true,
+++    "resolveJsonModule": true,
+++    "baseUrl": ".",
+++    "paths": {
+++      "@/*": ["src/*"]
+++    }
+++  },
+++  "include": ["src/**/*"],
+++  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+++}
++diff --git a/server/vitest.config.ts b/server/vitest.config.ts
++new file mode 100644
++index 0000000..ca1f51a
++--- /dev/null
+++++ b/server/vitest.config.ts
++@@ -0,0 +1,14 @@
+++import { defineConfig } from 'vitest/config';
+++import path from 'path';
+++
+++export default defineConfig({
+++  test: {
+++    globals: true,
+++    environment: 'node',
+++  },
+++  resolve: {
+++    alias: {
+++      '@': path.resolve(__dirname, './src'),
+++    },
+++  },
+++});
++
++```
+diff --git a/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-2-brief.md b/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-2-brief.md
+new file mode 100644
+index 0000000..0b90bc6
+--- /dev/null
++++ b/.superpowers/sdd/2026-09-02-whatstheword-implementation/task-2-brief.md
+@@ -0,0 +1,27 @@
++# Task 2 Brief: Core Domain Logic - Game Engine, Indonesian Word Bank & Fuzzy Matcher
++
++## Goal
++Implement the core pure domain logic and Indonesian word bank with unit tests:
++1. `server/src/data/defaultWordPacks.ts` & `client/src/data/defaultWordPacks.ts`:
++   - 50+ balanced word pairs across 5 Indonesian categories:
++     - `Makanan & Minuman` (e.g. Kopi/Teh, Bakso/Mie Ayam, Rendang/Gulai, Martabak Manis/Terang Bulan, Nasi Padang/Nasi Uduk, etc.)
++     - `Hewan` (e.g. Kucing/Harimau, Bebek/Ayam, Paus/Lumba-lumba, Elang/Burung Hantu, Kelinci/Hamster, etc.)
++     - `Benda & Gadget` (e.g. Laptop/Komputer, Smartphone/Tablet, Headphone/Earphone, Kipas Angin/AC, Jam Tangan/Jam Dinding, etc.)
++     - `Tempat & Hiburan` (e.g. Bioskop/Teater, Pantai/Danau, Supermarket/Pasar Tradisional, Museum/Perpustakaan, Hotel/Villa, etc.)
++     - `Profesi` (e.g. Dokter/Perawat, Pilot/Masinis, Polisi/Tentara, Koki/Barista, Guru/Dosen, etc.)
++2. `server/src/engine/FuzzyMatcher.ts` & `client/src/utils/fuzzyMatcher.ts`:
++   - `isFuzzyMatch(guessed: string, target: string, options?: { maxDistance?: number }): boolean`
++   - Levenshtein distance algorithm: case-insensitive, trims whitespace, removes punctuation.
++   - For string length < 4: exact match required. For length 4-7: tolerance <= 1. For length > 7: tolerance <= 2.
++3. `server/src/engine/GameEngine.ts`:
++   - `assignRoles(players: Player[], settings: GameSettings, wordPair: WordPair): { players: Player[]; speakingOrder: string[] }`
++   - `calculateVotes(votes: Record<string, string>, activePlayers: Player[]): { isTie: boolean; eliminatedPlayerId: string | null; voteCounts: Record<string, number> }`
++     * Note: Instant Skip Elimination rule! If 2 or more candidates tie for highest votes, `isTie: true` and `eliminatedPlayerId: null`.
++   - `checkWinCondition(players: Player[]): 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE' | null`
++4. Vitest Tests:
++   - `server/tests/FuzzyMatcher.test.ts` (test exact, casing, small typo, big typo, whitespace)
++   - `server/tests/GameEngine.test.ts` (test role distributions, tie-breaker instant skip, win conditions for Civilian, Undercover, Mr. White)
++
++## Report Contract
++Write report to: `C:\Users\ASUS\Documents\ALIFKA\PROJECT\whatstheword\.superpowers\sdd\2026-09-02-whatstheword-implementation\task-2-report.md`
++Return: status (DONE / BLOCKED), commits, one-line test summary.
+diff --git a/client/src/data/defaultWordPacks.ts b/client/src/data/defaultWordPacks.ts
+new file mode 100644
+index 0000000..2b5ff0c
+--- /dev/null
++++ b/client/src/data/defaultWordPacks.ts
+@@ -0,0 +1,145 @@
++import { WordPair, WordPack } from '../types/game.types';
++
++export const CATEGORIES = [
++  'Semua Kategori',
++  'Makanan & Minuman',
++  'Hewan',
++  'Benda & Gadget',
++  'Tempat & Hiburan',
++  'Profesi',
++] as const;
++
++export type WordCategory = (typeof CATEGORIES)[number];
++
++export const DEFAULT_WORD_PAIRS: WordPair[] = [
++  // 1. Makanan & Minuman (14 pairs)
++  { id: 'mkn-01', category: 'Makanan & Minuman', civilianWord: 'Kopi', undercoverWord: 'Teh' },
++  { id: 'mkn-02', category: 'Makanan & Minuman', civilianWord: 'Bakso', undercoverWord: 'Mie Ayam' },
++  { id: 'mkn-03', category: 'Makanan & Minuman', civilianWord: 'Rendang', undercoverWord: 'Gulai' },
++  { id: 'mkn-04', category: 'Makanan & Minuman', civilianWord: 'Martabak Manis', undercoverWord: 'Terang Bulan' },
++  { id: 'mkn-05', category: 'Makanan & Minuman', civilianWord: 'Nasi Padang', undercoverWord: 'Nasi Uduk' },
++  { id: 'mkn-06', category: 'Makanan & Minuman', civilianWord: 'Nasi Goreng', undercoverWord: 'Mie Goreng' },
++  { id: 'mkn-07', category: 'Makanan & Minuman', civilianWord: 'Es Kelapa', undercoverWord: 'Es Cendol' },
++  { id: 'mkn-08', category: 'Makanan & Minuman', civilianWord: 'Sate Ayam', undercoverWord: 'Sate Kambing' },
++  { id: 'mkn-09', category: 'Makanan & Minuman', civilianWord: 'Pempek', undercoverWord: 'Siomay' },
++  { id: 'mkn-10', category: 'Makanan & Minuman', civilianWord: 'Roti Bakar', undercoverWord: 'Pisang Bakar' },
++  { id: 'mkn-11', category: 'Makanan & Minuman', civilianWord: 'Soto Ayam', undercoverWord: 'Rawon' },
++  { id: 'mkn-12', category: 'Makanan & Minuman', civilianWord: 'Jus Alpukat', undercoverWord: 'Jus Mangga' },
++  { id: 'mkn-13', category: 'Makanan & Minuman', civilianWord: 'Kerupuk', undercoverWord: 'Keripik' },
++  { id: 'mkn-14', category: 'Makanan & Minuman', civilianWord: 'Sambal Terasi', undercoverWord: 'Sambal Matah' },
++
++  // 2. Hewan (13 pairs)
++  { id: 'hwn-01', category: 'Hewan', civilianWord: 'Kucing', undercoverWord: 'Harimau' },
++  { id: 'hwn-02', category: 'Hewan', civilianWord: 'Bebek', undercoverWord: 'Ayam' },
++  { id: 'hwn-03', category: 'Hewan', civilianWord: 'Paus', undercoverWord: 'Lumba-lumba' },
++  { id: 'hwn-04', category: 'Hewan', civilianWord: 'Elang', undercoverWord: 'Burung Hantu' },
++  { id: 'hwn-05', category: 'Hewan', civilianWord: 'Kelinci', undercoverWord: 'Hamster' },
++  { id: 'hwn-06', category: 'Hewan', civilianWord: 'Singa', undercoverWord: 'Macan Tutul' },
++  { id: 'hwn-07', category: 'Hewan', civilianWord: 'Gajah', undercoverWord: 'Badak' },
++  { id: 'hwn-08', category: 'Hewan', civilianWord: 'Buaya', undercoverWord: 'Alligator' },
++  { id: 'hwn-09', category: 'Hewan', civilianWord: 'Kuda', undercoverWord: 'Keledai' },
++  { id: 'hwn-10', category: 'Hewan', civilianWord: 'Kupu-kupu', undercoverWord: 'Capung' },
++  { id: 'hwn-11', category: 'Hewan', civilianWord: 'Lebah', undercoverWord: 'Tawon' },
++  { id: 'hwn-12', category: 'Hewan', civilianWord: 'Hiu', undercoverWord: 'Ikan Pari' },
++  { id: 'hwn-13', category: 'Hewan', civilianWord: 'Beruang', undercoverWord: 'Panda' },
++
++  // 3. Benda & Gadget (13 pairs)
++  { id: 'bnd-01', category: 'Benda & Gadget', civilianWord: 'Laptop', undercoverWord: 'Komputer' },
++  { id: 'bnd-02', category: 'Benda & Gadget', civilianWord: 'Smartphone', undercoverWord: 'Tablet' },
++  { id: 'bnd-03', category: 'Benda & Gadget', civilianWord: 'Headphone', undercoverWord: 'Earphone' },
++  { id: 'bnd-04', category: 'Benda & Gadget', civilianWord: 'Kipas Angin', undercoverWord: 'AC' },
++  { id: 'bnd-05', category: 'Benda & Gadget', civilianWord: 'Jam Tangan', undercoverWord: 'Jam Dinding' },
++  { id: 'bnd-06', category: 'Benda & Gadget', civilianWord: 'Televisi', undercoverWord: 'Proyektor' },
++  { id: 'bnd-07', category: 'Benda & Gadget', civilianWord: 'Sepeda', undercoverWord: 'Motor' },
++  { id: 'bnd-08', category: 'Benda & Gadget', civilianWord: 'Kacamata', undercoverWord: 'Lensa Kontak' },
++  { id: 'bnd-09', category: 'Benda & Gadget', civilianWord: 'Dompet', undercoverWord: 'Tas' },
++  { id: 'bnd-10', category: 'Benda & Gadget', civilianWord: 'Pulpen', undercoverWord: 'Pensil' },
++  { id: 'bnd-11', category: 'Benda & Gadget', civilianWord: 'Payung', undercoverWord: 'Jas Hujan' },
++  { id: 'bnd-12', category: 'Benda & Gadget', civilianWord: 'Senter', undercoverWord: 'Lilin' },
++  { id: 'bnd-13', category: 'Benda & Gadget', civilianWord: 'Pintu', undercoverWord: 'Jendela' },
++
++  // 4. Tempat & Hiburan (12 pairs)
++  { id: 'tmp-01', category: 'Tempat & Hiburan', civilianWord: 'Bioskop', undercoverWord: 'Teater' },
++  { id: 'tmp-02', category: 'Tempat & Hiburan', civilianWord: 'Pantai', undercoverWord: 'Danau' },
++  { id: 'tmp-03', category: 'Tempat & Hiburan', civilianWord: 'Supermarket', undercoverWord: 'Pasar Tradisional' },
++  { id: 'tmp-04', category: 'Tempat & Hiburan', civilianWord: 'Museum', undercoverWord: 'Perpustakaan' },
++  { id: 'tmp-05', category: 'Tempat & Hiburan', civilianWord: 'Hotel', undercoverWord: 'Villa' },
++  { id: 'tmp-06', category: 'Tempat & Hiburan', civilianWord: 'Taman Hiburan', undercoverWord: 'Kebun Binatang' },
++  { id: 'tmp-07', category: 'Tempat & Hiburan', civilianWord: 'Restoran', undercoverWord: 'Kafe' },
++  { id: 'tmp-08', category: 'Tempat & Hiburan', civilianWord: 'Rumah Sakit', undercoverWord: 'Puskesmas' },
++  { id: 'tmp-09', category: 'Tempat & Hiburan', civilianWord: 'Bandara', undercoverWord: 'Stasiun Kereta' },
++  { id: 'tmp-10', category: 'Tempat & Hiburan', civilianWord: 'Kolam Renang', undercoverWord: 'Waterpark' },
++  { id: 'tmp-11', category: 'Tempat & Hiburan', civilianWord: 'Gunung', undercoverWord: 'Bukit' },
++  { id: 'tmp-12', category: 'Tempat & Hiburan', civilianWord: 'Mall', undercoverWord: 'Pasar Malam' },
++
++  // 5. Profesi (12 pairs)
++  { id: 'prf-01', category: 'Profesi', civilianWord: 'Dokter', undercoverWord: 'Perawat' },
++  { id: 'prf-02', category: 'Profesi', civilianWord: 'Pilot', undercoverWord: 'Masinis' },
++  { id: 'prf-03', category: 'Profesi', civilianWord: 'Polisi', undercoverWord: 'Tentara' },
++  { id: 'prf-04', category: 'Profesi', civilianWord: 'Koki', undercoverWord: 'Barista' },
++  { id: 'prf-05', category: 'Profesi', civilianWord: 'Guru', undercoverWord: 'Dosen' },
++  { id: 'prf-06', category: 'Profesi', civilianWord: 'Pemadam Kebakaran', undercoverWord: 'Tim SAR' },
++  { id: 'prf-07', category: 'Profesi', civilianWord: 'Arsitek', undercoverWord: 'Insinyur' },
++  { id: 'prf-08', category: 'Profesi', civilianWord: 'Hakim', undercoverWord: 'Pengacara' },
++  { id: 'prf-09', category: 'Profesi', civilianWord: 'Wartawan', undercoverWord: 'Fotografer' },
++  { id: 'prf-10', category: 'Profesi', civilianWord: 'Pramugari', undercoverWord: 'Resepsionis' },
++  { id: 'prf-11', category: 'Profesi', civilianWord: 'Sopir Bus', undercoverWord: 'Supir Taksi' },
++  { id: 'prf-12', category: 'Profesi', civilianWord: 'Aktor', undercoverWord: 'Penyanyi' },
++];
++
++export const DEFAULT_WORD_PACKS: WordPack[] = [
++  {
++    id: 'pack-makanan',
++    name: 'Makanan & Minuman Indonesia',
++    category: 'Makanan & Minuman',
++    description: 'Kuliner populer, jajanan pasar, dan minuman khas Indonesia',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Makanan & Minuman'),
++  },
++  {
++    id: 'pack-hewan',
++    name: 'Dunia Hewan',
++    category: 'Hewan',
++    description: 'Fauna darat, air, udara, dan hewan peliharaan',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Hewan'),
++  },
++  {
++    id: 'pack-gadget',
++    name: 'Benda & Gadget',
++    category: 'Benda & Gadget',
++    description: 'Peralatan elektronik, perabotan rumah tangga, dan teknologi',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Benda & Gadget'),
++  },
++  {
++    id: 'pack-tempat',
++    name: 'Tempat & Hiburan',
++    category: 'Tempat & Hiburan',
++    description: 'Destinasi wisata, fasilitas publik, dan tempat rekreasi',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Tempat & Hiburan'),
++  },
++  {
++    id: 'pack-profesi',
++    name: 'Profesi & Pekerjaan',
++    category: 'Profesi',
++    description: 'Karier, pekerjaan umum, dan tenaga profesional',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Profesi'),
++  },
++];
++
++export function getWordPairsByCategory(category?: string): WordPair[] {
++  if (!category || category === 'Semua Kategori') {
++    return DEFAULT_WORD_PAIRS;
++  }
++  const filtered = DEFAULT_WORD_PAIRS.filter((wp) => wp.category.toLowerCase() === category.toLowerCase());
++  return filtered.length > 0 ? filtered : DEFAULT_WORD_PAIRS;
++}
++
++export function getRandomWordPair(category?: string): WordPair {
++  const pool = getWordPairsByCategory(category);
++  const randomIndex = Math.floor(Math.random() * pool.length);
++  return pool[randomIndex];
++}
+diff --git a/client/src/utils/fuzzyMatcher.ts b/client/src/utils/fuzzyMatcher.ts
+new file mode 100644
+index 0000000..11b6acf
+--- /dev/null
++++ b/client/src/utils/fuzzyMatcher.ts
+@@ -0,0 +1,114 @@
++export interface FuzzyMatchOptions {
++  maxDistance?: number;
++}
++
++/**
++ * Normalizes text for Indonesian language matching:
++ * - Converts to lowercase
++ * - Strips punctuation and special characters
++ * - Normalizes whitespace
++ */
++export function normalizeText(text: string): string {
++  if (!text) return '';
++  return text
++    .toLowerCase()
++    .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'<>@+\\|[\]]/g, '')
++    .replace(/\s+/g, ' ')
++    .trim();
++}
++
++/**
++ * Calculates the Levenshtein distance between two strings.
++ */
++export function levenshteinDistance(a: string, b: string): number {
++  const m = a.length;
++  const n = b.length;
++
++  if (m === 0) return n;
++  if (n === 0) return m;
++
++  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
++
++  for (let i = 0; i <= m; i++) {
++    dp[i][0] = i;
++  }
++  for (let j = 0; j <= n; j++) {
++    dp[0][j] = j;
++  }
++
++  for (let i = 1; i <= m; i++) {
++    for (let j = 1; j <= n; j++) {
++      if (a[i - 1] === b[j - 1]) {
++        dp[i][j] = dp[i - 1][j - 1];
++      } else {
++        dp[i][j] = Math.min(
++          dp[i - 1][j] + 1,     // deletion
++          dp[i][j - 1] + 1,     // insertion
++          dp[i - 1][j - 1] + 1  // substitution
++        );
++      }
++    }
++  }
++
++  return dp[m][n];
++}
++
++/**
++ * Determines whether guessed string is a fuzzy match for target string.
++ * Default rule:
++ * - Length < 4: exact match (tolerance 0)
++ * - Length 4-7: tolerance <= 1
++ * - Length > 7: tolerance <= 2
++ */
++export function isFuzzyMatch(
++  guessed: string,
++  target: string,
++  options?: FuzzyMatchOptions
++): boolean {
++  const normalizedGuessed = normalizeText(guessed);
++  const normalizedTarget = normalizeText(target);
++
++  if (normalizedGuessed === normalizedTarget) {
++    return true;
++  }
++
++  if (!normalizedGuessed || !normalizedTarget) {
++    return false;
++  }
++
++  const lenGuessed = normalizedGuessed.length;
++  const lenTarget = normalizedTarget.length;
++  let tolerance = 0;
++
++  if (options && options.maxDistance !== undefined) {
++    tolerance = options.maxDistance;
++  } else {
++    const minLength = Math.min(lenGuessed, lenTarget);
++    const maxLength = Math.max(lenGuessed, lenTarget);
++
++    if (minLength < 4) {
++      tolerance = 0;
++    } else if (maxLength <= 7) {
++      tolerance = 1;
++    } else {
++      tolerance = 2;
++    }
++  }
++
++  const distance = levenshteinDistance(normalizedGuessed, normalizedTarget);
++  return distance <= tolerance;
++}
++
++export class FuzzyMatcher {
++  static isMatch(guessed: string, target: string, options?: FuzzyMatchOptions): boolean {
++    return isFuzzyMatch(guessed, target, options);
++  }
++
++  static distance(a: string, b: string): number {
++    return levenshteinDistance(normalizeText(a), normalizeText(b));
++  }
++
++  static normalize(text: string): string {
++    return normalizeText(text);
++  }
++}
+diff --git a/client/src/utils/gameEngine.ts b/client/src/utils/gameEngine.ts
+new file mode 100644
+index 0000000..94bd3d0
+--- /dev/null
++++ b/client/src/utils/gameEngine.ts
+@@ -0,0 +1,207 @@
++import { Player, GameSettings, WordPair, PlayerRole } from '../types/game.types';
++
++export interface RoleAssignmentResult {
++  players: Player[];
++  speakingOrder: string[];
++}
++
++export interface VoteCalculationResult {
++  isTie: boolean;
++  eliminatedPlayerId: string | null;
++  voteCounts: Record<string, number>;
++}
++
++/**
++ * Shuffles an array in-place using Fisher-Yates algorithm and returns a new shuffled array.
++ */
++export function shuffleArray<T>(array: readonly T[]): T[] {
++  const result = [...array];
++  for (let i = result.length - 1; i > 0; i--) {
++    const j = Math.floor(Math.random() * (i + 1));
++    [result[i], result[j]] = [result[j], result[i]];
++  }
++  return result;
++}
++
++/**
++ * Assigns roles and words to all players according to room settings and selected word pair.
++ */
++export function assignRoles(
++  players: Player[],
++  settings: GameSettings,
++  wordPair: WordPair
++): RoleAssignmentResult {
++  const totalPlayers = players.length;
++  const undercoverCount = settings.undercoverCount || 0;
++  const mrWhiteCount = settings.enableMrWhite ? (settings.mrWhiteCount || 0) : 0;
++  const civilianCount = totalPlayers - undercoverCount - mrWhiteCount;
++
++  if (civilianCount < 1 || undercoverCount < 1 || totalPlayers < (undercoverCount + mrWhiteCount + 1)) {
++    throw new Error(
++      `Invalid role configuration: ${totalPlayers} players is insufficient for ${civilianCount} Civilians, ${undercoverCount} Undercovers, and ${mrWhiteCount} Mr. White.`
++    );
++  }
++
++  const rolePool: PlayerRole[] = [
++    ...Array(undercoverCount).fill('UNDERCOVER' as PlayerRole),
++    ...Array(mrWhiteCount).fill('MR_WHITE' as PlayerRole),
++    ...Array(civilianCount).fill('CIVILIAN' as PlayerRole),
++  ];
++
++  const shuffledRoles = shuffleArray(rolePool);
++
++  const assignedPlayers: Player[] = players.map((player, index) => {
++    const role = shuffledRoles[index];
++    let word = '';
++
++    if (role === 'CIVILIAN') {
++      word = wordPair.civilianWord;
++    } else if (role === 'UNDERCOVER') {
++      word = wordPair.undercoverWord;
++    } else if (role === 'MR_WHITE') {
++      word = '';
++    }
++
++    return {
++      ...player,
++      role,
++      word,
++      isAlive: true,
++      hasVoted: false,
++      votedTargetId: undefined,
++      isSpeaking: false,
++    };
++  });
++
++  const speakingOrder = shuffleArray(assignedPlayers.map((p) => p.id));
++
++  return {
++    players: assignedPlayers,
++    speakingOrder,
++  };
++}
++
++/**
++ * Calculates the tally of votes for active players.
++ * If 2 or more candidates have the same highest votes, returns isTie = true (Instant Skip rule).
++ */
++export function calculateVotes(
++  votes: Record<string, string>,
++  activePlayers: Player[]
++): VoteCalculationResult {
++  const alivePlayers = activePlayers.filter((p) => p.isAlive);
++  const aliveIds = new Set(alivePlayers.map((p) => p.id));
++
++  const voteCounts: Record<string, number> = {};
++  alivePlayers.forEach((p) => {
++    voteCounts[p.id] = 0;
++  });
++
++  Object.entries(votes).forEach(([voterId, targetId]) => {
++    if (aliveIds.has(voterId) && aliveIds.has(targetId)) {
++      voteCounts[targetId] = (voteCounts[targetId] || 0) + 1;
++    }
++  });
++
++  const totalVotesCast = Object.values(voteCounts).reduce((sum, count) => sum + count, 0);
++
++  if (totalVotesCast === 0) {
++    return {
++      isTie: true,
++      eliminatedPlayerId: null,
++      voteCounts,
++    };
++  }
++
++  const maxVotes = Math.max(...Object.values(voteCounts));
++
++  if (maxVotes === 0) {
++    return {
++      isTie: true,
++      eliminatedPlayerId: null,
++      voteCounts,
++    };
++  }
++
++  const topCandidates = Object.keys(voteCounts).filter(
++    (playerId) => voteCounts[playerId] === maxVotes
++  );
++
++  if (topCandidates.length === 1) {
++    return {
++      isTie: false,
++      eliminatedPlayerId: topCandidates[0],
++      voteCounts,
++    };
++  }
++
++  // Instant Skip on Tie
++  return {
++    isTie: true,
++    eliminatedPlayerId: null,
++    voteCounts,
++  };
++}
++
++/**
++ * Checks whether any team has achieved victory.
++ * Returns: 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE' | null
++ */
++export function checkWinCondition(players: Player[]): 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE' | null {
++  const alive = players.filter((p) => p.isAlive);
++  const aliveCivilians = alive.filter((p) => p.role === 'CIVILIAN').length;
++  const aliveUndercovers = alive.filter((p) => p.role === 'UNDERCOVER').length;
++  const aliveMrWhites = alive.filter((p) => p.role === 'MR_WHITE').length;
++  const totalAlive = alive.length;
++
++  // 1. Civilian Victory: All Undercovers and Mr. Whites are eliminated
++  if (aliveCivilians > 0 && aliveUndercovers === 0 && aliveMrWhites === 0) {
++    return 'CIVILIAN';
++  }
++
++  // 2. Mr. White Victory: Survives to the final 2 players
++  if (aliveMrWhites > 0 && totalAlive <= 2) {
++    return 'MR_WHITE';
++  }
++
++  // 3. Undercover Victory: Alive Undercovers >= Alive Civilians
++  if (aliveUndercovers > 0 && aliveUndercovers >= aliveCivilians) {
++    return 'UNDERCOVER';
++  }
++
++  // 4. All civilians eliminated fallback
++  if (aliveCivilians === 0) {
++    if (aliveUndercovers > 0) return 'UNDERCOVER';
++    if (aliveMrWhites > 0) return 'MR_WHITE';
++  }
++
++  // Game continues
++  return null;
++}
++
++export class GameEngine {
++  static assignRoles(
++    players: Player[],
++    settings: GameSettings,
++    wordPair: WordPair
++  ): RoleAssignmentResult {
++    return assignRoles(players, settings, wordPair);
++  }
++
++  static calculateVotes(
++    votes: Record<string, string>,
++    activePlayers: Player[]
++  ): VoteCalculationResult {
++    return calculateVotes(votes, activePlayers);
++  }
++
++  static checkWinCondition(
++    players: Player[]
++  ): 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE' | null {
++    return checkWinCondition(players);
++  }
++
++  static shuffle<T>(array: readonly T[]): T[] {
++    return shuffleArray(array);
++  }
++}
+diff --git a/server/src/data/defaultWordPacks.ts b/server/src/data/defaultWordPacks.ts
+new file mode 100644
+index 0000000..7489c80
+--- /dev/null
++++ b/server/src/data/defaultWordPacks.ts
+@@ -0,0 +1,145 @@
++import { WordPair, WordPack } from '../types/game.types.js';
++
++export const CATEGORIES = [
++  'Semua Kategori',
++  'Makanan & Minuman',
++  'Hewan',
++  'Benda & Gadget',
++  'Tempat & Hiburan',
++  'Profesi',
++] as const;
++
++export type WordCategory = (typeof CATEGORIES)[number];
++
++export const DEFAULT_WORD_PAIRS: WordPair[] = [
++  // 1. Makanan & Minuman (14 pairs)
++  { id: 'mkn-01', category: 'Makanan & Minuman', civilianWord: 'Kopi', undercoverWord: 'Teh' },
++  { id: 'mkn-02', category: 'Makanan & Minuman', civilianWord: 'Bakso', undercoverWord: 'Mie Ayam' },
++  { id: 'mkn-03', category: 'Makanan & Minuman', civilianWord: 'Rendang', undercoverWord: 'Gulai' },
++  { id: 'mkn-04', category: 'Makanan & Minuman', civilianWord: 'Martabak Manis', undercoverWord: 'Terang Bulan' },
++  { id: 'mkn-05', category: 'Makanan & Minuman', civilianWord: 'Nasi Padang', undercoverWord: 'Nasi Uduk' },
++  { id: 'mkn-06', category: 'Makanan & Minuman', civilianWord: 'Nasi Goreng', undercoverWord: 'Mie Goreng' },
++  { id: 'mkn-07', category: 'Makanan & Minuman', civilianWord: 'Es Kelapa', undercoverWord: 'Es Cendol' },
++  { id: 'mkn-08', category: 'Makanan & Minuman', civilianWord: 'Sate Ayam', undercoverWord: 'Sate Kambing' },
++  { id: 'mkn-09', category: 'Makanan & Minuman', civilianWord: 'Pempek', undercoverWord: 'Siomay' },
++  { id: 'mkn-10', category: 'Makanan & Minuman', civilianWord: 'Roti Bakar', undercoverWord: 'Pisang Bakar' },
++  { id: 'mkn-11', category: 'Makanan & Minuman', civilianWord: 'Soto Ayam', undercoverWord: 'Rawon' },
++  { id: 'mkn-12', category: 'Makanan & Minuman', civilianWord: 'Jus Alpukat', undercoverWord: 'Jus Mangga' },
++  { id: 'mkn-13', category: 'Makanan & Minuman', civilianWord: 'Kerupuk', undercoverWord: 'Keripik' },
++  { id: 'mkn-14', category: 'Makanan & Minuman', civilianWord: 'Sambal Terasi', undercoverWord: 'Sambal Matah' },
++
++  // 2. Hewan (13 pairs)
++  { id: 'hwn-01', category: 'Hewan', civilianWord: 'Kucing', undercoverWord: 'Harimau' },
++  { id: 'hwn-02', category: 'Hewan', civilianWord: 'Bebek', undercoverWord: 'Ayam' },
++  { id: 'hwn-03', category: 'Hewan', civilianWord: 'Paus', undercoverWord: 'Lumba-lumba' },
++  { id: 'hwn-04', category: 'Hewan', civilianWord: 'Elang', undercoverWord: 'Burung Hantu' },
++  { id: 'hwn-05', category: 'Hewan', civilianWord: 'Kelinci', undercoverWord: 'Hamster' },
++  { id: 'hwn-06', category: 'Hewan', civilianWord: 'Singa', undercoverWord: 'Macan Tutul' },
++  { id: 'hwn-07', category: 'Hewan', civilianWord: 'Gajah', undercoverWord: 'Badak' },
++  { id: 'hwn-08', category: 'Hewan', civilianWord: 'Buaya', undercoverWord: 'Alligator' },
++  { id: 'hwn-09', category: 'Hewan', civilianWord: 'Kuda', undercoverWord: 'Keledai' },
++  { id: 'hwn-10', category: 'Hewan', civilianWord: 'Kupu-kupu', undercoverWord: 'Capung' },
++  { id: 'hwn-11', category: 'Hewan', civilianWord: 'Lebah', undercoverWord: 'Tawon' },
++  { id: 'hwn-12', category: 'Hewan', civilianWord: 'Hiu', undercoverWord: 'Ikan Pari' },
++  { id: 'hwn-13', category: 'Hewan', civilianWord: 'Beruang', undercoverWord: 'Panda' },
++
++  // 3. Benda & Gadget (13 pairs)
++  { id: 'bnd-01', category: 'Benda & Gadget', civilianWord: 'Laptop', undercoverWord: 'Komputer' },
++  { id: 'bnd-02', category: 'Benda & Gadget', civilianWord: 'Smartphone', undercoverWord: 'Tablet' },
++  { id: 'bnd-03', category: 'Benda & Gadget', civilianWord: 'Headphone', undercoverWord: 'Earphone' },
++  { id: 'bnd-04', category: 'Benda & Gadget', civilianWord: 'Kipas Angin', undercoverWord: 'AC' },
++  { id: 'bnd-05', category: 'Benda & Gadget', civilianWord: 'Jam Tangan', undercoverWord: 'Jam Dinding' },
++  { id: 'bnd-06', category: 'Benda & Gadget', civilianWord: 'Televisi', undercoverWord: 'Proyektor' },
++  { id: 'bnd-07', category: 'Benda & Gadget', civilianWord: 'Sepeda', undercoverWord: 'Motor' },
++  { id: 'bnd-08', category: 'Benda & Gadget', civilianWord: 'Kacamata', undercoverWord: 'Lensa Kontak' },
++  { id: 'bnd-09', category: 'Benda & Gadget', civilianWord: 'Dompet', undercoverWord: 'Tas' },
++  { id: 'bnd-10', category: 'Benda & Gadget', civilianWord: 'Pulpen', undercoverWord: 'Pensil' },
++  { id: 'bnd-11', category: 'Benda & Gadget', civilianWord: 'Payung', undercoverWord: 'Jas Hujan' },
++  { id: 'bnd-12', category: 'Benda & Gadget', civilianWord: 'Senter', undercoverWord: 'Lilin' },
++  { id: 'bnd-13', category: 'Benda & Gadget', civilianWord: 'Pintu', undercoverWord: 'Jendela' },
++
++  // 4. Tempat & Hiburan (12 pairs)
++  { id: 'tmp-01', category: 'Tempat & Hiburan', civilianWord: 'Bioskop', undercoverWord: 'Teater' },
++  { id: 'tmp-02', category: 'Tempat & Hiburan', civilianWord: 'Pantai', undercoverWord: 'Danau' },
++  { id: 'tmp-03', category: 'Tempat & Hiburan', civilianWord: 'Supermarket', undercoverWord: 'Pasar Tradisional' },
++  { id: 'tmp-04', category: 'Tempat & Hiburan', civilianWord: 'Museum', undercoverWord: 'Perpustakaan' },
++  { id: 'tmp-05', category: 'Tempat & Hiburan', civilianWord: 'Hotel', undercoverWord: 'Villa' },
++  { id: 'tmp-06', category: 'Tempat & Hiburan', civilianWord: 'Taman Hiburan', undercoverWord: 'Kebun Binatang' },
++  { id: 'tmp-07', category: 'Tempat & Hiburan', civilianWord: 'Restoran', undercoverWord: 'Kafe' },
++  { id: 'tmp-08', category: 'Tempat & Hiburan', civilianWord: 'Rumah Sakit', undercoverWord: 'Puskesmas' },
++  { id: 'tmp-09', category: 'Tempat & Hiburan', civilianWord: 'Bandara', undercoverWord: 'Stasiun Kereta' },
++  { id: 'tmp-10', category: 'Tempat & Hiburan', civilianWord: 'Kolam Renang', undercoverWord: 'Waterpark' },
++  { id: 'tmp-11', category: 'Tempat & Hiburan', civilianWord: 'Gunung', undercoverWord: 'Bukit' },
++  { id: 'tmp-12', category: 'Tempat & Hiburan', civilianWord: 'Mall', undercoverWord: 'Pasar Malam' },
++
++  // 5. Profesi (12 pairs)
++  { id: 'prf-01', category: 'Profesi', civilianWord: 'Dokter', undercoverWord: 'Perawat' },
++  { id: 'prf-02', category: 'Profesi', civilianWord: 'Pilot', undercoverWord: 'Masinis' },
++  { id: 'prf-03', category: 'Profesi', civilianWord: 'Polisi', undercoverWord: 'Tentara' },
++  { id: 'prf-04', category: 'Profesi', civilianWord: 'Koki', undercoverWord: 'Barista' },
++  { id: 'prf-05', category: 'Profesi', civilianWord: 'Guru', undercoverWord: 'Dosen' },
++  { id: 'prf-06', category: 'Profesi', civilianWord: 'Pemadam Kebakaran', undercoverWord: 'Tim SAR' },
++  { id: 'prf-07', category: 'Profesi', civilianWord: 'Arsitek', undercoverWord: 'Insinyur' },
++  { id: 'prf-08', category: 'Profesi', civilianWord: 'Hakim', undercoverWord: 'Pengacara' },
++  { id: 'prf-09', category: 'Profesi', civilianWord: 'Wartawan', undercoverWord: 'Fotografer' },
++  { id: 'prf-10', category: 'Profesi', civilianWord: 'Pramugari', undercoverWord: 'Resepsionis' },
++  { id: 'prf-11', category: 'Profesi', civilianWord: 'Sopir Bus', undercoverWord: 'Supir Taksi' },
++  { id: 'prf-12', category: 'Profesi', civilianWord: 'Aktor', undercoverWord: 'Penyanyi' },
++];
++
++export const DEFAULT_WORD_PACKS: WordPack[] = [
++  {
++    id: 'pack-makanan',
++    name: 'Makanan & Minuman Indonesia',
++    category: 'Makanan & Minuman',
++    description: 'Kuliner populer, jajanan pasar, dan minuman khas Indonesia',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Makanan & Minuman'),
++  },
++  {
++    id: 'pack-hewan',
++    name: 'Dunia Hewan',
++    category: 'Hewan',
++    description: 'Fauna darat, air, udara, dan hewan peliharaan',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Hewan'),
++  },
++  {
++    id: 'pack-gadget',
++    name: 'Benda & Gadget',
++    category: 'Benda & Gadget',
++    description: 'Peralatan elektronik, perabotan rumah tangga, dan teknologi',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Benda & Gadget'),
++  },
++  {
++    id: 'pack-tempat',
++    name: 'Tempat & Hiburan',
++    category: 'Tempat & Hiburan',
++    description: 'Destinasi wisata, fasilitas publik, dan tempat rekreasi',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Tempat & Hiburan'),
++  },
++  {
++    id: 'pack-profesi',
++    name: 'Profesi & Pekerjaan',
++    category: 'Profesi',
++    description: 'Karier, pekerjaan umum, dan tenaga profesional',
++    isOfficial: true,
++    wordPairs: DEFAULT_WORD_PAIRS.filter((wp) => wp.category === 'Profesi'),
++  },
++];
++
++export function getWordPairsByCategory(category?: string): WordPair[] {
++  if (!category || category === 'Semua Kategori') {
++    return DEFAULT_WORD_PAIRS;
++  }
++  const filtered = DEFAULT_WORD_PAIRS.filter((wp) => wp.category.toLowerCase() === category.toLowerCase());
++  return filtered.length > 0 ? filtered : DEFAULT_WORD_PAIRS;
++}
++
++export function getRandomWordPair(category?: string): WordPair {
++  const pool = getWordPairsByCategory(category);
++  const randomIndex = Math.floor(Math.random() * pool.length);
++  return pool[randomIndex];
++}
+diff --git a/server/src/engine/FuzzyMatcher.ts b/server/src/engine/FuzzyMatcher.ts
+new file mode 100644
+index 0000000..da97441
+--- /dev/null
++++ b/server/src/engine/FuzzyMatcher.ts
+@@ -0,0 +1,115 @@
++export interface FuzzyMatchOptions {
++  maxDistance?: number;
++}
++
++/**
++ * Normalizes text for Indonesian language matching:
++ * - Converts to lowercase
++ * - Strips punctuation and special characters
++ * - Normalizes whitespace
++ */
++export function normalizeText(text: string): string {
++  if (!text) return '';
++  return text
++    .toLowerCase()
++    .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'<>@+\\|[\]]/g, '')
++    .replace(/\s+/g, ' ')
++    .trim();
++}
++
++/**
++ * Calculates the Levenshtein distance between two strings.
++ */
++export function levenshteinDistance(a: string, b: string): number {
++  const m = a.length;
++  const n = b.length;
++
++  if (m === 0) return n;
++  if (n === 0) return m;
++
++  // Single or double row optimization for memory efficiency
++  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
++
++  for (let i = 0; i <= m; i++) {
++    dp[i][0] = i;
++  }
++  for (let j = 0; j <= n; j++) {
++    dp[0][j] = j;
++  }
++
++  for (let i = 1; i <= m; i++) {
++    for (let j = 1; j <= n; j++) {
++      if (a[i - 1] === b[j - 1]) {
++        dp[i][j] = dp[i - 1][j - 1];
++      } else {
++        dp[i][j] = Math.min(
++          dp[i - 1][j] + 1,     // deletion
++          dp[i][j - 1] + 1,     // insertion
++          dp[i - 1][j - 1] + 1  // substitution
++        );
++      }
++    }
++  }
++
++  return dp[m][n];
++}
++
++/**
++ * Determines whether guessed string is a fuzzy match for target string.
++ * Default rule:
++ * - Length < 4: exact match (tolerance 0)
++ * - Length 4-7: tolerance <= 1
++ * - Length > 7: tolerance <= 2
++ */
++export function isFuzzyMatch(
++  guessed: string,
++  target: string,
++  options?: FuzzyMatchOptions
++): boolean {
++  const normalizedGuessed = normalizeText(guessed);
++  const normalizedTarget = normalizeText(target);
++
++  if (normalizedGuessed === normalizedTarget) {
++    return true;
++  }
++
++  if (!normalizedGuessed || !normalizedTarget) {
++    return false;
++  }
++
++  const lenGuessed = normalizedGuessed.length;
++  const lenTarget = normalizedTarget.length;
++  let tolerance = 0;
++
++  if (options && options.maxDistance !== undefined) {
++    tolerance = options.maxDistance;
++  } else {
++    const minLength = Math.min(lenGuessed, lenTarget);
++    const maxLength = Math.max(lenGuessed, lenTarget);
++
++    if (minLength < 4) {
++      tolerance = 0;
++    } else if (maxLength <= 7) {
++      tolerance = 1;
++    } else {
++      tolerance = 2;
++    }
++  }
++
++  const distance = levenshteinDistance(normalizedGuessed, normalizedTarget);
++  return distance <= tolerance;
++}
++
++export class FuzzyMatcher {
++  static isMatch(guessed: string, target: string, options?: FuzzyMatchOptions): boolean {
++    return isFuzzyMatch(guessed, target, options);
++  }
++
++  static distance(a: string, b: string): number {
++    return levenshteinDistance(normalizeText(a), normalizeText(b));
++  }
++
++  static normalize(text: string): string {
++    return normalizeText(text);
++  }
++}
+diff --git a/server/src/engine/GameEngine.ts b/server/src/engine/GameEngine.ts
+new file mode 100644
+index 0000000..3ca95a4
+--- /dev/null
++++ b/server/src/engine/GameEngine.ts
+@@ -0,0 +1,207 @@
++import { Player, GameSettings, WordPair, PlayerRole } from '../types/game.types.js';
++
++export interface RoleAssignmentResult {
++  players: Player[];
++  speakingOrder: string[];
++}
++
++export interface VoteCalculationResult {
++  isTie: boolean;
++  eliminatedPlayerId: string | null;
++  voteCounts: Record<string, number>;
++}
++
++/**
++ * Shuffles an array in-place using Fisher-Yates algorithm and returns a new shuffled array.
++ */
++export function shuffleArray<T>(array: readonly T[]): T[] {
++  const result = [...array];
++  for (let i = result.length - 1; i > 0; i--) {
++    const j = Math.floor(Math.random() * (i + 1));
++    [result[i], result[j]] = [result[j], result[i]];
++  }
++  return result;
++}
++
++/**
++ * Assigns roles and words to all players according to room settings and selected word pair.
++ */
++export function assignRoles(
++  players: Player[],
++  settings: GameSettings,
++  wordPair: WordPair
++): RoleAssignmentResult {
++  const totalPlayers = players.length;
++  const undercoverCount = settings.undercoverCount || 0;
++  const mrWhiteCount = settings.enableMrWhite ? (settings.mrWhiteCount || 0) : 0;
++  const civilianCount = totalPlayers - undercoverCount - mrWhiteCount;
++
++  if (civilianCount < 1 || undercoverCount < 1 || totalPlayers < (undercoverCount + mrWhiteCount + 1)) {
++    throw new Error(
++      `Invalid role configuration: ${totalPlayers} players is insufficient for ${civilianCount} Civilians, ${undercoverCount} Undercovers, and ${mrWhiteCount} Mr. White.`
++    );
++  }
++
++  const rolePool: PlayerRole[] = [
++    ...Array(undercoverCount).fill('UNDERCOVER' as PlayerRole),
++    ...Array(mrWhiteCount).fill('MR_WHITE' as PlayerRole),
++    ...Array(civilianCount).fill('CIVILIAN' as PlayerRole),
++  ];
++
++  const shuffledRoles = shuffleArray(rolePool);
++
++  const assignedPlayers: Player[] = players.map((player, index) => {
++    const role = shuffledRoles[index];
++    let word = '';
++
++    if (role === 'CIVILIAN') {
++      word = wordPair.civilianWord;
++    } else if (role === 'UNDERCOVER') {
++      word = wordPair.undercoverWord;
++    } else if (role === 'MR_WHITE') {
++      word = '';
++    }
++
++    return {
++      ...player,
++      role,
++      word,
++      isAlive: true,
++      hasVoted: false,
++      votedTargetId: undefined,
++      isSpeaking: false,
++    };
++  });
++
++  const speakingOrder = shuffleArray(assignedPlayers.map((p) => p.id));
++
++  return {
++    players: assignedPlayers,
++    speakingOrder,
++  };
++}
++
++/**
++ * Calculates the tally of votes for active players.
++ * If 2 or more candidates have the same highest votes, returns isTie = true (Instant Skip rule).
++ */
++export function calculateVotes(
++  votes: Record<string, string>,
++  activePlayers: Player[]
++): VoteCalculationResult {
++  const alivePlayers = activePlayers.filter((p) => p.isAlive);
++  const aliveIds = new Set(alivePlayers.map((p) => p.id));
++
++  const voteCounts: Record<string, number> = {};
++  alivePlayers.forEach((p) => {
++    voteCounts[p.id] = 0;
++  });
++
++  Object.entries(votes).forEach(([voterId, targetId]) => {
++    if (aliveIds.has(voterId) && aliveIds.has(targetId)) {
++      voteCounts[targetId] = (voteCounts[targetId] || 0) + 1;
++    }
++  });
++
++  const totalVotesCast = Object.values(voteCounts).reduce((sum, count) => sum + count, 0);
++
++  if (totalVotesCast === 0) {
++    return {
++      isTie: true,
++      eliminatedPlayerId: null,
++      voteCounts,
++    };
++  }
++
++  const maxVotes = Math.max(...Object.values(voteCounts));
++
++  if (maxVotes === 0) {
++    return {
++      isTie: true,
++      eliminatedPlayerId: null,
++      voteCounts,
++    };
++  }
++
++  const topCandidates = Object.keys(voteCounts).filter(
++    (playerId) => voteCounts[playerId] === maxVotes
++  );
++
++  if (topCandidates.length === 1) {
++    return {
++      isTie: false,
++      eliminatedPlayerId: topCandidates[0],
++      voteCounts,
++    };
++  }
++
++  // Instant Skip on Tie
++  return {
++    isTie: true,
++    eliminatedPlayerId: null,
++    voteCounts,
++  };
++}
++
++/**
++ * Checks whether any team has achieved victory.
++ * Returns: 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE' | null
++ */
++export function checkWinCondition(players: Player[]): 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE' | null {
++  const alive = players.filter((p) => p.isAlive);
++  const aliveCivilians = alive.filter((p) => p.role === 'CIVILIAN').length;
++  const aliveUndercovers = alive.filter((p) => p.role === 'UNDERCOVER').length;
++  const aliveMrWhites = alive.filter((p) => p.role === 'MR_WHITE').length;
++  const totalAlive = alive.length;
++
++  // 1. Civilian Victory: All Undercovers and Mr. Whites are eliminated
++  if (aliveCivilians > 0 && aliveUndercovers === 0 && aliveMrWhites === 0) {
++    return 'CIVILIAN';
++  }
++
++  // 2. Mr. White Victory: Survives to the final 2 players
++  if (aliveMrWhites > 0 && totalAlive <= 2) {
++    return 'MR_WHITE';
++  }
++
++  // 3. Undercover Victory: Alive Undercovers >= Alive Civilians
++  if (aliveUndercovers > 0 && aliveUndercovers >= aliveCivilians) {
++    return 'UNDERCOVER';
++  }
++
++  // 4. All civilians eliminated fallback
++  if (aliveCivilians === 0) {
++    if (aliveUndercovers > 0) return 'UNDERCOVER';
++    if (aliveMrWhites > 0) return 'MR_WHITE';
++  }
++
++  // Game continues
++  return null;
++}
++
++export class GameEngine {
++  static assignRoles(
++    players: Player[],
++    settings: GameSettings,
++    wordPair: WordPair
++  ): RoleAssignmentResult {
++    return assignRoles(players, settings, wordPair);
++  }
++
++  static calculateVotes(
++    votes: Record<string, string>,
++    activePlayers: Player[]
++  ): VoteCalculationResult {
++    return calculateVotes(votes, activePlayers);
++  }
++
++  static checkWinCondition(
++    players: Player[]
++  ): 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE' | null {
++    return checkWinCondition(players);
++  }
++
++  static shuffle<T>(array: readonly T[]): T[] {
++    return shuffleArray(array);
++  }
++}
+diff --git a/server/tests/FuzzyMatcher.test.ts b/server/tests/FuzzyMatcher.test.ts
+new file mode 100644
+index 0000000..ed664e8
+--- /dev/null
++++ b/server/tests/FuzzyMatcher.test.ts
+@@ -0,0 +1,102 @@
++import { describe, it, expect } from 'vitest';
++import { FuzzyMatcher, isFuzzyMatch, levenshteinDistance, normalizeText } from '../src/engine/FuzzyMatcher.js';
++
++describe('FuzzyMatcher', () => {
++  describe('normalizeText', () => {
++    it('should convert text to lowercase and trim spaces', () => {
++      expect(normalizeText('  Kopi  ')).toBe('kopi');
++      expect(normalizeText('MIE AYAM')).toBe('mie ayam');
++    });
++
++    it('should remove punctuation and special characters', () => {
++      expect(normalizeText('kucing!')).toBe('kucing');
++      expect(normalizeText('lumba-lumba')).toBe('lumbalumba');
++      expect(normalizeText('teh, botol.')).toBe('teh botol');
++    });
++
++    it('should collapse multiple spaces into a single space', () => {
++      expect(normalizeText('mie   goreng   spesial')).toBe('mie goreng spesial');
++    });
++  });
++
++  describe('levenshteinDistance', () => {
++    it('should calculate distance 0 for identical strings', () => {
++      expect(levenshteinDistance('kopi', 'kopi')).toBe(0);
++      expect(levenshteinDistance('', '')).toBe(0);
++    });
++
++    it('should calculate distance for single edit operations', () => {
++      expect(levenshteinDistance('kopi', 'topi')).toBe(1); // substitution
++      expect(levenshteinDistance('kopi', 'kpi')).toBe(1);  // deletion
++      expect(levenshteinDistance('kopi', 'kopis')).toBe(1); // insertion
++    });
++
++    it('should calculate distance for complex differences', () => {
++      expect(levenshteinDistance('kitten', 'sitting')).toBe(3);
++      expect(levenshteinDistance('martabak', 'terangbulan')).toBe(8);
++    });
++  });
++
++  describe('isFuzzyMatch', () => {
++    describe('Short strings (length < 4): exact match only', () => {
++      it('should match exact strings regardless of casing and whitespace', () => {
++        expect(isFuzzyMatch('Teh', 'teh')).toBe(true);
++        expect(isFuzzyMatch('  AIR  ', 'air')).toBe(true);
++        expect(isFuzzyMatch('CAT', 'cat')).toBe(true);
++      });
++
++      it('should reject typos for words with length < 4', () => {
++        expect(isFuzzyMatch('Teh', 'Tek')).toBe(false);
++        expect(isFuzzyMatch('Air', 'Ait')).toBe(false);
++        expect(isFuzzyMatch('Bus', 'Bua')).toBe(false);
++      });
++    });
++
++    describe('Medium strings (length 4 - 7): tolerance <= 1', () => {
++      it('should match exact and 1-typo words', () => {
++        expect(isFuzzyMatch('Dokter', 'Dokter')).toBe(true);
++        expect(isFuzzyMatch('Dokter', 'Doktr')).toBe(true); // 1 deletion
++        expect(isFuzzyMatch('Dokter', 'Dotter')).toBe(true); // 1 substitution
++        expect(isFuzzyMatch('Kucing', 'Kucikg')).toBe(true); // 1 substitution
++        expect(isFuzzyMatch('Kucing', 'Kucingg')).toBe(true); // 1 insertion
++      });
++
++      it('should reject words with 2 or more typos', () => {
++        expect(isFuzzyMatch('Dokter', 'Dottxr')).toBe(false); // 2 edits
++        expect(isFuzzyMatch('Kucing', 'Kudang')).toBe(false); // 2 edits
++      });
++    });
++
++    describe('Long strings (length > 7): tolerance <= 2', () => {
++      it('should match exact and up to 2-typo words', () => {
++        expect(isFuzzyMatch('Perpustakaan', 'Perpustakaan')).toBe(true);
++        expect(isFuzzyMatch('Perpustakaan', 'Perpustkaan')).toBe(true); // 1 deletion
++        expect(isFuzzyMatch('Perpustakaan', 'Perpustkan')).toBe(true);  // 2 deletions
++        expect(isFuzzyMatch('Komputer', 'Komputr')).toBe(true);         // 1 deletion
++        expect(isFuzzyMatch('Komputer', 'Komputre')).toBe(true);        // 2 edits
++        expect(isFuzzyMatch('Komputer', 'Komptr')).toBe(true);          // 2 deletions
++        expect(isFuzzyMatch('Supermarket', 'Supermarkit')).toBe(true);  // 1 substitution
++      });
++
++      it('should reject words with 3 or more typos', () => {
++        expect(isFuzzyMatch('Perpustakaan', 'Perpus')).toBe(false); // > 2 edits
++        expect(isFuzzyMatch('Supermarket', 'Superminimart')).toBe(false);
++      });
++    });
++
++    describe('Custom maxDistance option', () => {
++      it('should respect custom maxDistance when provided', () => {
++        expect(isFuzzyMatch('Teh', 'Tek', { maxDistance: 1 })).toBe(true);
++        expect(isFuzzyMatch('Perpustakaan', 'Perpustkaan', { maxDistance: 0 })).toBe(false);
++      });
++    });
++
++    describe('FuzzyMatcher static class wrapper', () => {
++      it('should expose isMatch method identically', () => {
++        expect(FuzzyMatcher.isMatch('Bakso', 'Bakso')).toBe(true);
++        expect(FuzzyMatcher.isMatch('Bakso', 'Bakzo')).toBe(true);
++        expect(FuzzyMatcher.isMatch('Bakso', 'Gorengan')).toBe(false);
++      });
++    });
++  });
++});
+diff --git a/server/tests/GameEngine.test.ts b/server/tests/GameEngine.test.ts
+new file mode 100644
+index 0000000..31ffd8d
+--- /dev/null
++++ b/server/tests/GameEngine.test.ts
+@@ -0,0 +1,256 @@
++import { describe, it, expect } from 'vitest';
++import { GameEngine, assignRoles, calculateVotes, checkWinCondition } from '../src/engine/GameEngine.js';
++import { Player, GameSettings, WordPair } from '../src/types/game.types.js';
++
++describe('GameEngine', () => {
++  const sampleWordPair: WordPair = {
++    id: 'wp-1',
++    category: 'Makanan & Minuman',
++    civilianWord: 'Kopi',
++    undercoverWord: 'Teh',
++  };
++
++  const createMockPlayers = (count: number): Player[] => {
++    return Array.from({ length: count }, (_, i) => ({
++      id: `p-${i + 1}`,
++      name: `Player ${i + 1}`,
++      avatar: `avatar-${i + 1}`,
++      isHost: i === 0,
++      isAlive: true,
++      hasVoted: false,
++    }));
++  };
++
++  describe('assignRoles', () => {
++    it('should correctly assign roles and words for 4 players (1 Undercover, 0 Mr. White)', () => {
++      const players = createMockPlayers(4);
++      const settings: GameSettings = {
++        category: 'Makanan & Minuman',
++        civilianCount: 3,
++        undercoverCount: 1,
++        mrWhiteCount: 0,
++        turnDurationSeconds: 30,
++        enableMrWhite: false,
++      };
++
++      const result = assignRoles(players, settings, sampleWordPair);
++
++      expect(result.players).toHaveLength(4);
++      expect(result.speakingOrder).toHaveLength(4);
++
++      const undercovers = result.players.filter((p) => p.role === 'UNDERCOVER');
++      const civilians = result.players.filter((p) => p.role === 'CIVILIAN');
++      const mrWhites = result.players.filter((p) => p.role === 'MR_WHITE');
++
++      expect(undercovers).toHaveLength(1);
++      expect(civilians).toHaveLength(3);
++      expect(mrWhites).toHaveLength(0);
++
++      expect(undercovers[0].word).toBe('Teh');
++      civilians.forEach((civ) => {
++        expect(civ.word).toBe('Kopi');
++        expect(civ.isAlive).toBe(true);
++        expect(civ.hasVoted).toBe(false);
++      });
++
++      // speakingOrder should contain all player IDs
++      const playerIds = players.map((p) => p.id);
++      expect(new Set(result.speakingOrder)).toEqual(new Set(playerIds));
++    });
++
++    it('should assign Mr. White with empty word when enabled', () => {
++      const players = createMockPlayers(6);
++      const settings: GameSettings = {
++        category: 'Makanan & Minuman',
++        civilianCount: 4,
++        undercoverCount: 1,
++        mrWhiteCount: 1,
++        turnDurationSeconds: 30,
++        enableMrWhite: true,
++      };
++
++      const result = assignRoles(players, settings, sampleWordPair);
++
++      const mrWhites = result.players.filter((p) => p.role === 'MR_WHITE');
++      expect(mrWhites).toHaveLength(1);
++      expect(mrWhites[0].word).toBe('');
++
++      const undercovers = result.players.filter((p) => p.role === 'UNDERCOVER');
++      expect(undercovers).toHaveLength(1);
++      expect(undercovers[0].word).toBe('Teh');
++
++      const civilians = result.players.filter((p) => p.role === 'CIVILIAN');
++      expect(civilians).toHaveLength(4);
++      civilians.forEach((c) => expect(c.word).toBe('Kopi'));
++    });
++
++    it('should throw error if player count is insufficient for roles', () => {
++      const players = createMockPlayers(2);
++      const settings: GameSettings = {
++        category: 'Makanan & Minuman',
++        civilianCount: 2,
++        undercoverCount: 1,
++        mrWhiteCount: 1,
++        turnDurationSeconds: 30,
++        enableMrWhite: true,
++      };
++
++      expect(() => assignRoles(players, settings, sampleWordPair)).toThrow();
++    });
++  });
++
++  describe('calculateVotes', () => {
++    it('should eliminate the player with clear highest votes', () => {
++      const activePlayers = createMockPlayers(4);
++      const votes: Record<string, string> = {
++        'p-1': 'p-2',
++        'p-3': 'p-2',
++        'p-4': 'p-2',
++        'p-2': 'p-1',
++      };
++
++      const result = calculateVotes(votes, activePlayers);
++
++      expect(result.isTie).toBe(false);
++      expect(result.eliminatedPlayerId).toBe('p-2');
++      expect(result.voteCounts['p-2']).toBe(3);
++      expect(result.voteCounts['p-1']).toBe(1);
++    });
++
++    it('should return instant skip tie when 2 players have identical highest votes', () => {
++      const activePlayers = createMockPlayers(4);
++      const votes: Record<string, string> = {
++        'p-1': 'p-2',
++        'p-3': 'p-2',
++        'p-2': 'p-4',
++        'p-4': 'p-4',
++      };
++
++      const result = calculateVotes(votes, activePlayers);
++
++      expect(result.isTie).toBe(true);
++      expect(result.eliminatedPlayerId).toBeNull();
++      expect(result.voteCounts['p-2']).toBe(2);
++      expect(result.voteCounts['p-4']).toBe(2);
++    });
++
++    it('should return tie when 3 players have identical highest votes', () => {
++      const activePlayers = createMockPlayers(6);
++      const votes: Record<string, string> = {
++        'p-1': 'p-2',
++        'p-2': 'p-3',
++        'p-3': 'p-4',
++        'p-4': 'p-2',
++        'p-5': 'p-3',
++        'p-6': 'p-4',
++      };
++
++      const result = calculateVotes(votes, activePlayers);
++
++      expect(result.isTie).toBe(true);
++      expect(result.eliminatedPlayerId).toBeNull();
++    });
++
++    it('should not treat tie for second place as a tie for highest', () => {
++      const activePlayers = createMockPlayers(5);
++      const votes: Record<string, string> = {
++        'p-1': 'p-5',
++        'p-2': 'p-5',
++        'p-3': 'p-5',
++        'p-4': 'p-1',
++        'p-5': 'p-2',
++      };
++
++      const result = calculateVotes(votes, activePlayers);
++
++      expect(result.isTie).toBe(false);
++      expect(result.eliminatedPlayerId).toBe('p-5');
++    });
++
++    it('should return tie and no elimination if no votes are cast', () => {
++      const activePlayers = createMockPlayers(4);
++      const votes: Record<string, string> = {};
++
++      const result = calculateVotes(votes, activePlayers);
++
++      expect(result.isTie).toBe(true);
++      expect(result.eliminatedPlayerId).toBeNull();
++    });
++  });
++
++  describe('checkWinCondition', () => {
++    it('should declare CIVILIAN win when all Undercover and Mr. White are eliminated', () => {
++      const players: Player[] = [
++        { id: '1', name: 'P1', avatar: 'a1', isHost: true, role: 'CIVILIAN', isAlive: true, hasVoted: false },
++        { id: '2', name: 'P2', avatar: 'a2', isHost: false, role: 'CIVILIAN', isAlive: true, hasVoted: false },
++        { id: '3', name: 'P3', avatar: 'a3', isHost: false, role: 'UNDERCOVER', isAlive: false, hasVoted: false },
++        { id: '4', name: 'P4', avatar: 'a4', isHost: false, role: 'MR_WHITE', isAlive: false, hasVoted: false },
++      ];
++
++      expect(checkWinCondition(players)).toBe('CIVILIAN');
++    });
++
++    it('should declare UNDERCOVER win when alive Undercovers >= alive Civilians', () => {
++      // 2 Undercovers vs 2 Civilians
++      const players: Player[] = [
++        { id: '1', name: 'P1', avatar: 'a1', isHost: true, role: 'CIVILIAN', isAlive: true, hasVoted: false },
++        { id: '2', name: 'P2', avatar: 'a2', isHost: false, role: 'CIVILIAN', isAlive: true, hasVoted: false },
++        { id: '3', name: 'P3', avatar: 'a3', isHost: false, role: 'UNDERCOVER', isAlive: true, hasVoted: false },
++        { id: '4', name: 'P4', avatar: 'a4', isHost: false, role: 'UNDERCOVER', isAlive: true, hasVoted: false },
++        { id: '5', name: 'P5', avatar: 'a5', isHost: false, role: 'MR_WHITE', isAlive: false, hasVoted: false },
++      ];
++
++      expect(checkWinCondition(players)).toBe('UNDERCOVER');
++    });
++
++    it('should declare UNDERCOVER win when 1 Undercover vs 1 Civilian remain', () => {
++      const players: Player[] = [
++        { id: '1', name: 'P1', avatar: 'a1', isHost: true, role: 'CIVILIAN', isAlive: true, hasVoted: false },
++        { id: '2', name: 'P2', avatar: 'a2', isHost: false, role: 'CIVILIAN', isAlive: false, hasVoted: false },
++        { id: '3', name: 'P3', avatar: 'a3', isHost: false, role: 'UNDERCOVER', isAlive: true, hasVoted: false },
++      ];
++
++      expect(checkWinCondition(players)).toBe('UNDERCOVER');
++    });
++
++    it('should declare MR_WHITE win when Mr. White survives to the final 2 players', () => {
++      const players: Player[] = [
++        { id: '1', name: 'P1', avatar: 'a1', isHost: true, role: 'CIVILIAN', isAlive: true, hasVoted: false },
++        { id: '2', name: 'P2', avatar: 'a2', isHost: false, role: 'CIVILIAN', isAlive: false, hasVoted: false },
++        { id: '3', name: 'P3', avatar: 'a3', isHost: false, role: 'UNDERCOVER', isAlive: false, hasVoted: false },
++        { id: '4', name: 'P4', avatar: 'a4', isHost: false, role: 'MR_WHITE', isAlive: true, hasVoted: false },
++      ];
++
++      expect(checkWinCondition(players)).toBe('MR_WHITE');
++    });
++
++    it('should return null if game is still active without a winner', () => {
++      const players: Player[] = [
++        { id: '1', name: 'P1', avatar: 'a1', isHost: true, role: 'CIVILIAN', isAlive: true, hasVoted: false },
++        { id: '2', name: 'P2', avatar: 'a2', isHost: false, role: 'CIVILIAN', isAlive: true, hasVoted: false },
++        { id: '3', name: 'P3', avatar: 'a3', isHost: false, role: 'CIVILIAN', isAlive: true, hasVoted: false },
++        { id: '4', name: 'P4', avatar: 'a4', isHost: false, role: 'UNDERCOVER', isAlive: true, hasVoted: false },
++        { id: '5', name: 'P5', avatar: 'a5', isHost: false, role: 'MR_WHITE', isAlive: true, hasVoted: false },
++      ];
++
++      expect(checkWinCondition(players)).toBeNull();
++    });
++  });
++
++  describe('GameEngine class wrapper', () => {
++    it('should expose static methods identically', () => {
++      const players = createMockPlayers(4);
++      const settings: GameSettings = {
++        category: 'Makanan & Minuman',
++        civilianCount: 3,
++        undercoverCount: 1,
++        mrWhiteCount: 0,
++        turnDurationSeconds: 30,
++        enableMrWhite: false,
++      };
++
++      const result = GameEngine.assignRoles(players, settings, sampleWordPair);
++      expect(result.players).toHaveLength(4);
++    });
++  });
++});
+
+```
