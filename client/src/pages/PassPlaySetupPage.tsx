@@ -29,7 +29,7 @@ const TURN_DURATION_OPTIONS = [
   { label: 'Bebas', value: 0, desc: 'Tanpa Timer' },
 ];
 
-const QUICK_PLAYER_COUNTS = [3, 4, 5, 6, 7, 8, 10, 12];
+const ALL_PLAYER_COUNTS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 const RANDOM_NAMES = [
   'Agent Cyber', 'Neon Fox', 'Shadow Byte', 'Phantom V', 'Holo Viper',
@@ -70,7 +70,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
 
   // Sync player count with players array
   const adjustPlayerCount = (newCount: number) => {
-    const clamped = Math.max(3, Math.min(20, newCount));
+    const clamped = Math.max(2, Math.min(20, newCount));
     setTotalPlayerCount(clamped);
 
     setPlayers((prev) => {
@@ -192,7 +192,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
 
     const success = startPassPlayGame();
     if (!success) {
-      alert('Minimal 3 pemain untuk memulai permainan!');
+      alert('Minimal 2 pemain untuk memulai permainan!');
     }
   };
 
@@ -252,16 +252,16 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            {/* Total Players Count Stepper */}
-            <Card glow="cyan" className="p-5 sm:p-6 space-y-4">
+            {/* Total Players Count Stepper & Scrollable Wheel */}
+            <Card glow="cyan" className="p-5 sm:p-6 space-y-5">
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
-                    <Users className="w-4 h-4" />
+                  <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold shadow-inner">
+                    <Users className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white">Jumlah Pemain</h3>
-                    <p className="text-xs text-slate-400">Pilih total pemain yang ikut di ruangan</p>
+                    <h3 className="text-base font-bold text-white">Jumlah Pemain (Min. 2 Orang)</h3>
+                    <p className="text-xs text-slate-400">Geser / scroll angka untuk menentukan total pemain</p>
                   </div>
                 </div>
 
@@ -269,37 +269,74 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount - 1)}
-                    disabled={totalPlayerCount <= 3}
-                    className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center text-lg active:scale-95 transition-all"
+                    disabled={totalPlayerCount <= 2}
+                    className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center text-lg active:scale-95 transition-all shadow-sm"
                   >
                     -
                   </button>
-                  <span className="text-2xl font-mono font-black text-cyan-400 min-w-[36px] text-center">
-                    {totalPlayerCount}
-                  </span>
+                  <div className="px-3 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-center min-w-[54px]">
+                    <span className="text-2xl font-mono font-black text-cyan-300">
+                      {totalPlayerCount}
+                    </span>
+                    <span className="text-[9px] font-mono text-cyan-400 block -mt-1 font-bold">ORANG</span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount + 1)}
                     disabled={totalPlayerCount >= 20}
-                    className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center text-lg active:scale-95 transition-all"
+                    className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center text-lg active:scale-95 transition-all shadow-sm"
                   >
                     +
                   </button>
                 </div>
               </div>
 
-              {/* Quick Select Buttons */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                {QUICK_PLAYER_COUNTS.map((cnt) => (
-                  <button
-                    key={cnt}
-                    type="button"
-                    onClick={() => adjustPlayerCount(cnt)}
-                    className={'px-3 py-1.5 rounded-xl font-mono text-xs font-bold shrink-0 transition-all ' + (totalPlayerCount === cnt ? 'bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-400/30' : 'bg-slate-900/80 border border-white/10 text-slate-400 hover:text-white')}
-                  >
-                    {cnt}P
-                  </button>
-                ))}
+              {/* Interactive Range Slider */}
+              <div className="space-y-1.5 px-1">
+                <input
+                  type="range"
+                  min={2}
+                  max={20}
+                  step={1}
+                  value={totalPlayerCount}
+                  onChange={(e) => adjustPlayerCount(Number(e.target.value))}
+                  className="w-full accent-cyan-400 h-2.5 bg-slate-900 rounded-lg cursor-pointer appearance-none border border-white/10"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-slate-500">
+                  <span>2 Pemain (Duel)</span>
+                  <span>10 Pemain</span>
+                  <span>20 Pemain (Maksimal)</span>
+                </div>
+              </div>
+
+              {/* Horizontal Scrollable Number Wheel Strip */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
+                    Pilih Cepat / Scroll Angka:
+                  </span>
+                  <span className="text-[10px] font-mono text-cyan-400">
+                    ← Geser Kiri / Kanan →
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scroll-smooth snap-x snap-mandatory">
+                  {ALL_PLAYER_COUNTS.map((cnt) => {
+                    const isSelected = totalPlayerCount === cnt;
+
+                    return (
+                      <button
+                        key={cnt}
+                        type="button"
+                        onClick={() => adjustPlayerCount(cnt)}
+                        className={'snap-center shrink-0 w-12 h-14 rounded-2xl border flex flex-col items-center justify-center transition-all ' + (isSelected ? 'bg-gradient-to-b from-cyan-400 to-cyan-500 text-slate-950 font-black shadow-lg shadow-cyan-400/40 scale-105 border-cyan-300 ring-2 ring-cyan-400/40' : 'bg-slate-900/90 border-white/10 text-slate-300 hover:border-cyan-500/40 hover:bg-slate-800/80')}
+                      >
+                        <span className="text-base font-mono font-black">{cnt}</span>
+                        <span className={'text-[9px] font-mono uppercase ' + (isSelected ? 'text-slate-950 font-bold' : 'text-slate-500')}>Pemain</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </Card>
 

@@ -211,7 +211,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
 
   const removePlayer = useCallback((playerId: string) => {
     setPlayers((prev) => {
-      if (prev.length <= 3) return prev; // Min 3 players
+      if (prev.length <= 2) return prev; // Min 2 players
       const filtered = prev.filter((p) => p.id !== playerId);
       if (filtered.length > 0 && !filtered.some((p) => p.isHost)) {
         filtered[0].isHost = true;
@@ -256,7 +256,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
 
   // Start Pass & Play Game
   const startPassPlayGame = useCallback((customPair?: WordPair): boolean => {
-    if (players.length < 3) return false;
+    if (players.length < 2) return false;
 
     const selectedWordPair = pickWordPair(customPair);
     setWordPair(selectedWordPair);

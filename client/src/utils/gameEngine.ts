@@ -149,18 +149,25 @@ export function calculateVotes(
  */
 export function checkWinCondition(players: Player[]): 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE' | null {
   const alive = players.filter((p) => p.isAlive);
+  const totalOriginal = players.length;
+  const totalAlive = alive.length;
+
+  // If no one is eliminated yet (game started with 2 players), continue game
+  if (totalOriginal === 2 && totalAlive === 2) {
+    return null;
+  }
+
   const aliveCivilians = alive.filter((p) => p.role === 'CIVILIAN').length;
   const aliveUndercovers = alive.filter((p) => p.role === 'UNDERCOVER').length;
   const aliveMrWhites = alive.filter((p) => p.role === 'MR_WHITE').length;
-  const totalAlive = alive.length;
 
   // 1. Civilian Victory: All Undercovers and Mr. Whites are eliminated
   if (aliveCivilians > 0 && aliveUndercovers === 0 && aliveMrWhites === 0) {
     return 'CIVILIAN';
   }
 
-  // 2. Mr. White Victory: Survives to the final 2 players
-  if (aliveMrWhites > 0 && totalAlive <= 2) {
+  // 2. Mr. White Victory: Survives to the final 2 players (when original game had > 2 players)
+  if (aliveMrWhites > 0 && totalAlive <= 2 && totalOriginal > 2) {
     return 'MR_WHITE';
   }
 
