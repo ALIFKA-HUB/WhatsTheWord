@@ -44,7 +44,7 @@ interface SmoothPlayerSliderProps {
 
 const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
   value,
-  min = 2,
+  min = 3,
   max = 20,
   onChange,
 }) => {
@@ -138,7 +138,7 @@ const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
 
       {/* Discrete Scale Markers */}
       <div className="flex justify-between text-[10px] font-mono text-slate-500 px-1">
-        <span className={value === 2 ? 'text-cyan-400 font-bold' : ''}>2 (Duel)</span>
+        <span className={value === 3 ? 'text-cyan-400 font-bold' : ''}>3 (Minimal)</span>
         <span className={value === 5 ? 'text-cyan-400 font-bold' : ''}>5</span>
         <span className={value === 10 ? 'text-cyan-400 font-bold' : ''}>10</span>
         <span className={value === 15 ? 'text-cyan-400 font-bold' : ''}>15</span>
@@ -181,7 +181,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
 
   // Sync player count with players array
   const adjustPlayerCount = (newCount: number) => {
-    const clamped = Math.max(2, Math.min(20, newCount));
+    const clamped = Math.max(3, Math.min(20, newCount));
     setTotalPlayerCount(clamped);
 
     setPlayers((prev) => {
@@ -306,7 +306,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
 
     const success = startPassPlayGame();
     if (!success) {
-      alert('Minimal 2 pemain untuk memulai permainan!');
+      alert('Minimal 3 pemain untuk memulai permainan!');
     }
   };
 
@@ -374,7 +374,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     <Users className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white">Jumlah Pemain (2 - 20 Orang)</h3>
+                    <h3 className="text-base font-bold text-white">Jumlah Pemain (3 - 20 Orang)</h3>
                     <p className="text-xs text-slate-400">Geser scroll bar di kiri & atur presisi dengan tombol +/- di kanan</p>
                   </div>
                 </div>
@@ -386,7 +386,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 <div className="flex-1 bg-slate-950/80 p-3.5 rounded-2xl border border-white/10">
                   <SmoothPlayerSlider
                     value={totalPlayerCount}
-                    min={2}
+                    min={3}
                     max={20}
                     onChange={adjustPlayerCount}
                   />
@@ -397,7 +397,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount - 1)}
-                    disabled={totalPlayerCount <= 2}
+                    disabled={totalPlayerCount <= 3}
                     className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all shadow-sm"
                   >
                     -
