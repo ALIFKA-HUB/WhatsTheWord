@@ -528,6 +528,7 @@ export class RoomManager {
 
     room.phase = 'LOBBY';
     room.round = 1;
+    room.consecutiveTies = 0;
     room.speakingOrder = [];
     room.currentSpeakerIndex = 0;
     room.activeTurnRemainingSeconds = room.settings.turnDurationSeconds || 45;
