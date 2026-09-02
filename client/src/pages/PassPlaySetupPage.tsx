@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
 import {
   Users,
@@ -57,6 +57,53 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
 
   // Avatar picker popup for specific player index
   const [avatarPickerPlayerIndex, setAvatarPickerPlayerIndex] = useState<number | null>(null);
+
+  // Smooth Drag & Auto-Center Scroll for Player Count Carousel
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const hasMovedRef = useRef(false);
+
+  // Auto-scroll selected number to center
+  const scrollToActiveNumber = useCallback((count: number) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const targetElement = container.querySelector(`[data-player-count="${count}"]`) as HTMLElement;
+    if (targetElement) {
+      const containerWidth = container.offsetWidth;
+      const targetLeft = targetElement.offsetLeft;
+      const targetWidth = targetElement.offsetWidth;
+      container.scrollTo({
+        left: targetLeft - containerWidth / 2 + targetWidth / 2,
+        behavior: 'smooth',
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    scrollToActiveNumber(totalPlayerCount);
+  }, [totalPlayerCount, scrollToActiveNumber]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isDraggingRef.current = true;
+    hasMovedRef.current = false;
+    startXRef.current = e.pageX - (scrollContainerRef.current?.offsetLeft || 0);
+    scrollLeftRef.current = scrollContainerRef.current?.scrollLeft || 0;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingRef.current || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - (scrollContainerRef.current.offsetLeft || 0);
+    const walk = (x - startXRef.current) * 1.5; // Drag sensitivity
+    if (Math.abs(walk) > 4) hasMovedRef.current = true;
+    scrollContainerRef.current.scrollLeft = scrollLeftRef.current - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    isDraggingRef.current = false;
+  };
 
   // Load custom packs from localStorage
   useEffect(() => {
@@ -252,16 +299,16 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            {/* Total Players Count Stepper & Scrollable Wheel */}
-            <Card glow="cyan" className="p-5 sm:p-6 space-y-5">
+                        {/* Total Players Count Stepper & Ultra-Smooth Scroll Wheel */}
+            <Card glow="cyan" className="p-5 sm:p-6 space-y-5 relative overflow-hidden">
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold shadow-inner">
                     <Users className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white">Jumlah Pemain (Min. 2 Orang)</h3>
-                    <p className="text-xs text-slate-400">Geser / scroll angka untuk menentukan total pemain</p>
+                    <h3 className="text-base font-bold text-white">Jumlah Pemain</h3>
+                    <p className="text-xs text-slate-400">Geser atau ketuk angka untuk memilih (2 - 20)</p>
                   </div>
                 </div>
 
@@ -274,7 +321,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                   >
                     -
                   </button>
-                  <div className="px-3 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-center min-w-[54px]">
+                  <div className="px-3.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-center min-w-[60px]">
                     <span className="text-2xl font-mono font-black text-cyan-300">
                       {totalPlayerCount}
                     </span>
@@ -291,36 +338,20 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 </div>
               </div>
 
-              {/* Interactive Range Slider */}
-              <div className="space-y-1.5 px-1">
-                <input
-                  type="range"
-                  min={2}
-                  max={20}
-                  step={1}
-                  value={totalPlayerCount}
-                  onChange={(e) => adjustPlayerCount(Number(e.target.value))}
-                  className="w-full accent-cyan-400 h-2.5 bg-slate-900 rounded-lg cursor-pointer appearance-none border border-white/10"
-                />
-                <div className="flex justify-between text-[10px] font-mono text-slate-500">
-                  <span>2 Pemain (Duel)</span>
-                  <span>10 Pemain</span>
-                  <span>20 Pemain (Maksimal)</span>
-                </div>
-              </div>
+              {/* Ultra Smooth Drag & Touch Scroll Wheel */}
+              <div className="relative pt-1 pb-1">
+                {/* Subtle Edge Fade Gradients */}
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-900/90 to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-900/90 to-transparent z-10 pointer-events-none" />
 
-              {/* Horizontal Scrollable Number Wheel Strip */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
-                    Scroll Angka Pemain:
-                  </span>
-                  <span className="text-[10px] font-mono text-cyan-400">
-                    ← Geser Kiri / Kanan →
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scroll-smooth snap-x snap-mandatory">
+                <div
+                  ref={scrollContainerRef}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUpOrLeave}
+                  onMouseLeave={handleMouseUpOrLeave}
+                  className="flex items-center gap-2.5 overflow-x-auto py-2 px-6 scroll-smooth select-none cursor-grab active:cursor-grabbing [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                >
                   {ALL_PLAYER_COUNTS.map((cnt) => {
                     const isSelected = totalPlayerCount === cnt;
 
@@ -328,11 +359,16 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                       <button
                         key={cnt}
                         type="button"
-                        onClick={() => adjustPlayerCount(cnt)}
-                        className={'snap-center shrink-0 w-12 h-14 rounded-2xl border flex flex-col items-center justify-center transition-all ' + (isSelected ? 'bg-gradient-to-b from-cyan-400 to-cyan-500 text-slate-950 font-black shadow-lg shadow-cyan-400/40 scale-105 border-cyan-300 ring-2 ring-cyan-400/40' : 'bg-slate-900/90 border-white/10 text-slate-300 hover:border-cyan-500/40 hover:bg-slate-800/80')}
+                        data-player-count={cnt}
+                        onClick={() => {
+                          if (!hasMovedRef.current) {
+                            adjustPlayerCount(cnt);
+                          }
+                        }}
+                        className={'shrink-0 w-14 h-16 rounded-2xl border flex flex-col items-center justify-center transition-all duration-300 ' + (isSelected ? 'bg-gradient-to-b from-cyan-400 to-cyan-500 text-slate-950 font-black shadow-[0_0_25px_-3px_rgba(6,182,212,0.6)] scale-110 border-white ring-2 ring-cyan-400/50 z-20' : 'bg-slate-950/80 border-white/10 text-slate-400 hover:text-slate-200 hover:border-cyan-500/30 hover:bg-slate-900/80 opacity-70 hover:opacity-100')}
                       >
-                        <span className="text-base font-mono font-black">{cnt}</span>
-                        <span className={'text-[9px] font-mono uppercase ' + (isSelected ? 'text-slate-950 font-bold' : 'text-slate-500')}>Pemain</span>
+                        <span className="text-lg font-mono font-black">{cnt}</span>
+                        <span className={'text-[9px] font-mono uppercase tracking-tight ' + (isSelected ? 'text-slate-950 font-black' : 'text-slate-500')}>Pemain</span>
                       </button>
                     );
                   })}
