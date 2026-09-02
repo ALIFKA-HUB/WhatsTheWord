@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   Users,
-  Play,
-  Clock,
   Shield,
   EyeOff,
   HelpCircle,
@@ -11,6 +9,7 @@ import {
   ArrowLeft,
   Dices,
   Vote,
+  Clock,
   Shuffle,
 } from 'lucide-react';
 import { usePassPlay } from '../context/PassPlayContext';
@@ -21,6 +20,7 @@ import { PRESET_AVATARS } from '../components/game/AvatarPicker';
 import { getLocalCustomPacks } from '../services/wordPackService';
 import { CustomWordPack } from '../types/game.types';
 import { Header } from '../components/common/Header';
+import { cn } from '../utils/cn';
 
 const TURN_DURATION_OPTIONS = [
   { label: '30s', value: 30, desc: 'Cepat & Intens' },
@@ -93,13 +93,12 @@ const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
 
   return (
     <div className="space-y-3 select-none">
-      <div className="flex items-center justify-between text-[11px] font-mono">
-        <span className="text-slate-400 flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          Scroll / Geser Bar Pemain:
+      <div className="flex items-center justify-between text-xs font-mono">
+        <span className="text-zinc-400">
+          Geser Jumlah Pemain:
         </span>
-        <span className="text-cyan-300 font-bold font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
-          {value} Pemain Terpilih
+        <span className="text-zinc-200 font-semibold px-2 py-0.5 rounded-md bg-zinc-800 border border-zinc-700">
+          {value} Pemain
         </span>
       </div>
 
@@ -110,13 +109,13 @@ const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className="relative h-10 flex items-center cursor-pointer touch-none group"
+        className="relative h-9 flex items-center cursor-pointer touch-none group"
       >
         {/* Background Track */}
-        <div className="w-full h-3 rounded-full bg-slate-900 border border-white/10 relative overflow-hidden group-hover:border-cyan-500/30 transition-colors">
-          {/* Active Fill with Gradient & Glow */}
+        <div className="w-full h-2 rounded-full bg-zinc-800 border border-zinc-700/50 relative overflow-hidden">
+          {/* Active Fill */}
           <div
-            className="h-full bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-300 transition-all duration-75 shadow-[0_0_15px_rgba(6,182,212,0.6)]"
+            className="h-full bg-white transition-all duration-75"
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -127,22 +126,22 @@ const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
           style={{ left: `${percentage}%` }}
         >
           <div
-            className={`w-7 h-7 rounded-full bg-white border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.8)] flex items-center justify-center transition-all ${
-              isDragging ? 'scale-125 ring-4 ring-cyan-400/40' : 'group-hover:scale-110'
+            className={`w-6 h-6 rounded-full bg-white border-2 border-zinc-950 shadow-md flex items-center justify-center transition-all ${
+              isDragging ? 'scale-125' : 'group-hover:scale-110'
             }`}
           >
-            <div className="w-2 h-2 rounded-full bg-cyan-500" />
+            <div className="w-1.5 h-1.5 rounded-full bg-zinc-950" />
           </div>
         </div>
       </div>
 
       {/* Discrete Scale Markers */}
-      <div className="flex justify-between text-[10px] font-mono text-slate-500 px-1">
-        <span className={value === 3 ? 'text-cyan-400 font-bold' : ''}>3 (Minimal)</span>
-        <span className={value === 5 ? 'text-cyan-400 font-bold' : ''}>5</span>
-        <span className={value === 10 ? 'text-cyan-400 font-bold' : ''}>10</span>
-        <span className={value === 15 ? 'text-cyan-400 font-bold' : ''}>15</span>
-        <span className={value === 20 ? 'text-cyan-400 font-bold' : ''}>20 (Maks)</span>
+      <div className="flex justify-between text-[11px] font-mono text-zinc-500 px-0.5">
+        <span className={value === 3 ? 'text-zinc-100 font-bold' : ''}>3 Min</span>
+        <span className={value === 5 ? 'text-zinc-100 font-bold' : ''}>5</span>
+        <span className={value === 10 ? 'text-zinc-100 font-bold' : ''}>10</span>
+        <span className={value === 15 ? 'text-zinc-100 font-bold' : ''}>15</span>
+        <span className={value === 20 ? 'text-zinc-100 font-bold' : ''}>20 Maks</span>
       </div>
     </div>
   );
@@ -320,26 +319,26 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
   ];
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-[100dvh] flex flex-col bg-[#09090b] text-zinc-100 font-sans">
       <Header
         onBack={currentStep === 1 ? onBack : () => setCurrentStep((prev) => (prev - 1) as any)}
-        backLabel={currentStep === 1 ? 'Menu Utama' : 'Kembali ke Langkah ' + (currentStep - 1)}
-        className="border-b border-white/10"
+        backLabel={currentStep === 1 ? 'Menu Utama' : 'Langkah ' + (currentStep - 1)}
+        className="border-b border-zinc-800/80"
       />
 
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 sm:py-8 space-y-6">
         {/* Step Progress Header */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 font-bold">
-              Setup Permainan Offline (1 HP)
+            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+              Pass &amp; Play · Mode 1 HP
             </span>
-            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
+            <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300">
               Langkah {currentStep} dari 3
             </span>
           </div>
 
-          {/* Progress Pills */}
+          {/* Progress Indicators */}
           <div className="grid grid-cols-3 gap-2">
             {[
               { step: 1, label: '1. Peran & Jumlah' },
@@ -351,7 +350,10 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 onClick={() => {
                   if (st.step < currentStep) setCurrentStep(st.step as any);
                 }}
-                className={'h-1.5 rounded-full transition-all duration-300 ' + (currentStep >= st.step ? 'bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.5)]' : 'bg-slate-800')}
+                className={cn(
+                  'h-1 rounded-full transition-all duration-300 cursor-pointer',
+                  currentStep >= st.step ? 'bg-zinc-200' : 'bg-zinc-800'
+                )}
               />
             ))}
           </div>
@@ -361,29 +363,29 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
         {currentStep === 1 && (
           <motion.div
             key="step1"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-5"
           >
-                        {/* Total Players Card: Left Scroll Bar | Right Stepper [-] [N] [+] */}
-            <Card glow="cyan" className="p-5 sm:p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            {/* Total Players Card */}
+            <Card padding="md" className="space-y-4 border-zinc-800 bg-zinc-900/40">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold shadow-inner">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 flex items-center justify-center">
                     <Users className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white">Jumlah Pemain (3 - 20 Orang)</h3>
-                    <p className="text-xs text-slate-400">Geser scroll bar di kiri & atur presisi dengan tombol +/- di kanan</p>
+                    <h3 className="text-sm sm:text-base font-bold text-zinc-100">Jumlah Pemain (3 - 20 Orang)</h3>
+                    <p className="text-xs text-zinc-400">Geser bar di kiri atau gunakan tombol +/- di kanan</p>
                   </div>
                 </div>
               </div>
 
               {/* Side-by-Side: Left Scroll Bar & Right Stepper */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3.5 pt-1">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
                 {/* Left Side: Scroll Bar Track */}
-                <div className="flex-1 bg-slate-950/80 p-3.5 rounded-2xl border border-white/10">
+                <div className="flex-1 bg-zinc-950/80 p-3.5 rounded-xl border border-zinc-800">
                   <SmoothPlayerSlider
                     value={totalPlayerCount}
                     min={3}
@@ -393,28 +395,28 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 </div>
 
                 {/* Right Side: Stepper [-] [N] [+] */}
-                <div className="flex items-center justify-center gap-2 shrink-0 bg-slate-950/80 p-3.5 rounded-2xl border border-white/10">
+                <div className="flex items-center justify-center gap-2 shrink-0 bg-zinc-950/80 p-3.5 rounded-xl border border-zinc-800">
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount - 1)}
                     disabled={totalPlayerCount <= 3}
-                    className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all shadow-sm"
+                    className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 font-bold hover:bg-zinc-800 disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all"
                   >
                     -
                   </button>
 
-                  <div className="px-3.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-center min-w-[62px]">
-                    <span className="text-2xl font-mono font-black text-cyan-300">
+                  <div className="px-3.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-center min-w-[64px]">
+                    <span className="text-2xl font-mono font-bold text-zinc-100">
                       {totalPlayerCount}
                     </span>
-                    <span className="text-[9px] font-mono text-cyan-400 block -mt-1 font-bold">ORANG</span>
+                    <span className="text-[9px] font-mono text-zinc-400 block -mt-1 font-semibold uppercase">Pemain</span>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount + 1)}
                     disabled={totalPlayerCount >= 20}
-                    className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all shadow-sm"
+                    className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 font-bold hover:bg-zinc-800 disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all"
                   >
                     +
                   </button>
@@ -422,63 +424,63 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
             </Card>
 
-            {/* Role Breakdown */}
-            <Card className="p-5 sm:p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-cyan-400" />
+            {/* Role Breakdown Card */}
+            <Card padding="md" className="space-y-3.5 border-zinc-800 bg-zinc-900/40">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+                <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-zinc-400" />
                   Komposisi Peran
                 </span>
-                <span className="text-xs font-mono font-semibold text-cyan-300">
-                  {currentCivilian} Warga vs {currentUndercover} Impostor {mrWhiteCount > 0 ? '+ 1 Butakata' : ''}
+                <span className="text-xs font-mono font-medium text-zinc-400">
+                  {currentCivilian} Warga vs {currentUndercover} Impostor {mrWhiteCount > 0 ? '+ 1 Mr. White' : ''}
                 </span>
               </div>
 
               {/* Civilian Row */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/60 border border-cyan-500/20">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold">
-                    <Shield className="w-5 h-5" />
+                  <div className="w-8 h-8 rounded-lg bg-zinc-900 text-zinc-300 flex items-center justify-center">
+                    <Shield className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-cyan-300">Warga (Civilian)</p>
-                    <p className="text-[11px] text-slate-400">Mendapatkan kata rahasia mayoritas</p>
+                    <p className="text-sm font-semibold text-zinc-200">Warga (Civilian)</p>
+                    <p className="text-[11px] text-zinc-500">Mendapatkan kata rahasia mayoritas</p>
                   </div>
                 </div>
-                <span className="text-lg font-mono font-black text-cyan-400 px-3.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+                <span className="text-base font-mono font-bold text-zinc-200 px-3 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">
                   {currentCivilian}
                 </span>
               </div>
 
               {/* Undercover Stepper */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/60 border border-rose-500/20">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center font-bold">
-                    <EyeOff className="w-5 h-5" />
+                  <div className="w-8 h-8 rounded-lg bg-rose-950/30 text-rose-400 flex items-center justify-center">
+                    <EyeOff className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-rose-300">Impostor (Undercover)</p>
-                    <p className="text-[11px] text-slate-400">Kata mirip, tidak tahu dirinya impostor</p>
+                    <p className="text-sm font-semibold text-rose-300">Impostor (Undercover)</p>
+                    <p className="text-[11px] text-zinc-500">Kata mirip, tidak tahu dirinya impostor</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => handleUndercoverChange(-1)}
                     disabled={currentUndercover <= 1}
-                    className="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center font-bold active:scale-95"
+                    className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 disabled:opacity-30 flex items-center justify-center font-bold active:scale-95"
                   >
                     -
                   </button>
-                  <span className="text-lg font-mono font-black text-rose-400 min-w-[28px] text-center">
+                  <span className="text-base font-mono font-bold text-rose-300 min-w-[26px] text-center">
                     {currentUndercover}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleUndercoverChange(1)}
                     disabled={currentUndercover >= maxUndercover}
-                    className="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center font-bold active:scale-95"
+                    className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 disabled:opacity-30 flex items-center justify-center font-bold active:scale-95"
                   >
                     +
                   </button>
@@ -486,21 +488,26 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
 
               {/* Mr. White Toggle */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/60 border border-purple-500/20">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">
-                    <HelpCircle className="w-5 h-5" />
+                  <div className="w-8 h-8 rounded-lg bg-purple-950/30 text-purple-400 flex items-center justify-center">
+                    <HelpCircle className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-purple-300">Buta Kata (Mr. White)</p>
-                    <p className="text-[11px] text-slate-400">Tanpa kata sama sekali (muncul ???)</p>
+                    <p className="text-sm font-semibold text-purple-300">Mr. White (Buta Kata)</p>
+                    <p className="text-[11px] text-zinc-500">Tanpa kata sama sekali (muncul ???)</p>
                   </div>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleToggleMrWhite}
-                  className={'px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all border ' + (settings.enableMrWhite ? 'bg-purple-500/20 border-purple-400 text-purple-300 shadow-[0_0_15px_-3px_rgba(168,85,247,0.4)]' : 'bg-slate-900 border-white/10 text-slate-500 hover:text-slate-300')}
+                  className={cn(
+                    'px-3 py-1 rounded-lg text-xs font-mono font-semibold transition-all border',
+                    settings.enableMrWhite
+                      ? 'bg-purple-950/40 border-purple-800 text-purple-300'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                  )}
                 >
                   {settings.enableMrWhite ? 'AKTIF (1)' : 'NONAKTIF'}
                 </button>
@@ -510,13 +517,12 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             {/* Next Button */}
             <Button
               variant="primary"
-              size="xl"
+              size="lg"
               fullWidth
               onClick={() => setCurrentStep(2)}
-              rightIcon={<ArrowRight className="w-5 h-5" />}
-              className="shadow-xl shadow-cyan-500/30 text-base py-4"
+              rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Lanjut: Pilih Kategori & Aturan Ronde
+              Lanjut: Pilih Kategori &amp; Aturan
             </Button>
           </motion.div>
         )}
@@ -525,19 +531,19 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
         {currentStep === 2 && (
           <motion.div
             key="step2"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-5"
           >
             {/* Category Grid Selection */}
-            <Card glow="cyan" className="p-5 sm:p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                  <Dices className="w-4 h-4 text-cyan-400" />
+            <Card padding="md" className="space-y-4 border-zinc-800 bg-zinc-900/40">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+                <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                  <Dices className="w-4 h-4 text-zinc-400" />
                   Pilih Kategori Kata
                 </span>
-                <span className="text-xs font-mono text-cyan-300 font-semibold">
+                <span className="text-xs font-mono text-zinc-400">
                   {settings.category || '🎲 Acak / Misteri'}
                 </span>
               </div>
@@ -550,20 +556,25 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     <div
                       key={cat.id}
                       onClick={() => updateSettings({ category: cat.id })}
-                      className={'p-3.5 rounded-2xl border cursor-pointer transition-all ' + (isSelected ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_20px_-3px_rgba(6,182,212,0.4)] text-white' : 'bg-slate-950/60 border-white/10 text-slate-300 hover:border-cyan-500/30 hover:bg-slate-900/80')}
+                      className={cn(
+                        'p-3.5 rounded-xl border cursor-pointer transition-all',
+                        isSelected
+                          ? 'bg-zinc-800 border-zinc-400 text-white'
+                          : 'bg-zinc-950/60 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/80'
+                      )}
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">{cat.icon}</span>
+                        <span className="text-xl">{cat.icon}</span>
                         <div>
-                          <p className="text-sm font-bold">{cat.title}</p>
-                          <p className="text-[10px] text-slate-400 leading-tight mt-0.5">{cat.desc}</p>
+                          <p className="text-sm font-semibold">{cat.title}</p>
+                          <p className="text-[11px] text-zinc-500 leading-tight mt-0.5">{cat.desc}</p>
                         </div>
                       </div>
                     </div>
                   );
                 })}
 
-                {/* Custom Packs if available */}
+                {/* Custom Packs */}
                 {customPacks.map((cp) => {
                   const isSelected = settings.category === cp.title || settings.category === cp.id;
 
@@ -571,13 +582,18 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     <div
                       key={cp.id}
                       onClick={() => updateSettings({ category: cp.title })}
-                      className={'p-3.5 rounded-2xl border cursor-pointer transition-all ' + (isSelected ? 'bg-purple-500/20 border-purple-400 shadow-[0_0_20px_-3px_rgba(168,85,247,0.4)] text-white' : 'bg-slate-950/60 border-white/10 text-slate-300 hover:border-purple-500/30 hover:bg-slate-900/80')}
+                      className={cn(
+                        'p-3.5 rounded-xl border cursor-pointer transition-all',
+                        isSelected
+                          ? 'bg-zinc-800 border-zinc-400 text-white'
+                          : 'bg-zinc-950/60 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/80'
+                      )}
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">📦</span>
+                        <span className="text-xl">📦</span>
                         <div>
-                          <p className="text-sm font-bold">{cp.title}</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5">{cp.wordPairs.length} pasangan kata buatanmu</p>
+                          <p className="text-sm font-semibold">{cp.title}</p>
+                          <p className="text-[11px] text-zinc-500 mt-0.5">{cp.wordPairs.length} pasang kata kustom</p>
                         </div>
                       </div>
                     </div>
@@ -586,16 +602,16 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
             </Card>
 
-            {/* Voting Start Round & Durasi Settings */}
-            <Card className="p-5 sm:p-6 space-y-4">
+            {/* Voting & Duration Settings */}
+            <Card padding="md" className="space-y-4 border-zinc-800 bg-zinc-900/40">
               {/* Voting Start Round Setting */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                    <Vote className="w-4 h-4 text-cyan-400" />
+                  <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                    <Vote className="w-4 h-4 text-zinc-400" />
                     Voting Eliminasi Dimulai Pada
                   </label>
-                  <span className="text-[11px] font-mono text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+                  <span className="text-[11px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
                     Ronde {settings.votingStartRound || 2}
                   </span>
                 </div>
@@ -612,10 +628,15 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                         key={opt.round}
                         type="button"
                         onClick={() => updateSettings({ votingStartRound: opt.round })}
-                        className={'p-2.5 rounded-2xl text-center border transition-all ' + (isSelected ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md font-bold' : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200')}
+                        className={cn(
+                          'p-2.5 rounded-xl text-center border transition-all',
+                          isSelected
+                            ? 'bg-zinc-800 border-zinc-500 text-white font-semibold shadow-sm'
+                            : 'bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+                        )}
                       >
-                        <span className="text-xs sm:text-sm font-bold block">{opt.label}</span>
-                        <span className="text-[9px] text-slate-400 block mt-0.5">{opt.desc}</span>
+                        <span className="text-xs sm:text-sm font-semibold block">{opt.label}</span>
+                        <span className="text-[10px] text-zinc-500 block mt-0.5">{opt.desc}</span>
                       </button>
                     );
                   })}
@@ -623,9 +644,9 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
 
               {/* Turn Duration Settings */}
-              <div className="space-y-2 pt-3 border-t border-white/10">
-                <label className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-cyan-400" />
+              <div className="space-y-2 pt-3 border-t border-zinc-800/80">
+                <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-zinc-400" />
                   Durasi Diskusi Putaran
                 </label>
 
@@ -637,7 +658,12 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                         key={opt.value}
                         type="button"
                         onClick={() => updateSettings({ turnDurationSeconds: opt.value })}
-                        className={'p-2 rounded-xl text-center border transition-all ' + (isSelected ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md font-bold' : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200')}
+                        className={cn(
+                          'p-2 rounded-xl text-center border transition-all',
+                          isSelected
+                            ? 'bg-zinc-800 border-zinc-500 text-white font-semibold shadow-sm'
+                            : 'bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+                        )}
                         title={opt.desc}
                       >
                         <span className="text-xs sm:text-sm font-mono block">{opt.label}</span>
@@ -651,7 +677,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             {/* Navigation Buttons */}
             <div className="flex items-center gap-3">
               <Button
-                variant="outline"
+                variant="secondary"
                 size="lg"
                 onClick={() => setCurrentStep(1)}
                 leftIcon={<ArrowLeft className="w-4 h-4" />}
@@ -665,10 +691,10 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 size="lg"
                 fullWidth
                 onClick={() => setCurrentStep(3)}
-                rightIcon={<ArrowRight className="w-5 h-5" />}
-                className="w-2/3 shadow-xl shadow-cyan-500/30 text-base py-3.5"
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+                className="w-2/3"
               >
-                Lanjut: Isi Nama & Avatar
+                Lanjut: Roster Pemain
               </Button>
             </div>
           </motion.div>
@@ -678,40 +704,39 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
         {currentStep === 3 && (
           <motion.div
             key="step3"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-5"
           >
             {/* Header with Quick Randomize */}
-            <Card glow="cyan" className="p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <Card padding="md" className="space-y-4 border-zinc-800 bg-zinc-900/40">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
                 <div>
-                  <h3 className="text-base font-bold text-white">Daftar {totalPlayerCount} Pemain</h3>
-                  <p className="text-xs text-slate-400">Ketik nama teman atau gunakan avatar favorit</p>
+                  <h3 className="text-sm sm:text-base font-bold text-zinc-100">Daftar {totalPlayerCount} Pemain</h3>
+                  <p className="text-xs text-zinc-400">Ketik nama pemain atau pilih avatar favorit</p>
                 </div>
 
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="xs"
                   onClick={handleRandomizeAll}
                   leftIcon={<Shuffle className="w-3.5 h-3.5" />}
-                  className="text-xs"
                 >
                   Acak Semua
                 </Button>
               </div>
 
               {/* Player Inputs List */}
-              <div className="space-y-2.5 max-h-[50vh] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
                 {players.map((player, idx) => (
                   <div
                     key={player.id}
-                    className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-slate-950/70 border border-white/10 focus-within:border-cyan-400/50 transition-all"
+                    className="flex items-center gap-2.5 p-2 rounded-xl bg-zinc-950/80 border border-zinc-800 focus-within:border-zinc-600 transition-all"
                   >
                     {/* Index Badge */}
-                    <span className="w-7 h-7 rounded-xl bg-slate-900 text-slate-400 font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-white/5">
-                      #{idx + 1}
+                    <span className="w-6 h-6 rounded-md bg-zinc-900 text-zinc-400 font-mono font-semibold text-[11px] flex items-center justify-center shrink-0 border border-zinc-800">
+                      {idx + 1}
                     </span>
 
                     {/* Avatar Button */}
@@ -719,7 +744,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                       type="button"
                       onClick={() => setAvatarPickerPlayerIndex(idx)}
                       title="Klik untuk ganti avatar"
-                      className="w-10 h-10 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-2xl flex items-center justify-center shrink-0 transition-transform active:scale-90"
+                      className="w-9 h-9 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xl flex items-center justify-center shrink-0 transition-transform active:scale-95"
                     >
                       {player.avatar}
                     </button>
@@ -731,7 +756,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                       onChange={(e) => handlePlayerNameChange(idx, e.target.value)}
                       placeholder={'Pemain ' + (idx + 1)}
                       maxLength={20}
-                      className="flex-1 bg-transparent px-3 py-1.5 text-sm font-semibold text-white placeholder-slate-500 focus:outline-none"
+                      className="flex-1 bg-transparent px-2.5 py-1 text-sm font-medium text-zinc-100 placeholder-zinc-600 focus:outline-none"
                     />
 
                     {/* Randomize Single Player */}
@@ -739,7 +764,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                       type="button"
                       onClick={() => handleRandomizeSingleName(idx)}
                       title="Acak nama & avatar"
-                      className="p-2 rounded-xl text-slate-500 hover:text-cyan-400 hover:bg-slate-900 transition-colors"
+                      className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
                     >
                       <Dices className="w-4 h-4" />
                     </button>
@@ -748,11 +773,11 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
             </Card>
 
-            {/* Navigation & Start Game */}
+            {/* Action Buttons */}
             <div className="flex items-center gap-3">
               <Button
-                variant="outline"
-                size="xl"
+                variant="secondary"
+                size="lg"
                 onClick={() => setCurrentStep(2)}
                 leftIcon={<ArrowLeft className="w-4 h-4" />}
                 className="w-1/3"
@@ -762,11 +787,11 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
 
               <Button
                 variant="primary"
-                size="xl"
+                size="lg"
                 fullWidth
                 onClick={handleStartGame}
-                leftIcon={<Play className="w-5 h-5 fill-current" />}
-                className="w-2/3 shadow-xl shadow-cyan-500/30 text-base py-4 font-black"
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+                className="w-2/3"
               >
                 Mulai Permainan 🚀
               </Button>
@@ -779,27 +804,20 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
       <Modal
         isOpen={avatarPickerPlayerIndex !== null}
         onClose={() => setAvatarPickerPlayerIndex(null)}
-        title="Pilih Avatar Cyber Agent"
-        size="md"
+        title="Pilih Avatar Pemain"
+        size="sm"
       >
-        <div className="p-2 space-y-4">
-          <div className="grid grid-cols-4 gap-3">
-            {PRESET_AVATARS.map((av) => (
-              <button
-                key={av.emoji}
-                type="button"
-                onClick={() => {
-                  if (avatarPickerPlayerIndex !== null) {
-                    handleSelectAvatar(avatarPickerPlayerIndex, av.emoji);
-                  }
-                }}
-                className="p-3 rounded-2xl bg-slate-950 border border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10 flex flex-col items-center gap-1.5 transition-all active:scale-95 group"
-              >
-                <span className="text-3xl group-hover:scale-110 transition-transform">{av.emoji}</span>
-                <span className="text-[10px] font-mono text-slate-400 truncate max-w-full">{av.name}</span>
-              </button>
-            ))}
-          </div>
+        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 p-2 max-h-[60vh] overflow-y-auto">
+          {PRESET_AVATARS.map((av) => (
+            <button
+              key={av.id}
+              onClick={() => avatarPickerPlayerIndex !== null && handleSelectAvatar(avatarPickerPlayerIndex, av.emoji)}
+              className="p-3 text-3xl rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800 transition-all flex items-center justify-center active:scale-95"
+              title={av.name}
+            >
+              {av.emoji}
+            </button>
+          ))}
         </div>
       </Modal>
     </div>

@@ -18,10 +18,10 @@ export interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   title = "WHAT'S THE WORD",
-  subtitle = 'CYBER DECEPTION',
+  subtitle = 'SOCIAL DEDUCTION',
   roomCode,
   onBack,
-  backLabel = 'Keluar',
+  backLabel = 'Kembali',
   showBack = false,
   rightElement,
   sticky = true,
@@ -44,12 +44,12 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       className={cn(
-        'w-full z-40 px-4 py-3 bg-slate-950/85 backdrop-blur-md border-b border-white/10 transition-all duration-200',
+        'w-full z-40 px-4 py-3.5 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60 transition-all duration-200',
         sticky && 'sticky top-0',
         className
       )}
     >
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
         {/* Left Section: Back button or Brand */}
         <div className="flex items-center gap-3">
           {(showBack || onBack) && (
@@ -57,8 +57,8 @@ export const Header: React.FC<HeaderProps> = ({
               variant="secondary"
               size="sm"
               onClick={onBack}
-              leftIcon={<ArrowLeft className="w-4 h-4 text-cyan-400" />}
-              className="text-xs sm:text-sm font-medium hover:border-cyan-500/40"
+              leftIcon={<ArrowLeft className="w-4 h-4 text-zinc-400" />}
+              className="text-xs font-medium"
               aria-label={backLabel}
             >
               <span className="hidden sm:inline">{backLabel}</span>
@@ -66,16 +66,15 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           <div className="flex items-center gap-2.5">
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-slate-950 border border-cyan-500/40 overflow-hidden shadow-[0_0_15px_-3px_rgba(6,182,212,0.5)]">
-              <img src="/logo.svg" alt="What's The Word Logo" className="w-7 h-7 object-contain" />
-              <div className="absolute -inset-0.5 rounded-xl bg-cyan-500/20 blur-sm -z-10" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 shrink-0">
+              <img src="/logo.svg" alt="What's The Word Logo" className="w-5 h-5 object-contain" />
             </div>
 
             <div className="flex flex-col">
-              <span className="text-base sm:text-lg font-black tracking-wider bg-gradient-to-r from-cyan-400 via-violet-400 to-rose-400 bg-clip-text text-transparent font-display leading-tight">
+              <span className="text-sm sm:text-base font-bold tracking-tight text-zinc-100 font-sans leading-tight">
                 {title}
               </span>
-              <span className="text-[10px] sm:text-xs font-mono tracking-widest text-cyan-400/80 uppercase font-semibold">
+              <span className="text-[10px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
                 {subtitle}
               </span>
             </div>
@@ -86,44 +85,41 @@ export const Header: React.FC<HeaderProps> = ({
         {roomCode && (
           <button
             onClick={handleCopyRoomCode}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900/90 border border-cyan-500/40 hover:border-cyan-400 hover:bg-slate-800/90 transition-all shadow-sm group cursor-pointer text-left"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all cursor-pointer text-left active:scale-95"
             title="Klik untuk salin kode room"
           >
-            <span className="text-[10px] uppercase font-mono text-slate-400">ROOM:</span>
-            <span className="text-xs sm:text-sm font-mono font-bold text-cyan-300 tracking-wider">
+            <span className="text-[10px] text-zinc-500 font-mono uppercase">KODE:</span>
+            <span className="font-mono font-bold text-sm tracking-widest text-zinc-100">
               {roomCode}
             </span>
             {copied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-0.5" />
+              <Check className="w-3.5 h-3.5 text-emerald-400 ml-1" />
             ) : (
-              <Copy className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400 shrink-0 ml-0.5 transition-colors" />
+              <Copy className="w-3.5 h-3.5 text-zinc-500 ml-1" />
             )}
           </button>
         )}
 
-        {/* Right Section: Sound Mute Toggle & Custom Actions */}
+        {/* Right Section: Sound Toggle & Custom Actions */}
         <div className="flex items-center gap-2">
           {rightElement}
 
-          <Button
-            variant="ghost"
-            size="icon"
+          {/* Sound Mute/Unmute Button */}
+          <button
             onClick={toggleMute}
             className={cn(
-              'border rounded-xl transition-all',
+              'p-2 rounded-lg border transition-all text-zinc-400 hover:text-zinc-200 active:scale-95',
               isMuted
-                ? 'border-rose-500/30 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20'
-                : 'border-cyan-500/30 text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 shadow-[0_0_10px_-2px_rgba(6,182,212,0.3)]'
+                ? 'bg-zinc-900/60 border-zinc-800 text-zinc-600'
+                : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 text-zinc-300'
             )}
-            title={isMuted ? 'Nyalakan Suara (Unmute)' : 'Matikan Suara (Mute)'}
-            aria-label={isMuted ? 'Nyalakan Suara' : 'Matikan Suara'}
+            title={isMuted ? 'Aktifkan Suara' : 'Bisukan Suara'}
+            aria-label={isMuted ? 'Aktifkan Suara' : 'Bisukan Suara'}
           >
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </Button>
+          </button>
         </div>
       </div>
     </header>
   );
 };
-
-export default Header;

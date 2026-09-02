@@ -50,29 +50,29 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto min-h-[500px] flex flex-col justify-center items-center px-4 py-6">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-center items-center px-4 py-6 font-sans">
       {/* Top Pass Progress Stepper */}
-      <div className="w-full flex items-center justify-between mb-6 px-2">
+      <div className="w-full flex items-center justify-between mb-5 px-1">
         <div className="flex items-center gap-2">
-          <Badge variant="cyan" size="sm" pulse>
-            FASE INTI KATA
+          <Badge variant="slate" size="sm">
+            INTIP KATA
           </Badge>
-          <span className="text-xs font-mono text-slate-400">
+          <span className="text-xs font-mono text-zinc-400">
             Pemain {currentRevealIndex + 1} dari {totalPlayers}
           </span>
         </div>
 
-        {/* Progress Dots */}
+        {/* Progress Indicators */}
         <div className="flex items-center gap-1">
           {players.map((_, idx) => (
             <span
               key={idx}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
+              className={`h-1 rounded-full transition-all duration-200 ${
                 idx === currentRevealIndex
-                  ? 'w-6 bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]'
+                  ? 'w-5 bg-white'
                   : idx < currentRevealIndex
-                  ? 'w-2 bg-emerald-400'
-                  : 'w-2 bg-slate-800'
+                  ? 'w-2 bg-zinc-600'
+                  : 'w-2 bg-zinc-800'
               }`}
             />
           ))}
@@ -85,45 +85,41 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
         {subScreen === 'PASS_PROMPT' && (
           <motion.div
             key="pass-prompt"
-            initial={{ opacity: 0, scale: 0.92, y: 15 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -15 }}
-            transition={{ type: 'spring', damping: 24, stiffness: 300 }}
-            className="w-full flex flex-col items-center text-center space-y-6 p-6 sm:p-8 rounded-3xl bg-slate-900/90 border border-white/10 shadow-2xl backdrop-blur-xl"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full flex flex-col items-center text-center space-y-6 p-6 sm:p-8 rounded-2xl bg-zinc-900/60 border border-zinc-800 backdrop-blur-md shadow-sm"
           >
             <div className="relative">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-tr from-cyan-500/20 via-violet-500/10 to-transparent border border-cyan-500/30 flex items-center justify-center text-5xl sm:text-6xl shadow-inner animate-pulse">
+              <div className="w-20 h-20 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-4xl shadow-sm">
                 {currentPlayer.avatar}
               </div>
-              <div className="absolute -bottom-2 -right-2 p-2 rounded-xl bg-slate-950 border border-cyan-400/40 text-cyan-400 shadow-md">
-                <Smartphone className="w-4 h-4" />
+              <div className="absolute -bottom-1.5 -right-1.5 p-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-zinc-300">
+                <Smartphone className="w-3.5 h-3.5" />
               </div>
             </div>
 
-            <div className="space-y-2 max-w-sm">
-              <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold">
-                OPER PERANGKAT KE:
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 font-semibold">
+                Giliran Pemain #{currentRevealIndex + 1}
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black font-display text-white tracking-wide">
-                {currentPlayer.name}
+              <h2 className="text-2xl font-bold tracking-tight text-white font-sans">
+                Oper HP ke {currentPlayer.name}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans">
-                Berikan smartphone ini kepada <strong>{currentPlayer.name}</strong>. Jangan biarkan pemain lain melihat layar!
+              <p className="text-xs text-zinc-400 max-w-[280px] leading-relaxed">
+                Pemain lain dilarang mengintip! Tekan tombol saat HP sudah di tangan <strong>{currentPlayer.name}</strong>.
               </p>
             </div>
 
-            <div className="w-full pt-2">
-              <Button
-                variant="primary"
-                size="lg"
-                fullWidth
-                onClick={handleReadyToPeek}
-                rightIcon={<ArrowRight className="w-5 h-5" />}
-                className="shadow-lg shadow-cyan-500/25 py-3.5 text-base"
-              >
-                Saya {currentPlayer.name}, Saya Sudah Siap!
-              </Button>
-            </div>
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={handleReadyToPeek}
+              rightIcon={<ArrowRight className="w-4 h-4" />}
+            >
+              Saya {currentPlayer.name}, Siap Intip
+            </Button>
           </motion.div>
         )}
 
@@ -131,87 +127,75 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
         {subScreen === 'REVEAL_CARD' && (
           <motion.div
             key="reveal-card"
-            initial={{ opacity: 0, scale: 0.94, y: 15 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -15 }}
-            transition={{ type: 'spring', damping: 24, stiffness: 300 }}
-            className="w-full flex flex-col items-center space-y-6"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="w-full flex flex-col items-center space-y-5"
           >
-            {/* Player Target Badge */}
-            <div className="flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-slate-900/80 border border-white/10 shadow-sm">
-              <span className="text-xl">{currentPlayer.avatar}</span>
-              <span className="text-sm font-bold text-slate-200">{currentPlayer.name}</span>
+            <div className="text-center space-y-0.5">
+              <p className="text-xs font-mono text-zinc-400 font-medium">
+                Pemain: <span className="text-zinc-200 font-bold">{currentPlayer.name}</span>
+              </p>
             </div>
 
-            {/* Reusable Secret Card */}
+            {/* Reusable SecretCard Component */}
             <SecretCard
               role={currentPlayer.role}
               word={currentPlayer.word}
               category={settings.category}
-              className="shadow-2xl"
             />
 
-            {/* Confirm Finished Button */}
-            <div className="w-full max-w-sm">
-              <Button
-                variant="secondary"
-                size="md"
-                fullWidth
-                onClick={handleFinishPeeking}
-                leftIcon={<ShieldCheck className="w-4 h-4 text-emerald-400" />}
-                className="hover:border-emerald-500/40 hover:text-white"
-              >
-                Sudah Hafal Kata & Peran
-              </Button>
-            </div>
+            <Button
+              variant="secondary"
+              size="lg"
+              fullWidth
+              onClick={handleFinishPeeking}
+              leftIcon={<CheckCircle className="w-4 h-4 text-emerald-400" />}
+            >
+              Sudah Hafal Kata &amp; Tutup Layar
+            </Button>
           </motion.div>
         )}
 
-        {/* SUB-SCREEN 3: Done & Pass to Next Player */}
+        {/* SUB-SCREEN 3: Done Peeking - Next Player or Start */}
         {subScreen === 'DONE_PROMPT' && (
           <motion.div
             key="done-prompt"
-            initial={{ opacity: 0, scale: 0.92, y: 15 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -15 }}
-            transition={{ type: 'spring', damping: 24, stiffness: 300 }}
-            className="w-full flex flex-col items-center text-center space-y-6 p-6 sm:p-8 rounded-3xl bg-slate-900/90 border border-white/10 shadow-2xl backdrop-blur-xl"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full flex flex-col items-center text-center space-y-6 p-6 sm:p-8 rounded-2xl bg-zinc-900/60 border border-zinc-800 backdrop-blur-md shadow-sm"
           >
-            <div className="w-20 h-20 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
-              <CheckCircle className="w-10 h-10 animate-bounce" />
+            <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400">
+              <ShieldCheck className="w-7 h-7" />
             </div>
 
-            <div className="space-y-2 max-w-sm">
-              <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-semibold">
-                KATA BERHASIL DITERIMA
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-mono text-emerald-400 uppercase tracking-wider font-semibold">
+                Kata Telah Terkunci
               </span>
-              <h2 className="text-xl sm:text-2xl font-bold font-display text-white">
-                {currentPlayer.name} Telah Mengintip
+              <h2 className="text-xl font-bold tracking-tight text-white">
+                {isLastPlayer ? 'Semua Pemain Telah Siap!' : `Lanjut ke Pemain Berikutnya`}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 font-sans">
+              <p className="text-xs text-zinc-400 max-w-[280px] leading-relaxed">
                 {isLastPlayer
-                  ? 'Semua pemain telah selesai melihat peran masing-masing! Siap untuk memulai putaran diskusi dan clue?'
-                  : 'Sembunyikan layar dan oper smartphone ke pemain berikutnya.'}
+                  ? 'Seluruh pemain sudah melihat kata rahasia masing-masing. Saatnya memulai putaran diskusi!'
+                  : `Oper HP ke pemain berikutnya tanpa membocorkan kata rahasiamu.`}
               </p>
             </div>
 
-            <div className="w-full pt-2">
-              <Button
-                variant={isLastPlayer ? 'primary' : 'secondary'}
-                size="lg"
-                fullWidth
-                onClick={handleProceedNext}
-                rightIcon={<ArrowRight className="w-5 h-5" />}
-                className={isLastPlayer ? 'shadow-lg shadow-cyan-500/30 font-bold' : ''}
-              >
-                {isLastPlayer ? 'Mulai Beri Clue (Diskusi)' : 'Oper ke Pemain Berikutnya'}
-              </Button>
-            </div>
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={handleProceedNext}
+              rightIcon={<ArrowRight className="w-4 h-4" />}
+            >
+              {isLastPlayer ? 'Mulai Diskusi & Voting' : 'Oper ke Pemain Selanjutnya'}
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 };
-
-export default PassPlaySecretView;

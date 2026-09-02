@@ -19,25 +19,25 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-bold shadow-lg shadow-cyan-500/25 border border-cyan-300/40 hover:shadow-cyan-400/40',
-  danger:
-    'bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-bold shadow-lg shadow-rose-600/30 border border-rose-400/40 hover:shadow-rose-500/50',
-  accent:
-    'bg-gradient-to-r from-purple-600 to-violet-500 hover:from-purple-500 hover:to-violet-400 text-white font-bold shadow-lg shadow-purple-600/30 border border-purple-400/40 hover:shadow-purple-500/50',
+    'bg-zinc-100 text-zinc-950 font-semibold hover:bg-white active:bg-zinc-200 border border-zinc-200 shadow-sm',
   secondary:
-    'bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-white/10 hover:border-white/20 backdrop-blur-sm shadow-md',
+    'bg-zinc-900/90 text-zinc-200 font-medium hover:bg-zinc-800 hover:text-white active:bg-zinc-800/60 border border-zinc-800 hover:border-zinc-700 shadow-sm',
+  danger:
+    'bg-rose-950/40 text-rose-300 font-medium hover:bg-rose-900/50 hover:text-rose-200 border border-rose-900/50 hover:border-rose-700 active:bg-rose-900/70',
+  accent:
+    'bg-cyan-500/15 text-cyan-300 font-medium hover:bg-cyan-500/25 hover:text-cyan-200 border border-cyan-500/30 hover:border-cyan-400/50',
   outline:
-    'bg-transparent border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400 active:bg-cyan-500/20 shadow-sm',
+    'bg-transparent border border-zinc-700/80 text-zinc-300 hover:bg-zinc-800/60 hover:text-white hover:border-zinc-600 active:bg-zinc-800',
   ghost:
-    'bg-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 active:bg-white/10 border border-transparent',
+    'bg-transparent text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 active:bg-zinc-800 border border-transparent',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
   xs: 'px-2.5 py-1 text-xs rounded-lg gap-1.5',
-  sm: 'px-3 py-1.5 text-xs sm:text-sm rounded-xl gap-2',
+  sm: 'px-3 py-1.5 text-xs sm:text-sm rounded-lg gap-2',
   md: 'px-4 py-2 text-sm sm:text-base rounded-xl gap-2',
-  lg: 'px-6 py-3 text-base sm:text-lg rounded-2xl gap-2.5 font-semibold',
-  xl: 'px-8 py-4 text-lg sm:text-xl rounded-2xl gap-3 font-bold tracking-wide',
+  lg: 'px-5 py-2.5 text-base rounded-xl gap-2.5 font-medium',
+  xl: 'px-6 py-3.5 text-base sm:text-lg rounded-xl gap-3 font-semibold tracking-wide',
   icon: 'p-2.5 rounded-xl aspect-square flex items-center justify-center',
 };
 
@@ -84,8 +84,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={isDisabled}
         onClick={handleClick}
         className={cn(
-          'relative inline-flex items-center justify-center select-none font-sans transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
-          'active:scale-[0.97] hover:brightness-110 disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100 disabled:hover:brightness-100',
+          'relative inline-flex items-center justify-center select-none font-sans transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
+          'active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none disabled:active:scale-100',
           variantStyles[variant],
           sizeStyles[size],
           fullWidth && 'w-full',
@@ -100,9 +100,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {leftIcon && <span className="inline-flex shrink-0 items-center justify-center">{leftIcon}</span>}
+            {leftIcon && <span className="inline-flex shrink-0 items-center">{leftIcon}</span>}
             {children && <span>{children}</span>}
-            {rightIcon && <span className="inline-flex shrink-0 items-center justify-center">{rightIcon}</span>}
+            {rightIcon && <span className="inline-flex shrink-0 items-center">{rightIcon}</span>}
           </>
         )}
       </button>
@@ -111,4 +111,3 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
-export default Button;

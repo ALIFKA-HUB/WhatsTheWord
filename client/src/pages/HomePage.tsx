@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+
 import {
   Smartphone,
   Wifi,
-  Sparkles,
   PlusCircle,
   LogIn,
   BookOpen,
-  Shield,
-  EyeOff,
-  HelpCircle,
   ArrowRight,
   AlertCircle,
 } from 'lucide-react';
@@ -21,7 +17,6 @@ import { Badge } from '../components/common/Badge';
 import { AvatarPicker, PRESET_AVATARS } from '../components/game/AvatarPicker';
 import { CustomWordPackModal } from '../components/lobby/CustomWordPackModal';
 import { useSocket } from '../hooks/useSocket';
-import { useGameSound } from '../hooks/useGameSound';
 import { STORAGE_KEYS } from '../context/SocketContext';
 import { cn } from '../utils/cn';
 
@@ -37,7 +32,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onEnterOnlineLobby,
 }) => {
   const { isConnected, isConnecting, createRoom, joinRoom, error, clearError } = useSocket();
-  const { playButtonTap } = useGameSound();
+  
 
   const [onlineTab, setOnlineTab] = useState<OnlineTab>('HOST');
   const [roomCodeInput, setRoomCodeInput] = useState('');
@@ -127,270 +122,250 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-slate-950 font-sans">
+    <div className="min-h-[100dvh] bg-[#09090b] text-zinc-100 flex flex-col selection:bg-zinc-700 selection:text-white font-sans">
       <Header />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:py-10 flex flex-col justify-center space-y-8">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 sm:py-12 flex flex-col justify-center space-y-10">
         {/* Hero Section */}
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
+        <div className="text-center space-y-4 max-w-xl mx-auto">
           <div className="flex justify-center">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', damping: 15 }}
-              className="relative flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-slate-950 border-2 border-cyan-400 shadow-[0_0_35px_-5px_rgba(6,182,212,0.6)]"
-            >
-              <img src="/logo.svg" alt="What's The Word Logo" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
-              <div className="absolute -inset-1 rounded-3xl bg-cyan-500/20 blur-md -z-10 animate-pulse" />
-            </motion.div>
+            <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center p-2.5 shadow-sm">
+              <img src="/logo.svg" alt="What's The Word Logo" className="w-full h-full object-contain" />
+            </div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold shadow-[0_0_15px_-3px_rgba(6,182,212,0.3)]"
-          >
-            <Sparkles className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '4s' }} />
-            <span>Cyber Social Word Deduction Game</span>
-          </motion.div>
+          <div className="space-y-2">
+            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-100 font-sans">
+              WHAT'S THE WORD
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-normal">
+              Permainan deduksi kata sosial. Temukan penyusup di antara warga sipil dengan satu kata rahasia yang mirip dan Mr. White yang menyamar tanpa kata.
+            </p>
+          </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black font-display tracking-tight bg-gradient-to-r from-cyan-300 via-white to-rose-400 bg-clip-text text-transparent leading-tight">
-            WHAT'S THE WORD
-          </h1>
-
-          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans">
-            Temukan penyusup di antara warga sipil! Satu kata rahasia yang mirip, perdebatan sengit, dan satu Butakata (Mr. White) yang menyamar tanpa tahu apa-apa.
-          </p>
-
-          {/* Quick Roles Overview */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-            <Badge variant="cyan" size="sm" icon={<Shield className="w-3 h-3" />}>
-              Warga (Satu Kata)
-            </Badge>
-            <Badge variant="crimson" size="sm" icon={<EyeOff className="w-3 h-3" />}>
-              Impostor (Kata Mirip)
-            </Badge>
-            <Badge variant="violet" size="sm" icon={<HelpCircle className="w-3 h-3" />}>
-              Mr. White (Tanpa Kata)
-            </Badge>
+          {/* Minimalist Role Tags */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-xs">
+            <span className="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300 font-medium">
+              Warga <span className="text-zinc-500 font-normal">· Kata Sama</span>
+            </span>
+            <span className="px-2.5 py-1 rounded-md bg-rose-950/30 border border-rose-900/40 text-rose-300 font-medium">
+              Impostor <span className="text-rose-400/60 font-normal">· Kata Mirip</span>
+            </span>
+            <span className="px-2.5 py-1 rounded-md bg-purple-950/30 border border-purple-900/40 text-purple-300 font-medium">
+              Mr. White <span className="text-purple-400/60 font-normal">· Tanpa Kata</span>
+            </span>
           </div>
         </div>
 
-        {/* Mode Selector Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+        {/* Mode Selector Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
           {/* 1. Offline Pass & Play Card */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="h-full"
+          <Card
+            padding="lg"
+            className="h-full flex flex-col justify-between border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/70 hover:border-zinc-700 transition-all group"
           >
-            <Card
-              glow="cyan"
-              padding="lg"
-              className="h-full flex flex-col justify-between border-cyan-500/30 hover:border-cyan-400/50 bg-gradient-to-b from-slate-900/90 to-slate-950/90 group"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_20px_-3px_rgba(6,182,212,0.3)] group-hover:scale-110 transition-transform">
-                    <Smartphone className="w-6 h-6" />
-                  </div>
-                  <Badge variant="cyan" size="sm">
-                    1 HP Offline
-                  </Badge>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-200">
+                  <Smartphone className="w-5 h-5" />
                 </div>
-
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold font-display text-slate-100 group-hover:text-cyan-300 transition-colors">
-                    Pass &amp; Play (Offline)
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                    Main bersama teman dalam satu lingkaran hanya dengan <strong>1 smartphone</strong>. Ganti-gantian intip kata rahasia tanpa butuh internet!
-                  </p>
-                </div>
-
-                <ul className="text-xs text-slate-400 space-y-1.5 pt-1">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                    3 - 20 Pemain Offline
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                    Sensor intip layar &amp; suara buzzer
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                    Bank kata ratusan pasang Indonesia
-                  </li>
-                </ul>
+                <Badge variant="slate" size="sm">
+                  1 HP Offline
+                </Badge>
               </div>
 
-              <div className="pt-6">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  fullWidth
-                  onClick={onStartPassPlay}
-                  rightIcon={<ArrowRight className="w-5 h-5" />}
-                >
-                  Mulai Mode 1 HP
-                </Button>
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold text-zinc-100">
+                  Pass &amp; Play
+                </h3>
+                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                  Main bersama dalam 1 perangkat tanpa koneksi internet. Oper HP bergantian untuk intip kata rahasia dan mulai diskusi langsung.
+                </p>
               </div>
-            </Card>
-          </motion.div>
+
+              <div className="pt-2 text-xs text-zinc-500 space-y-1 font-mono">
+                <div>• 3 - 20 Pemain</div>
+                <div>• Sensor tap/hold intip rahasia</div>
+                <div>• 64+ Pasang kata bahasa Indonesia</div>
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={onStartPassPlay}
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+              >
+                Mulai Mode 1 HP
+              </Button>
+            </div>
+          </Card>
 
           {/* 2. Online Multi-Device Room Card */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.15 }}
-            className="h-full"
+          <Card
+            padding="lg"
+            className="h-full flex flex-col justify-between border-zinc-800 bg-zinc-900/40 hover:border-zinc-700 transition-all"
           >
-            <Card
-              glow="violet"
-              padding="lg"
-              className="h-full flex flex-col justify-between border-purple-500/30 hover:border-purple-400/50 bg-gradient-to-b from-slate-900/90 to-slate-950/90"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-[0_0_20px_-3px_rgba(168,85,247,0.3)]">
-                    <Wifi className="w-6 h-6 animate-pulse" />
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={cn(
-                        'w-2 h-2 rounded-full',
-                        isConnected ? 'bg-emerald-400 animate-ping' : 'bg-rose-400'
-                      )}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-200">
+                  <Wifi className="w-5 h-5" />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={cn(
+                      'w-2 h-2 rounded-full',
+                      isConnected ? 'bg-emerald-400' : isConnecting ? 'bg-amber-400 animate-pulse' : 'bg-rose-400'
+                    )}
+                  />
+                  <span className="text-[11px] font-mono text-zinc-400">
+                    {isConnected ? 'Online' : isConnecting ? 'Menghubungkan...' : 'Offline'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold text-zinc-100">
+                  Multi-Device Online
+                </h3>
+                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                  Setiap pemain menggunakan smartphone masing-masing secara realtime dengan sinkronisasi voting &amp; timer.
+                </p>
+              </div>
+
+              {/* Minimal Tabs */}
+              <div className="grid grid-cols-2 p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-medium">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOnlineTab('HOST');
+                    setFormError(null);
+                    clearError();
+                  }}
+                  className={cn(
+                    'py-1.5 rounded-lg transition-all',
+                    onlineTab === 'HOST'
+                      ? 'bg-zinc-800 text-zinc-100 font-semibold shadow-sm'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                  )}
+                >
+                  Buat Room
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOnlineTab('JOIN');
+                    setFormError(null);
+                    clearError();
+                  }}
+                  className={cn(
+                    'py-1.5 rounded-lg transition-all',
+                    onlineTab === 'JOIN'
+                      ? 'bg-zinc-800 text-zinc-100 font-semibold shadow-sm'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                  )}
+                >
+                  Gabung Room
+                </button>
+              </div>
+
+              {/* Minimal Form */}
+              <div className="space-y-3 pt-1">
+                {/* Name & Avatar Row */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
+                    Nama &amp; Avatar Agen
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <AvatarPicker
+                      selectedAvatar={selectedAvatar}
+                      onSelectAvatar={setSelectedAvatar}
+                      showNicknameInput={false}
                     />
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
-                      {isConnecting
-                        ? 'Menghubungkan...'
-                        : isConnected
-                        ? 'Online Room'
-                        : 'Server Offline'}
-                    </span>
+                    <input
+                      type="text"
+                      maxLength={18}
+                      value={playerName}
+                      onChange={(e) => setPlayerName(e.target.value)}
+                      placeholder="Nama kamu..."
+                      className="flex-1 px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 text-zinc-100 text-sm outline-none transition-all placeholder:text-zinc-600"
+                    />
                   </div>
                 </div>
 
-                {/* Tab switcher: Host vs Join */}
-                <div className="grid grid-cols-2 gap-1 p-1 bg-slate-950/80 rounded-xl border border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOnlineTab('HOST');
-                      setFormError(null);
-                      try {
-                        playButtonTap();
-                      } catch {}
-                    }}
-                    className={cn(
-                      'flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all',
-                      onlineTab === 'HOST'
-                        ? 'bg-purple-500/25 text-purple-200 border border-purple-400/40 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200'
-                    )}
-                  >
-                    <PlusCircle className="w-3.5 h-3.5" />
-                    Buat Room (Host)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOnlineTab('JOIN');
-                      setFormError(null);
-                      try {
-                        playButtonTap();
-                      } catch {}
-                    }}
-                    className={cn(
-                      'flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all',
-                      onlineTab === 'JOIN'
-                        ? 'bg-cyan-500/25 text-cyan-200 border border-cyan-400/40 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200'
-                    )}
-                  >
-                    <LogIn className="w-3.5 h-3.5" />
-                    Gabung Room
-                  </button>
-                </div>
-
-                {/* Nickname & Avatar Picker */}
-                <AvatarPicker
-                  nickname={playerName}
-                  onNicknameChange={setPlayerName}
-                  selectedAvatar={selectedAvatar}
-                  onSelectAvatar={setSelectedAvatar}
-                  className="space-y-3"
-                />
-
-                {/* Join Tab Specific: Room Code Input */}
+                {/* Join Code Input */}
                 {onlineTab === 'JOIN' && (
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">
-                      Kode Room (4 Karakter)
+                    <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
+                      Kode Room (4 Huruf)
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. 7K9X"
+                      maxLength={4}
                       value={roomCodeInput}
                       onChange={(e) => setRoomCodeInput(e.target.value.toUpperCase())}
-                      maxLength={4}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-950/80 border border-cyan-500/30 text-cyan-300 font-mono text-center font-bold text-lg tracking-widest uppercase placeholder:text-slate-600 focus:outline-none focus:border-cyan-400"
+                      placeholder="MISAL: KOP1"
+                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 text-zinc-100 text-sm font-mono tracking-widest text-center uppercase outline-none transition-all placeholder:text-zinc-600"
                     />
                   </div>
                 )}
 
                 {/* Error Banner */}
                 {(formError || error) && (
-                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
-                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                  <div className="p-2.5 rounded-lg bg-rose-950/30 border border-rose-900/50 text-rose-300 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{formError || error}</span>
                   </div>
                 )}
               </div>
+            </div>
 
-              <div className="pt-5">
-                {onlineTab === 'HOST' ? (
-                  <Button
-                    variant="accent"
-                    size="lg"
-                    fullWidth
-                    isLoading={isSubmitting}
-                    onClick={handleCreateRoom}
-                    leftIcon={<PlusCircle className="w-5 h-5" />}
-                  >
-                    Buat Room Baru
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    fullWidth
-                    isLoading={isSubmitting}
-                    onClick={handleJoinRoom}
-                    leftIcon={<LogIn className="w-5 h-5" />}
-                  >
-                    Gabung Room Sekarang
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </motion.div>
+            <div className="pt-5">
+              {onlineTab === 'HOST' ? (
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  onClick={handleCreateRoom}
+                  isLoading={isSubmitting}
+                  loadingText="Membuat Room..."
+                  leftIcon={<PlusCircle className="w-4 h-4" />}
+                >
+                  Buat Room Baru
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  onClick={handleJoinRoom}
+                  isLoading={isSubmitting}
+                  loadingText="Bergabung..."
+                  leftIcon={<LogIn className="w-4 h-4" />}
+                >
+                  Gabung ke Room
+                </Button>
+              )}
+            </div>
+          </Card>
         </div>
 
-        {/* Custom Word Pack Feature Button */}
-        <div className="flex items-center justify-center pt-2">
-          <Button
-            variant="secondary"
-            size="sm"
+        {/* Footer Actions */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-zinc-800/60 text-xs text-zinc-500">
+          <button
+            type="button"
             onClick={() => setIsPackModalOpen(true)}
-            leftIcon={<BookOpen className="w-4 h-4 text-cyan-400" />}
-            className="text-xs font-semibold border-cyan-500/20 hover:border-cyan-400/40"
+            className="flex items-center gap-2 hover:text-zinc-300 transition-colors"
           >
-            Buka Pembuat Paket Kata Kustom
-          </Button>
+            <BookOpen className="w-4 h-4" />
+            <span>Paket Kata Kustom / Komunitas</span>
+          </button>
+
+          <div className="font-mono text-[11px] text-zinc-600">
+            What's The Word · v1.0.0
+          </div>
         </div>
       </main>
 
@@ -402,5 +377,3 @@ export const HomePage: React.FC<HomePageProps> = ({
     </div>
   );
 };
-
-export default HomePage;
