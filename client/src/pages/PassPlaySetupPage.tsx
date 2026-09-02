@@ -206,37 +206,40 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
     });
 
     // Auto-balance roles when total changes
-    const mrWhite = settings.enableMrWhite ? 1 : 0;
-    const maxUndercover = Math.max(1, Math.floor((clamped - mrWhite - 1) / 2));
+    const mrWhite = settings.enableMrWhite && clamped >= 3 ? 1 : 0;
+    const maxUndercover = clamped === 2 ? 1 : Math.max(1, Math.floor((clamped - mrWhite - 1) / 2));
     const nextUndercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
-    const nextCivilian = clamped - nextUndercover - mrWhite;
+    const nextCivilian = Math.max(1, clamped - nextUndercover - mrWhite);
 
     updateSettings({
       undercoverCount: nextUndercover,
       civilianCount: nextCivilian,
+      enableMrWhite: mrWhite > 0,
+      mrWhiteCount: mrWhite,
     });
   };
 
   // Role constraints
-  const mrWhiteCount = settings.enableMrWhite ? 1 : 0;
-  const maxUndercover = Math.max(1, Math.floor((totalPlayerCount - mrWhiteCount - 1) / 2));
-  const currentUndercover = Math.min(Math.max(1, settings.undercoverCount), maxUndercover);
+  const mrWhiteCount = settings.enableMrWhite && totalPlayerCount >= 3 ? 1 : 0;
+  const maxUndercover = totalPlayerCount === 2 ? 1 : Math.max(1, Math.floor((totalPlayerCount - mrWhiteCount - 1) / 2));
+  const currentUndercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
   const currentCivilian = Math.max(1, totalPlayerCount - currentUndercover - mrWhiteCount);
 
   const handleUndercoverChange = (delta: number) => {
     const next = Math.max(1, Math.min(maxUndercover, currentUndercover + delta));
     updateSettings({
       undercoverCount: next,
-      civilianCount: totalPlayerCount - next - mrWhiteCount,
+      civilianCount: Math.max(1, totalPlayerCount - next - mrWhiteCount),
     });
   };
 
   const handleToggleMrWhite = () => {
+    if (totalPlayerCount < 3) return; // Mr White requires at least 3 players
     const nextEnable = !settings.enableMrWhite;
     const nextMrWhite = nextEnable ? 1 : 0;
     const nextMaxUndercover = Math.max(1, Math.floor((totalPlayerCount - nextMrWhite - 1) / 2));
     const nextUndercover = Math.min(currentUndercover, nextMaxUndercover);
-    const nextCivilian = totalPlayerCount - nextUndercover - nextMrWhite;
+    const nextCivilian = Math.max(1, totalPlayerCount - nextUndercover - nextMrWhite);
 
     updateSettings({
       enableMrWhite: nextEnable,
