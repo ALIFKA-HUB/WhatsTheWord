@@ -313,7 +313,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
-                    Pilih Cepat / Scroll Angka:
+                    Scroll Angka Pemain:
                   </span>
                   <span className="text-[10px] font-mono text-cyan-400">
                     ← Geser Kiri / Kanan →
