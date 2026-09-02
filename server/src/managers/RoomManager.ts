@@ -377,6 +377,16 @@ export class RoomManager {
     const calcResult = GameEngine.calculateVotes(votes, room.players);
 
     if (calcResult.isTie) {
+      room.consecutiveTies = (room.consecutiveTies || 0) + 1;
+      const maxTies = room.settings.maxConsecutiveTies || 3;
+
+      if (room.consecutiveTies >= maxTies) {
+        room.phase = 'GAME_OVER';
+        room.winningRole = 'UNDERCOVER';
+        this.roomLastActivity.set(normalizedRoomId, Date.now());
+        return { room, isComplete: true, isTie: true, winner: 'UNDERCOVER' };
+      }
+
       // Instant Skip on Tie Rule
       room.round++;
       room.phase = 'TURN_PHASE';
@@ -394,6 +404,9 @@ export class RoomManager {
       this.roomLastActivity.set(normalizedRoomId, Date.now());
       return { room, isComplete: true, isTie: true };
     }
+
+    // Reset consecutive ties on elimination
+    room.consecutiveTies = 0;
 
     // Elimination
     const eliminated = room.players.find((p) => p.id === calcResult.eliminatedPlayerId);

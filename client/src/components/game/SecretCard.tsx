@@ -74,8 +74,6 @@ export const SecretCard: React.FC<SecretCardProps> = ({
           isHolding
             ? isMrWhite
               ? 'border-purple-500 shadow-[0_0_35px_-5px_rgba(168,85,247,0.5)] scale-[1.02]'
-              : role === 'UNDERCOVER'
-              ? 'border-rose-500 shadow-[0_0_35px_-5px_rgba(244,63,94,0.5)] scale-[1.02]'
               : 'border-cyan-400 shadow-[0_0_35px_-5px_rgba(6,182,212,0.5)] scale-[1.02]'
             : 'border-white/10 hover:border-white/20 active:scale-[0.99]'
         )}
@@ -111,24 +109,28 @@ export const SecretCard: React.FC<SecretCardProps> = ({
               transition={{ type: 'spring', damping: 20, stiffness: 300 }}
               className="flex flex-col items-center justify-center space-y-3 pointer-events-none"
             >
-              <RoleBadge role={role} size="lg" />
-
               {isMrWhite ? (
-                <div className="text-center space-y-1">
-                  <p className="text-xl sm:text-2xl font-black font-display text-purple-300 tracking-wide">
-                    BUTAKATA (MR. WHITE)
-                  </p>
-                  <p className="text-xs text-purple-200/80 max-w-[220px] font-sans">
-                    Kamu tidak memiliki kata rahasia! Simak petunjuk warga dan tebak katanya.
-                  </p>
-                </div>
+                <>
+                  <RoleBadge role="MR_WHITE" size="lg" />
+                  <div className="text-center space-y-1">
+                    <p className="text-3xl sm:text-4xl font-black font-mono text-purple-300 tracking-widest">
+                      ???
+                    </p>
+                    <p className="text-xs text-purple-200/90 max-w-[240px] font-sans leading-relaxed">
+                      Kamu adalah <span className="font-semibold text-purple-300">Mr. White (Buta Kata)</span>! Kamu tidak memiliki kata. Simak petunjuk pemain lain dan tebak kata warga!
+                    </p>
+                  </div>
+                </>
               ) : (
-                <div className="text-center space-y-1">
-                  <p className="text-2xl sm:text-3xl font-black font-display text-transparent bg-gradient-to-r from-cyan-200 via-white to-cyan-300 bg-clip-text tracking-wider uppercase">
+                <div className="text-center space-y-2 py-1">
+                  <span className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
+                    Kata Rahasia Kamu
+                  </span>
+                  <p className="text-3xl sm:text-4xl font-black font-display text-transparent bg-gradient-to-r from-cyan-200 via-white to-cyan-300 bg-clip-text tracking-wider uppercase">
                     {word || 'Kata Rahasia'}
                   </p>
-                  <p className="text-[11px] text-slate-400 font-sans">
-                    Jelaskan kata ini tanpa ketahuan impostor/butakata!
+                  <p className="text-xs text-slate-400 font-sans max-w-[240px]">
+                    Ingat kata ini dan berikan 1 petunjuk tanpa dicurigai pemain lain!
                   </p>
                 </div>
               )}

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Mic,
   ArrowRight,
   Vote,
   Skull,
@@ -10,14 +9,14 @@ import {
   Clock,
   Send,
   Users,
+  CheckCircle2,
 } from 'lucide-react';
 import { usePassPlay } from '../../context/PassPlayContext';
 import { useGameSound } from '../../hooks/useGameSound';
 import { Button } from '../common/Button';
 import { Card } from '../common/Card';
-import { Badge, RoleBadge } from '../common/Badge';
+import { Badge } from '../common/Badge';
 import { Modal } from '../common/Modal';
-import { CountdownTimer } from './CountdownTimer';
 import { Player } from '../../types/game.types';
 
 export const PassPlayVotingView: React.FC = () => {
@@ -25,15 +24,13 @@ export const PassPlayVotingView: React.FC = () => {
     players,
     phase,
     speakingOrder,
-    currentSpeakerIndex,
-    activeSpeakerId,
     round,
     settings,
     votes,
     isTieLastRound,
     tieMessage,
+    consecutiveTies,
     pendingEliminatedPlayer,
-    nextSpeaker,
     startVotingPhase,
     castVote,
     clearVotes,
@@ -44,45 +41,47 @@ export const PassPlayVotingView: React.FC = () => {
 
   const { playVoteBuzzer, playElimination, playVictory, playDefeat } = useGameSound();
 
-  // Local turn timer for the active speaker
-  const [turnTimerSeconds, setTurnTimerSeconds] = useState<number>(settings.turnDurationSeconds || 45);
-
   // Voting Selection State
   const [selectedSuspectId, setSelectedSuspectId] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [votingMode, setVotingMode] = useState<'consensus' | 'individual'>('consensus');
   const [currentVoterId, setCurrentVoterId] = useState<string | null>(null);
 
+  // Table Discussion timer
+  const [discussionSeconds, setDiscussionSeconds] = useState<number>(
+    settings.turnDurationSeconds > 0 ? settings.turnDurationSeconds * 2 : 0
+  );
+
   // Mr White Guess Modal State
   const [mrWhiteGuessInput, setMrWhiteGuessInput] = useState('');
   const [mrWhiteTimerSeconds, setMrWhiteTimerSeconds] = useState(45);
 
   const alivePlayers = players.filter((p) => p.isAlive);
-  const activeSpeaker = players.find((p) => p.id === activeSpeakerId) || alivePlayers[0];
-  const isLastSpeaker = currentSpeakerIndex >= speakingOrder.filter(id => players.find(p => p.id === id)?.isAlive).length - 1;
+  const orderedAlivePlayers = speakingOrder
+    .map((id) => players.find((p) => p.id === id))
+    .filter((p): p is Player => !!p && p.isAlive);
 
-  // Reset speaker timer on speaker change
+  const votingStartRound = settings.votingStartRound || 2;
+  const isWarmingUpRound = round < votingStartRound;
+  const maxTies = settings.maxConsecutiveTies || 3;
+
+  // Reset timer on phase change
   useEffect(() => {
     if (phase === 'TURN_CLUE') {
-      setTurnTimerSeconds(settings.turnDurationSeconds || 45);
+      setDiscussionSeconds(settings.turnDurationSeconds > 0 ? settings.turnDurationSeconds * 2 : 0);
     }
-  }, [activeSpeakerId, phase, settings.turnDurationSeconds]);
+  }, [phase, round, settings.turnDurationSeconds]);
 
-  // Turn Clue Countdown ticker
+  // Discussion Countdown ticker
   useEffect(() => {
-    if (phase !== 'TURN_CLUE' || settings.turnDurationSeconds === 0) return;
+    if (phase !== 'TURN_CLUE' || discussionSeconds <= 0) return;
 
     const interval = setInterval(() => {
-      setTurnTimerSeconds((prev) => {
-        if (prev <= 1) {
-          return 0;
-        }
-        return prev - 1;
-      });
+      setDiscussionSeconds((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [phase, settings.turnDurationSeconds, activeSpeakerId]);
+  }, [phase, discussionSeconds]);
 
   // Mr White 45s countdown timer ticker
   useEffect(() => {
@@ -115,10 +114,6 @@ export const PassPlayVotingView: React.FC = () => {
     }
   }, [mrWhiteTimerSeconds, phase]);
 
-  const handleNextSpeakerClick = () => {
-    nextSpeaker();
-  };
-
   const handleSelectSuspect = (playerId: string) => {
     if (votingMode === 'consensus') {
       setSelectedSuspectId(playerId);
@@ -127,7 +122,6 @@ export const PassPlayVotingView: React.FC = () => {
       if (currentVoterId) {
         castVote(currentVoterId, playerId);
         playVoteBuzzer();
-        // Advance to next voter
         const nextVoter = alivePlayers.find((p) => p.id !== currentVoterId && !votes[p.id]);
         setCurrentVoterId(nextVoter ? nextVoter.id : null);
       }
@@ -190,144 +184,130 @@ export const PassPlayVotingView: React.FC = () => {
               <AlertTriangle className="w-5 h-5 animate-bounce" />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-bold font-display uppercase tracking-wider text-amber-300">
-                Aturan Instant Skip Aktif!
-              </h4>
-              <p className="text-xs text-amber-200/90">{tieMessage}</p>
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold font-display uppercase tracking-wider text-amber-300">
+                  Suara Seri — Lewati Eliminasi!
+                </h4>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                  Seri {consecutiveTies}/{maxTies}
+                </span>
+              </div>
+              <p className="text-xs text-amber-200/90 mt-0.5">{tieMessage}</p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* PHASE 1: TURN CLUE (DISCUSSION) */}
+      {/* PHASE 1: TURN CLUE (TABLE DISCUSSION) */}
       {phase === 'TURN_CLUE' && (
         <div className="space-y-6">
           {/* Header Status */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge variant="cyan" size="md" pulse>
-                Ronde {round}
-              </Badge>
-              <span className="text-xs font-mono text-slate-400">
-                Fase Pemberian Petunjuk (Clue)
-              </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Badge variant={isWarmingUpRound ? 'violet' : 'cyan'} size="md" pulse>
+                  Ronde {round} {isWarmingUpRound ? '• Pemanasan Clue' : '• Putaran Diskusi'}
+                </Badge>
+                <span className="text-xs font-mono text-slate-400">
+                  {alivePlayers.length} Pemain Aktif
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold font-display text-white">
+                {isWarmingUpRound
+                  ? 'Pemanasan: Berikan 1 Clue Bergantian'
+                  : 'Putaran Clue & Analisis Meja'}
+              </h2>
             </div>
 
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={startVotingPhase}
-              rightIcon={<Vote className="w-3.5 h-3.5" />}
-              className="text-xs"
-            >
-              Langsung ke Voting
-            </Button>
+            {isWarmingUpRound ? (
+              <span className="text-xs font-mono text-purple-300 bg-purple-500/10 px-3 py-1.5 rounded-xl border border-purple-500/30 self-start sm:self-center">
+                Voting dibuka pada Ronde {votingStartRound}
+              </span>
+            ) : (
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={startVotingPhase}
+                rightIcon={<Vote className="w-3.5 h-3.5" />}
+                className="text-xs self-start sm:self-center"
+              >
+                Buka Voting Sekarang
+              </Button>
+            )}
           </div>
 
-          {/* Active Speaker Spotlight Card */}
-          <Card glow="cyan" className="p-6 sm:p-8 text-center space-y-6 relative overflow-hidden">
-            <div className="absolute top-3 right-3">
-              <span className="text-xs font-mono text-slate-500">
-                {currentSpeakerIndex + 1} / {speakingOrder.filter(id => players.find(p => p.id === id)?.isAlive).length} Pembicara
-              </span>
+          {/* Table Guide Card */}
+          <Card glow="cyan" className="p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-cyan-400" />
+                <span className="text-sm font-bold font-display uppercase tracking-wider text-slate-200">
+                  Urutan Bicara di Meja Nyata
+                </span>
+              </div>
+              {discussionSeconds > 0 && (
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{discussionSeconds}s</span>
+                </div>
+              )}
             </div>
 
-            {/* Avatar Spotlight */}
-            <div className="flex flex-col items-center space-y-3">
-              <div className="relative">
-                <motion.div
-                  key={activeSpeaker?.id}
-                  initial={{ scale: 0.8, rotate: -5 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: 'spring', damping: 15 }}
-                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-cyan-500/10 border-2 border-cyan-400 flex items-center justify-center text-5xl sm:text-6xl shadow-[0_0_35px_-5px_rgba(6,182,212,0.5)]"
+            <p className="text-xs text-slate-400">
+              Silakan bicara berurutan dari nomor 1 sampai selesai secara langsung di meja. Berikan 1 kata/kalimat petunjuk tanpa membocorkan kata rahasiamu!
+            </p>
+
+            {/* Speaking Order Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {orderedAlivePlayers.map((p, idx) => (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/60 border border-white/10 hover:border-cyan-500/30 transition-all"
                 >
-                  {activeSpeaker?.avatar}
-                </motion.div>
-                <span className="absolute -bottom-2 -right-2 p-1.5 rounded-xl bg-cyan-400 text-slate-950 shadow-md">
-                  <Mic className="w-4 h-4 animate-pulse" />
-                </span>
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-xs font-mono text-cyan-400 font-semibold uppercase tracking-wider">
-                  GILIRAN BICARA SEKARANG:
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-black font-display text-white">
-                  {activeSpeaker?.name}
-                </h2>
-                <p className="text-xs text-slate-400 font-sans max-w-sm mx-auto">
-                  Berikan 1 kata atau kalimat petunjuk yang mendeskripsikan kata rahasiamu!
-                </p>
-              </div>
+                  <div className="flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono font-black text-xs flex items-center justify-center">
+                      #{idx + 1}
+                    </span>
+                    <span className="text-2xl">{p.avatar}</span>
+                    <div>
+                      <p className="text-sm font-bold text-slate-200">{p.name}</p>
+                      <p className="text-[10px] font-mono text-slate-500">Giliran #{idx + 1}</p>
+                    </div>
+                  </div>
+                  <CheckCircle2 className="w-4 h-4 text-slate-600" />
+                </div>
+              ))}
             </div>
 
-            {/* Countdown Timer (if enabled) */}
-            {settings.turnDurationSeconds > 0 ? (
-              <div className="py-2">
-                <CountdownTimer
-                  totalSeconds={settings.turnDurationSeconds}
-                  remainingSeconds={turnTimerSeconds}
-                  size={100}
-                  strokeWidth={7}
-                  soundEnabled
-                  variant="circular"
-                />
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-slate-400">
-                <Clock className="w-3.5 h-3.5" />
-                Waktu Giliran Bebas
-              </div>
-            )}
-
-            {/* Next Speaker CTA */}
-            <div className="pt-2 max-w-sm mx-auto">
-              <Button
-                variant="primary"
-                size="lg"
-                fullWidth
-                onClick={handleNextSpeakerClick}
-                rightIcon={isLastSpeaker ? <Vote className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
-                className="shadow-xl shadow-cyan-500/30 text-base py-3.5"
-              >
-                {isLastSpeaker ? 'Selesai & Mulai Voting' : 'Lanjut ke Pembicara Berikutnya'}
-              </Button>
+            {/* Action CTA */}
+            <div className="pt-3 border-t border-white/10">
+              {isWarmingUpRound ? (
+                <Button
+                  variant="primary"
+                  size="xl"
+                  fullWidth
+                  onClick={() => {
+                    startVotingPhase();
+                  }}
+                  rightIcon={<ArrowRight className="w-5 h-5" />}
+                  className="shadow-xl shadow-purple-500/20 text-base py-4"
+                >
+                  Semua Sudah Beri Clue → Lanjut ke Ronde {round + 1}
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="xl"
+                  fullWidth
+                  onClick={startVotingPhase}
+                  rightIcon={<Vote className="w-5 h-5" />}
+                  className="shadow-xl shadow-cyan-500/30 text-base py-4"
+                >
+                  Semua Sudah Beri Clue → Mulai Voting Eliminasi
+                </Button>
+              )}
             </div>
           </Card>
-
-          {/* Speaking Order List */}
-          <div className="space-y-2">
-            <span className="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider">
-              Urutan Bicara Ronde {round}:
-            </span>
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
-              {speakingOrder
-                .map((id) => players.find((p) => p.id === id))
-                .filter((p): p is Player => !!p && p.isAlive)
-                .map((p, idx) => {
-                  const isCurrent = idx === currentSpeakerIndex;
-                  const isPast = idx < currentSpeakerIndex;
-
-                  return (
-                    <div
-                      key={p.id}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shrink-0 transition-all ${
-                        isCurrent
-                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200 shadow-md ring-1 ring-cyan-400 font-bold'
-                          : isPast
-                          ? 'bg-slate-900/40 border-white/5 text-slate-500'
-                          : 'bg-slate-900/80 border-white/10 text-slate-300'
-                      }`}
-                    >
-                      <span className="text-sm">{p.avatar}</span>
-                      <span className="text-xs truncate max-w-[100px]">{p.name}</span>
-                      {isCurrent && <Mic className="w-3 h-3 text-cyan-400 animate-pulse ml-1" />}
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
         </div>
       )}
 
@@ -339,32 +319,40 @@ export const PassPlayVotingView: React.FC = () => {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Badge variant="crimson" size="md" pulse>
-                  FASE VOTING
+                  FASE VOTING ELIMINASI
                 </Badge>
                 <span className="text-xs font-mono text-slate-400">
                   Ronde {round} • {alivePlayers.length} Pemain Hidup
                 </span>
+                {consecutiveTies > 0 && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                    Seri: {consecutiveTies}/{maxTies}
+                  </span>
+                )}
               </div>
               <h2 className="text-xl sm:text-2xl font-bold font-display text-white">
                 Pilih Pemain Yang Dicurigai
               </h2>
+              <p className="text-xs text-slate-400">
+                Diskusikan bersama di meja dan pilih pemain yang diduga sebagai Impostor atau Buta Kata.
+              </p>
             </div>
 
-            {/* Voting Mode Switcher */}
-            <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-white/10 shrink-0">
+            {/* Voting Mode Toggle */}
+            <div className="flex items-center p-1 rounded-xl bg-slate-950/80 border border-white/10 self-start sm:self-center">
               <button
                 type="button"
                 onClick={() => {
                   setVotingMode('consensus');
                   clearVotes();
                 }}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   votingMode === 'consensus'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    ? 'bg-rose-500 text-white shadow-md'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Konsensus Langsung
+                Keputusan Bersama
               </button>
               <button
                 type="button"
@@ -372,223 +360,208 @@ export const PassPlayVotingView: React.FC = () => {
                   setVotingMode('individual');
                   setCurrentVoterId(alivePlayers[0]?.id || null);
                 }}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   votingMode === 'individual'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    ? 'bg-rose-500 text-white shadow-md'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Tally 1 per 1
+                Voting Rahasia (Tally)
               </button>
             </div>
           </div>
 
-          {/* Mode Instructions */}
-          {votingMode === 'individual' && (
-            <div className="p-3 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs text-slate-300">
-                  Giliran memilih:{' '}
-                  <strong className="text-cyan-300">
-                    {alivePlayers.find((p) => p.id === currentVoterId)?.name || 'Semua Selesai'}
-                  </strong>
-                </span>
+          {/* Individual Voter Guidance Banner (if in Individual mode) */}
+          {votingMode === 'individual' && currentVoterId && (
+            <Card className="p-4 bg-rose-500/10 border-rose-500/30 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{players.find((p) => p.id === currentVoterId)?.avatar}</span>
+                <div>
+                  <span className="text-xs font-mono text-rose-300 uppercase tracking-wider font-semibold">
+                    Giliran Memberi Suara:
+                  </span>
+                  <p className="text-sm font-bold text-white">
+                    {players.find((p) => p.id === currentVoterId)?.name}
+                  </p>
+                </div>
               </div>
-              <span className="text-[10px] font-mono text-slate-400">
-                {Object.keys(votes).length}/{alivePlayers.length} Suara
+              <span className="text-xs font-mono text-slate-400">
+                {Object.keys(votes).length} / {alivePlayers.length} Suara Masuk
               </span>
-            </div>
+            </Card>
           )}
 
-          {/* Interactive Suspect Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {alivePlayers.map((p) => {
-              const voteCount = Object.values(votes).filter((targetId) => targetId === p.id).length;
+          {/* Suspect Players Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+            {alivePlayers.map((player) => {
+              const isSelected = selectedSuspectId === player.id;
+              const voteCount = Object.values(votes).filter((id) => id === player.id).length;
 
               return (
-                <motion.button
-                  key={p.id}
+                <motion.div
+                  key={player.id}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => handleSelectSuspect(p.id)}
-                  className="group relative flex items-center justify-between p-4 rounded-2xl bg-slate-900/80 border border-white/10 hover:border-rose-500/50 hover:bg-slate-900/95 transition-all text-left shadow-lg hover:shadow-rose-950/40"
+                  onClick={() => handleSelectSuspect(player.id)}
+                  className={`relative p-4 sm:p-5 rounded-2xl border text-center cursor-pointer transition-all duration-200 flex flex-col items-center space-y-3 ${
+                    isSelected
+                      ? 'bg-rose-500/20 border-rose-400 shadow-[0_0_25px_-3px_rgba(244,63,94,0.5)] ring-2 ring-rose-400'
+                      : 'bg-slate-900/80 border-white/10 hover:border-rose-500/40 hover:bg-slate-800/80'
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl group-hover:scale-110 transition-transform">
-                      {p.avatar}
-                    </span>
-                    <div>
-                      <h4 className="text-base font-bold text-white group-hover:text-rose-300 transition-colors">
-                        {p.name}
-                      </h4>
-                      <span className="text-[11px] font-mono text-slate-400">
-                        {votingMode === 'consensus' ? 'Klik untuk eliminasi' : 'Pilih sebagai target'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Vote Count Indicator for Individual Mode */}
+                  {/* Vote Badge if individual mode */}
                   {votingMode === 'individual' && voteCount > 0 && (
-                    <span className="px-2.5 py-1 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-mono font-bold">
-                      {voteCount} Vote
+                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-rose-500 text-white font-mono font-black text-xs shadow-md">
+                      {voteCount} vote
                     </span>
                   )}
 
-                  {/* Red Skull icon indicator */}
-                  <div className="p-2 rounded-xl bg-slate-950/60 border border-white/5 text-slate-500 group-hover:text-rose-400 group-hover:border-rose-500/30 transition-all">
-                    <Skull className="w-4 h-4" />
+                  <span className="text-4xl sm:text-5xl">{player.avatar}</span>
+
+                  <div className="space-y-0.5 w-full">
+                    <p className="text-sm sm:text-base font-bold text-white truncate px-1">
+                      {player.name}
+                    </p>
+                    <span className="text-[10px] font-mono text-slate-400 block">
+                      {votingMode === 'consensus' ? 'Klik untuk eliminasi' : 'Pilih sebagai sasaran'}
+                    </span>
                   </div>
-                </motion.button>
+                </motion.div>
               );
             })}
           </div>
 
-          {/* Individual Mode Finalize Action */}
-          {votingMode === 'individual' && (
-            <div className="pt-3 flex items-center justify-end gap-3">
-              <Button variant="ghost" size="sm" onClick={clearVotes}>
-                Reset Suara
-              </Button>
+          {/* Individual Mode Complete CTA */}
+          {votingMode === 'individual' && Object.keys(votes).length >= alivePlayers.length && (
+            <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 text-center space-y-3">
+              <p className="text-sm font-bold text-slate-200">
+                Semua pemain telah memberikan suara!
+              </p>
               <Button
                 variant="danger"
-                size="md"
+                size="lg"
                 onClick={handleCalculateTallyElimination}
-                disabled={Object.keys(votes).length === 0}
-                leftIcon={<Skull className="w-4 h-4" />}
+                rightIcon={<Skull className="w-5 h-5" />}
+                className="shadow-xl shadow-rose-500/30"
               >
-                Hitung & Eliminasi Hasil Tally
+                Hitung Hasil & Eliminasi Pemain
               </Button>
             </div>
           )}
         </div>
       )}
 
-      {/* Confirmation Modal for Consensus Elimination */}
+      {/* MODAL 1: Confirm Consensus Elimination */}
       <Modal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        title="Konfirmasi Eliminasi Pemain"
-        subtitle="Pemain yang tereliminasi akan diungkap atau Mr. White diberi kesempatan tebak kata."
+        title="Konfirmasi Eliminasi"
         size="sm"
-        footer={
-          <div className="flex items-center justify-end gap-2 w-full">
-            <Button variant="ghost" size="sm" onClick={() => setIsConfirmModalOpen(false)}>
+      >
+        <div className="space-y-5 text-center py-2">
+          {selectedSuspectId && (
+            <div className="space-y-3">
+              <span className="text-6xl block">
+                {players.find((p) => p.id === selectedSuspectId)?.avatar}
+              </span>
+              <div>
+                <p className="text-lg font-black font-display text-white">
+                  {players.find((p) => p.id === selectedSuspectId)?.name}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Apakah seluruh pemain sepakat untuk mengeliminasi pemain ini?
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 pt-2">
+            <Button
+              variant="outline"
+              size="md"
+              fullWidth
+              onClick={() => setIsConfirmModalOpen(false)}
+            >
               Batal
             </Button>
             <Button
               variant="danger"
-              size="sm"
+              size="md"
+              fullWidth
               onClick={handleConfirmConsensusElimination}
               leftIcon={<Skull className="w-4 h-4" />}
             >
-              Ya, Eliminasi Sekarang
+              Ya, Eliminasi!
             </Button>
           </div>
-        }
-      >
-        {selectedSuspectId && (
-          <div className="flex flex-col items-center text-center space-y-3 py-3">
-            <div className="text-5xl">
-              {players.find((p) => p.id === selectedSuspectId)?.avatar}
-            </div>
-            <div>
-              <p className="text-lg font-bold text-white">
-                {players.find((p) => p.id === selectedSuspectId)?.name}
-              </p>
-              <p className="text-xs text-rose-300/80">
-                Apakah semua pemain sepakat mengeliminasi pemain ini?
-              </p>
-            </div>
-          </div>
-        )}
+        </div>
       </Modal>
 
-      {/* MR. WHITE 45s GUESS MODAL */}
+      {/* MODAL 2: Mr White Emergency Guess Modal */}
       <Modal
         isOpen={phase === 'MR_WHITE_GUESS'}
-        onClose={() => {}} // Block outside close during high-tension moment
-        closeOnOutsideClick={false}
-        closeOnEscape={false}
-        showCloseButton={false}
-        title={
-          <div className="flex items-center gap-2 text-purple-400">
-            <HelpCircle className="w-5 h-5 animate-pulse" />
-            <span>MR. WHITE INTERCEPT!</span>
-          </div>
-        }
-        subtitle="Pemain Buta Kata (Mr. White) terpilih untuk dieliminasi!"
+        onClose={() => {}}
+        title="🚨 INTERSEPSI DARURAT: MR. WHITE"
         size="md"
       >
-        <div className="space-y-5 py-2">
-          {/* Mr. White Profile Header */}
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-purple-500/10 border border-purple-500/30">
-            <span className="text-4xl">{pendingEliminatedPlayer?.avatar}</span>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-bold text-white">
-                  {pendingEliminatedPlayer?.name}
-                </span>
-                <RoleBadge role="MR_WHITE" size="sm" />
-              </div>
-              <p className="text-xs text-purple-200/80">
-                Kamu memiliki kesempatan terakhir! Tebak kata rahasia milik Warga untuk memenangkan game seketika!
-              </p>
-            </div>
+        <div className="space-y-5 text-center py-2">
+          <div className="w-16 h-16 rounded-2xl bg-purple-500/20 border border-purple-400 text-purple-300 flex items-center justify-center mx-auto text-3xl shadow-[0_0_25px_-3px_rgba(168,85,247,0.5)]">
+            <HelpCircle className="w-8 h-8 animate-pulse" />
+          </div>
+
+          <div className="space-y-1.5">
+            <h3 className="text-xl font-black font-display text-purple-300">
+              {pendingEliminatedPlayer?.name} adalah Buta Kata (Mr. White)!
+            </h3>
+            <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
+              Mr. White tereliminasi, tapi memiliki <span className="text-purple-300 font-bold">1 kesempatan tebak</span> kata rahasia Civilian. Jika tebakan benar, <span className="text-purple-400 font-black">MR. WHITE MENANG SEKETIKA!</span>
+            </p>
           </div>
 
           {/* 45s Countdown */}
-          <div className="flex justify-center">
-            <CountdownTimer
-              totalSeconds={45}
-              remainingSeconds={mrWhiteTimerSeconds}
-              size={90}
-              strokeWidth={7}
-              soundEnabled
-              variant="compact"
+          <div className="flex items-center justify-center gap-2 text-xs font-mono text-purple-300 bg-purple-500/10 py-1.5 px-3 rounded-full border border-purple-500/30 max-w-xs mx-auto">
+            <Clock className="w-4 h-4 animate-spin text-purple-400" />
+            <span>Sisa Waktu Menebak: {mrWhiteTimerSeconds}s</span>
+          </div>
+
+          {/* Guess Input */}
+          <div className="space-y-3 pt-2">
+            <input
+              type="text"
+              value={mrWhiteGuessInput}
+              onChange={(e) => setMrWhiteGuessInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSubmitMrWhite();
+              }}
+              placeholder="Ketik tebakan kata Warga di sini..."
+              autoFocus
+              className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-purple-500/40 text-white placeholder-slate-500 text-center font-display text-lg focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 shadow-inner"
             />
-          </div>
 
-          {/* Word Guess Input */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-300">
-              Ketik Kata Rahasia Warga:
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={mrWhiteGuessInput}
-                onChange={(e) => setMrWhiteGuessInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSubmitMrWhite();
-                }}
-                placeholder="Contoh: Kopi, Martabak, Laptop..."
-                autoFocus
-                className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-purple-500/40 text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 text-base font-bold"
-              />
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="md"
+                onClick={skipMrWhiteGuess}
+                className="text-xs text-slate-400 hover:text-slate-200"
+              >
+                Menyerah / Lewati
+              </Button>
+              <Button
+                variant="accent"
+                size="lg"
+                fullWidth
+                disabled={!mrWhiteGuessInput.trim()}
+                onClick={handleSubmitMrWhite}
+                rightIcon={<Send className="w-4 h-4" />}
+                className="shadow-xl shadow-purple-500/30"
+              >
+                Kirim Tebakan
+              </Button>
             </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-2 gap-3">
-            <Button variant="ghost" size="sm" onClick={skipMrWhiteGuess}>
-              Menyerah (Skip)
-            </Button>
-            <Button
-              variant="accent"
-              size="md"
-              onClick={handleSubmitMrWhite}
-              disabled={!mrWhiteGuessInput.trim()}
-              rightIcon={<Send className="w-4 h-4" />}
-              className="font-bold shadow-lg shadow-purple-500/30"
-            >
-              Kirim Tebakan
-            </Button>
           </div>
         </div>
       </Modal>
     </div>
   );
 };
-
-export default PassPlayVotingView;

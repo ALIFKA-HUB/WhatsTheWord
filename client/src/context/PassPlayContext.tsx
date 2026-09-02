@@ -29,6 +29,7 @@ export interface PassPlayContextType {
   pendingEliminatedPlayer: Player | null;
   votes: Record<string, string>;
   isTieLastRound: boolean;
+  consecutiveTies: number;
   tieMessage: string | null;
   mrWhiteGuessResult: { guessed: string; isCorrect: boolean } | null;
 
@@ -133,6 +134,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
   const [pendingEliminatedPlayer, setPendingEliminatedPlayer] = useState<Player | null>(null);
   const [votes, setVotes] = useState<Record<string, string>>({});
   const [isTieLastRound, setIsTieLastRound] = useState<boolean>(false);
+  const [consecutiveTies, setConsecutiveTies] = useState<number>(0);
   const [tieMessage, setTieMessage] = useState<string | null>(null);
   const [mrWhiteGuessResult, setMrWhiteGuessResult] = useState<{ guessed: string; isCorrect: boolean } | null>(null);
 
@@ -281,6 +283,8 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       setPendingEliminatedPlayer(null);
       setVotes({});
       setIsTieLastRound(false);
+      setConsecutiveTies(0);
+      setConsecutiveTies(0);
       setTieMessage(null);
       setMrWhiteGuessResult(null);
       setPhase('REVEAL_PASS');
@@ -621,6 +625,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       pendingEliminatedPlayer,
       votes,
       isTieLastRound,
+      consecutiveTies,
       tieMessage,
       mrWhiteGuessResult,
       addPlayer,
@@ -656,6 +661,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       pendingEliminatedPlayer,
       votes,
       isTieLastRound,
+      consecutiveTies,
       tieMessage,
       mrWhiteGuessResult,
       addPlayer,

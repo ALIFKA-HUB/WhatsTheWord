@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Users,
+  Vote,
   UserPlus,
   Trash2,
   Play,
@@ -404,6 +405,47 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 >
                   {settings.enableMrWhite ? 'AKTIF (1)' : 'NONAKTIF'}
                 </button>
+              </div>
+            </Card>
+
+                        {/* Voting Start Round Setting */}
+            <Card className="p-4 sm:p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-bold text-slate-200 flex items-center gap-2">
+                  <Vote className="w-4 h-4 text-cyan-400" />
+                  Voting Eliminasi Dimulai Pada
+                </label>
+                <span className="text-[11px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/30">
+                  Ronde {settings.votingStartRound || 2}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Pemanasan clue memberi kesempatan semua pemain menganalisis sebelum eliminasi dimulai.
+              </p>
+
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { round: 1, label: 'Ronde 1', desc: 'Langsung Voting' },
+                  { round: 2, label: 'Ronde 2', desc: 'Pemanasan 1 Ronde (Disarankan)' },
+                  { round: 3, label: 'Ronde 3', desc: 'Pemanasan 2 Ronde' },
+                ].map((opt) => {
+                  const isSelected = (settings.votingStartRound || 2) === opt.round;
+                  return (
+                    <button
+                      key={opt.round}
+                      type="button"
+                      onClick={() => updateSettings({ votingStartRound: opt.round })}
+                      className={`p-2.5 rounded-xl text-center border transition-all ${
+                        isSelected
+                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)] font-bold'
+                          : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200 hover:bg-slate-800/80'
+                      }`}
+                    >
+                      <span className="text-xs sm:text-sm font-bold block">{opt.label}</span>
+                      <span className="text-[9px] text-slate-400 block mt-0.5">{opt.desc}</span>
+                    </button>
+                  );
+                })}
               </div>
             </Card>
 

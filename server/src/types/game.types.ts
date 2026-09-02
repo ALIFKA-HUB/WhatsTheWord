@@ -34,6 +34,8 @@ export interface GameSettings {
   undercoverCount: number;
   mrWhiteCount: number;
   turnDurationSeconds: number;
+  votingStartRound?: number;
+  maxConsecutiveTies?: number;
   enableMrWhite: boolean;
   customWordPair?: WordPair;
 }
@@ -46,6 +48,7 @@ export interface RoomState {
   speakingOrder: string[];
   currentSpeakerIndex: number;
   activeTurnRemainingSeconds: number;
+  consecutiveTies?: number;
   settings: GameSettings;
   winningRole?: 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE';
   eliminatedPlayer?: Player;
