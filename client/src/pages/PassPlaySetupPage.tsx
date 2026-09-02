@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   Users,
@@ -29,8 +29,6 @@ const TURN_DURATION_OPTIONS = [
   { label: 'Bebas', value: 0, desc: 'Tanpa Timer' },
 ];
 
-const ALL_PLAYER_COUNTS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-
 const RANDOM_NAMES = [
   'Agent Cyber', 'Neon Fox', 'Shadow Byte', 'Phantom V', 'Holo Viper',
   'Specter 7', 'Cyborg Zero', 'Matrix Ghost', 'Alpha Wolf', 'Quantum Cat',
@@ -57,53 +55,6 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
 
   // Avatar picker popup for specific player index
   const [avatarPickerPlayerIndex, setAvatarPickerPlayerIndex] = useState<number | null>(null);
-
-  // Smooth Drag & Auto-Center Scroll for Player Count Carousel
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const scrollLeftRef = useRef(0);
-  const hasMovedRef = useRef(false);
-
-  // Auto-scroll selected number to center
-  const scrollToActiveNumber = useCallback((count: number) => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const targetElement = container.querySelector(`[data-player-count="${count}"]`) as HTMLElement;
-    if (targetElement) {
-      const containerWidth = container.offsetWidth;
-      const targetLeft = targetElement.offsetLeft;
-      const targetWidth = targetElement.offsetWidth;
-      container.scrollTo({
-        left: targetLeft - containerWidth / 2 + targetWidth / 2,
-        behavior: 'smooth',
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    scrollToActiveNumber(totalPlayerCount);
-  }, [totalPlayerCount, scrollToActiveNumber]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    isDraggingRef.current = true;
-    hasMovedRef.current = false;
-    startXRef.current = e.pageX - (scrollContainerRef.current?.offsetLeft || 0);
-    scrollLeftRef.current = scrollContainerRef.current?.scrollLeft || 0;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingRef.current || !scrollContainerRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - (scrollContainerRef.current.offsetLeft || 0);
-    const walk = (x - startXRef.current) * 1.5; // Drag sensitivity
-    if (Math.abs(walk) > 4) hasMovedRef.current = true;
-    scrollContainerRef.current.scrollLeft = scrollLeftRef.current - walk;
-  };
-
-  const handleMouseUpOrLeave = () => {
-    isDraggingRef.current = false;
-  };
 
   // Load custom packs from localStorage
   useEffect(() => {
@@ -299,79 +250,79 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-                        {/* Total Players Count Stepper & Ultra-Smooth Scroll Wheel */}
-            <Card glow="cyan" className="p-5 sm:p-6 space-y-5 relative overflow-hidden">
+                        {/* Total Players Card: Left Scroll Bar | Right Stepper [-] [N] [+] */}
+            <Card glow="cyan" className="p-5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold shadow-inner">
-                    <Users className="w-5 h-5" />
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold shadow-inner">
+                    <Users className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white">Jumlah Pemain</h3>
-                    <p className="text-xs text-slate-400">Geser atau ketuk angka untuk memilih (2 - 20)</p>
+                    <h3 className="text-base font-bold text-white">Jumlah Pemain (2 - 20 Orang)</h3>
+                    <p className="text-xs text-slate-400">Geser scroll bar di kiri & atur presisi dengan tombol +/- di kanan</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Side-by-Side: Left Scroll Bar & Right Stepper */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3.5 pt-1">
+                {/* Left Side: Scroll Bar Track */}
+                <div className="flex-1 space-y-2.5 bg-slate-950/80 p-3.5 rounded-2xl border border-white/10">
+                  <div className="flex items-center justify-between text-[11px] font-mono">
+                    <span className="text-slate-400 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                      Scroll Bar Pemain:
+                    </span>
+                    <span className="text-cyan-300 font-bold font-mono px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30">
+                      {totalPlayerCount} Pemain
+                    </span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min={2}
+                    max={20}
+                    step={1}
+                    value={totalPlayerCount}
+                    onChange={(e) => adjustPlayerCount(Number(e.target.value))}
+                    className="w-full accent-cyan-400 h-3 bg-slate-900 rounded-lg cursor-pointer appearance-none border border-white/10"
+                  />
+
+                  <div className="flex justify-between text-[10px] font-mono text-slate-500 px-0.5">
+                    <span>2 (Duel)</span>
+                    <span>5</span>
+                    <span>10</span>
+                    <span>15</span>
+                    <span>20 (Maks)</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                {/* Right Side: Stepper [-] [N] [+] */}
+                <div className="flex items-center justify-center gap-2 shrink-0 bg-slate-950/80 p-3.5 rounded-2xl border border-white/10">
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount - 1)}
                     disabled={totalPlayerCount <= 2}
-                    className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center text-lg active:scale-95 transition-all shadow-sm"
+                    className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all shadow-sm"
                   >
                     -
                   </button>
-                  <div className="px-3.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-center min-w-[60px]">
+
+                  <div className="px-3.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-center min-w-[62px]">
                     <span className="text-2xl font-mono font-black text-cyan-300">
                       {totalPlayerCount}
                     </span>
                     <span className="text-[9px] font-mono text-cyan-400 block -mt-1 font-bold">ORANG</span>
                   </div>
+
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount + 1)}
                     disabled={totalPlayerCount >= 20}
-                    className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-40 flex items-center justify-center text-lg active:scale-95 transition-all shadow-sm"
+                    className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white font-bold hover:bg-slate-800 disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all shadow-sm"
                   >
                     +
                   </button>
-                </div>
-              </div>
-
-              {/* Ultra Smooth Drag & Touch Scroll Wheel */}
-              <div className="relative pt-1 pb-1">
-                {/* Subtle Edge Fade Gradients */}
-                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-900/90 to-transparent z-10 pointer-events-none" />
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-900/90 to-transparent z-10 pointer-events-none" />
-
-                <div
-                  ref={scrollContainerRef}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUpOrLeave}
-                  onMouseLeave={handleMouseUpOrLeave}
-                  className="flex items-center gap-2.5 overflow-x-auto py-2 px-6 scroll-smooth select-none cursor-grab active:cursor-grabbing [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                >
-                  {ALL_PLAYER_COUNTS.map((cnt) => {
-                    const isSelected = totalPlayerCount === cnt;
-
-                    return (
-                      <button
-                        key={cnt}
-                        type="button"
-                        data-player-count={cnt}
-                        onClick={() => {
-                          if (!hasMovedRef.current) {
-                            adjustPlayerCount(cnt);
-                          }
-                        }}
-                        className={'shrink-0 w-14 h-16 rounded-2xl border flex flex-col items-center justify-center transition-all duration-300 ' + (isSelected ? 'bg-gradient-to-b from-cyan-400 to-cyan-500 text-slate-950 font-black shadow-[0_0_25px_-3px_rgba(6,182,212,0.6)] scale-110 border-white ring-2 ring-cyan-400/50 z-20' : 'bg-slate-950/80 border-white/10 text-slate-400 hover:text-slate-200 hover:border-cyan-500/30 hover:bg-slate-900/80 opacity-70 hover:opacity-100')}
-                      >
-                        <span className="text-lg font-mono font-black">{cnt}</span>
-                        <span className={'text-[9px] font-mono uppercase tracking-tight ' + (isSelected ? 'text-slate-950 font-black' : 'text-slate-500')}>Pemain</span>
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
             </Card>
