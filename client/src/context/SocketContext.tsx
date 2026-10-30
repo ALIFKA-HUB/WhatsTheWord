@@ -55,13 +55,13 @@ export interface SocketContextType {
 export const SocketContext = createContext<SocketContextType | null>(null);
 
 const getSocketUrl = (): string => {
-  if (typeof window === 'undefined') return 'http://localhost:3001';
+  if (typeof window === 'undefined') return 'http://localhost:3002';
   if (import.meta.env.VITE_SOCKET_URL) {
     return import.meta.env.VITE_SOCKET_URL;
   }
   // If running in development with Vite proxy or standard dev setup
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:3001';
+    return 'http://localhost:3002';
   }
   return window.location.origin;
 };
