@@ -22,9 +22,11 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
   } = usePassPlay();
 
   const [subScreen, setSubScreen] = useState<SecretPassSubScreen>('PASS_PROMPT');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const currentPlayer = players[currentRevealIndex] || players[0];
-  const isLastPlayer = currentRevealIndex >= players.length - 1;
+  const safeRevealIndex = Math.min(Math.max(0, currentRevealIndex), Math.max(0, players.length - 1));
+  const currentPlayer = players[safeRevealIndex] || players[0];
+  const isLastPlayer = safeRevealIndex >= players.length - 1;
   const totalPlayers = players.length;
 
   // Reset sub-screen when reveal index changes
@@ -41,12 +43,20 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
   };
 
   const handleProceedNext = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+
     if (isLastPlayer) {
       finishRevealPhase();
       onAllRevealed?.();
     } else {
       nextRevealPlayer();
     }
+
+    // Release lock after brief transition
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 250);
   };
 
   return (
@@ -58,7 +68,7 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
             INTIP KATA
           </Badge>
           <span className="text-xs font-mono text-zinc-400">
-            Pemain {currentRevealIndex + 1} dari {totalPlayers}
+            Pemain {safeRevealIndex + 1} dari {totalPlayers}
           </span>
         </div>
 
@@ -68,9 +78,9 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
             <span
               key={idx}
               className={`h-1 rounded-full transition-all duration-200 ${
-                idx === currentRevealIndex
+                idx === safeRevealIndex
                   ? 'w-5 bg-white'
-                  : idx < currentRevealIndex
+                  : idx < safeRevealIndex
                   ? 'w-2 bg-zinc-600'
                   : 'w-2 bg-zinc-800'
               }`}
@@ -101,7 +111,7 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
 
             <div className="space-y-1.5">
               <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 font-semibold">
-                Giliran Pemain #{currentRevealIndex + 1}
+                Giliran Pemain #{safeRevealIndex + 1}
               </span>
               <h2 className="text-2xl font-bold tracking-tight text-white font-sans">
                 Oper HP ke {currentPlayer.name}
@@ -188,6 +198,7 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
               variant="primary"
               size="lg"
               fullWidth
+              disabled={isTransitioning}
               onClick={handleProceedNext}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >

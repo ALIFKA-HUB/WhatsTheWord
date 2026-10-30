@@ -306,10 +306,11 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
 
   const nextRevealPlayer = useCallback(() => {
     setCurrentRevealIndex((prev) => {
-      const next = prev + 1;
-      return next;
+      // Clamp agar double-tap pada tombol lanjut tidak melampaui pemain terakhir
+      const maxIndex = Math.max(0, players.length - 1);
+      return Math.min(prev + 1, maxIndex);
     });
-  }, []);
+  }, [players.length]);
 
   const finishRevealPhase = useCallback(() => {
     // Alive speaking order
