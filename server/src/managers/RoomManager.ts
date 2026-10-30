@@ -62,13 +62,14 @@ export class RoomManager {
     graceMs: number,
     onExpired: (roomId: string, playerId: string, room: RoomState | null) => void
   ): void {
-    const key = `${roomId}:${playerId}`;
+    const normalized = roomId.trim().toUpperCase();
+    const key = `${normalized}:${playerId}`;
     if (this.disconnectTimers.has(key)) return; // already scheduled (multi-tab / duplicate disconnect)
 
     const timer = setTimeout(() => {
       this.disconnectTimers.delete(key);
-      const room = this.leaveRoom(roomId, playerId);
-      onExpired(roomId, playerId, room);
+      const room = this.leaveRoom(normalized, playerId);
+      onExpired(normalized, playerId, room);
     }, graceMs);
     this.disconnectTimers.set(key, timer);
   }
@@ -77,7 +78,8 @@ export class RoomManager {
    * Cancels a scheduled disconnect cleanup (player reconnected or left explicitly).
    */
   public cancelPlayerCleanup(roomId: string, playerId: string): void {
-    const key = `${roomId}:${playerId}`;
+    const normalized = roomId.trim().toUpperCase();
+    const key = `${normalized}:${playerId}`;
     const timer = this.disconnectTimers.get(key);
     if (timer) {
       clearTimeout(timer);

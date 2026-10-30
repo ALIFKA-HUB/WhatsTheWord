@@ -24,6 +24,12 @@ const AppRouter: React.FC = () => {
     }
   }, [room, currentView]);
 
+  useEffect(() => {
+    if (!room && currentView === 'ONLINE') {
+      setCurrentView('HOME');
+    }
+  }, [room, currentView]);
+
   if (currentView === 'PASS_PLAY') {
     if (passPlayPhase === 'SETUP') {
       return <PassPlaySetupPage onBack={() => setCurrentView('HOME')} />;
