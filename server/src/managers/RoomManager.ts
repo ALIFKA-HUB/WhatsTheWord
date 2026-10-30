@@ -120,7 +120,7 @@ export class RoomManager {
 
     const hostPlayer: Player = {
       id: playerId,
-      name: hostName.trim() || 'Host',
+      name: (hostName || '').trim() || 'Host',
       avatar: avatar || 'avatar_1',
       isHost: true,
       isAlive: true,
@@ -168,11 +168,11 @@ export class RoomManager {
     avatar: string,
     existingToken?: string
   ): JoinRoomResult {
-    const normalizedRoomId = roomId.trim().toUpperCase();
+    const normalizedRoomId = (roomId || '').trim().toUpperCase();
     const room = this.rooms.get(normalizedRoomId);
 
     if (!room) {
-      throw new Error(`Room not found: ${normalizedRoomId}`);
+      throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
     }
 
     if (existingToken) {
@@ -191,7 +191,7 @@ export class RoomManager {
     }
 
     if (room.phase !== 'LOBBY') {
-      throw new Error('Cannot join room while game is in progress');
+      throw new Error('Tidak dapat bergabung: permainan sedang berlangsung');
     }
 
     const playerId = randomUUID();
@@ -199,7 +199,7 @@ export class RoomManager {
 
     const newPlayer: Player = {
       id: playerId,
-      name: playerName.trim() || `Player ${room.players.length + 1}`,
+      name: (playerName || '').trim() || `Player ${room.players.length + 1}`,
       avatar: avatar || 'avatar_1',
       isHost: room.players.length === 0,
       isAlive: true,
@@ -221,7 +221,7 @@ export class RoomManager {
    * Removes a player from the room. Migrates host if needed or deletes empty room.
    */
   public leaveRoom(roomId: string, playerId: string): RoomState | null {
-    const normalizedRoomId = roomId.trim().toUpperCase();
+    const normalizedRoomId = (roomId || '').trim().toUpperCase();
     const room = this.rooms.get(normalizedRoomId);
 
     if (!room) return null;
@@ -265,15 +265,15 @@ export class RoomManager {
    * Updates game settings during LOBBY phase.
    */
   public updateSettings(roomId: string, settings: Partial<GameSettings>): RoomState {
-    const normalizedRoomId = roomId.trim().toUpperCase();
+    const normalizedRoomId = (roomId || '').trim().toUpperCase();
     const room = this.rooms.get(normalizedRoomId);
 
     if (!room) {
-      throw new Error(`Room not found: ${normalizedRoomId}`);
+      throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
     }
 
     if (room.phase !== 'LOBBY') {
-      throw new Error('Cannot update settings while game is in progress');
+      throw new Error('Pengaturan tidak dapat diubah saat permainan sedang berlangsung');
     }
 
     room.settings = {
@@ -297,11 +297,11 @@ export class RoomManager {
     settings?: GameSettings,
     customWordPair?: WordPair
   ): RoomState {
-    const normalizedRoomId = roomId.trim().toUpperCase();
+    const normalizedRoomId = (roomId || '').trim().toUpperCase();
     const room = this.rooms.get(normalizedRoomId);
 
     if (!room) {
-      throw new Error(`Room not found: ${normalizedRoomId}`);
+      throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
     }
 
     if (settings) {
@@ -338,11 +338,11 @@ export class RoomManager {
    * Advances the speaker turn, or transitions to VOTING when all speakers finish.
    */
   public advanceTurn(roomId: string): RoomState {
-    const normalizedRoomId = roomId.trim().toUpperCase();
+    const normalizedRoomId = (roomId || '').trim().toUpperCase();
     const room = this.rooms.get(normalizedRoomId);
 
     if (!room) {
-      throw new Error(`Room not found: ${normalizedRoomId}`);
+      throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
     }
 
     const livingSpeakerIds = room.speakingOrder.filter((id) =>
@@ -376,26 +376,26 @@ export class RoomManager {
    * If all active players have voted, calculates outcome: Instant Skip on tie, Mr. White Guess, or Elimination.
    */
   public castVote(roomId: string, voterId: string, targetId: string): CastVoteResult {
-    const normalizedRoomId = roomId.trim().toUpperCase();
+    const normalizedRoomId = (roomId || '').trim().toUpperCase();
     const room = this.rooms.get(normalizedRoomId);
 
     if (!room) {
-      throw new Error(`Room not found: ${normalizedRoomId}`);
+      throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
     }
 
     if (room.phase !== 'VOTING') {
-      throw new Error('Voting is not currently active');
+      throw new Error('Sesi voting belum aktif');
     }
 
     const voter = room.players.find((p) => p.id === voterId);
     const target = room.players.find((p) => p.id === targetId);
 
     if (!voter || !voter.isAlive) {
-      throw new Error('Voter is not active in this game');
+      throw new Error('Pemain yang memilih tidak aktif dalam permainan');
     }
 
     if (!target || !target.isAlive) {
-      throw new Error('Target is not active in this game');
+      throw new Error('Target voting tidak ditemukan atau sudah tereliminasi');
     }
 
     voter.hasVoted = true;
@@ -492,15 +492,15 @@ export class RoomManager {
    * Handles Mr. White's emergency guess using fuzzy text matching.
    */
   public handleMrWhiteGuess(roomId: string, guess: string): MrWhiteGuessResult {
-    const normalizedRoomId = roomId.trim().toUpperCase();
+    const normalizedRoomId = (roomId || '').trim().toUpperCase();
     const room = this.rooms.get(normalizedRoomId);
 
     if (!room) {
-      throw new Error(`Room not found: ${normalizedRoomId}`);
+      throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
     }
 
     if (room.phase !== 'MR_WHITE_GUESS') {
-      throw new Error('Mr. White guess phase is not active');
+      throw new Error('Fase tebak kata Mr. White tidak sedang aktif');
     }
 
     const civilianWord = room.wordPair?.civilianWord || '';
@@ -563,11 +563,11 @@ export class RoomManager {
    * Resets room back to LOBBY for a rematch while retaining connected players.
    */
   public rematch(roomId: string): RoomState {
-    const normalizedRoomId = roomId.trim().toUpperCase();
+    const normalizedRoomId = (roomId || '').trim().toUpperCase();
     const room = this.rooms.get(normalizedRoomId);
 
     if (!room) {
-      throw new Error(`Room not found: ${normalizedRoomId}`);
+      throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
     }
 
     room.phase = 'LOBBY';
@@ -597,7 +597,7 @@ export class RoomManager {
    * Retrieves room by roomId.
    */
   public getRoom(roomId: string): RoomState | undefined {
-    return this.rooms.get(roomId.trim().toUpperCase());
+    return this.rooms.get((roomId || '').trim().toUpperCase());
   }
 
   /**

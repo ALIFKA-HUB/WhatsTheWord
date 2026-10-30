@@ -48,10 +48,38 @@ describe('RoomManager', () => {
       expect(p2.playerToken).not.toBe(p3.playerToken);
     });
 
-    it('should throw error when joining non-existent room', () => {
+    it('should throw Indonesian error when joining non-existent room', () => {
       expect(() => {
         roomManager.joinRoom('ZZZZ', 'Bob', 'avatar_2');
-      }).toThrow(/Room not found/i);
+      }).toThrow(/Ruangan tidak ditemukan/i);
+    });
+
+    it('should safely handle whitespace and lowercase room codes', () => {
+      const { roomId } = roomManager.createRoom('Host', 'avatar_1');
+      const joined = roomManager.joinRoom(` ${roomId.toLowerCase()} `, 'Guest', 'avatar_2');
+      expect(joined.room.roomId).toBe(roomId);
+    });
+
+    it('should safely handle missing or empty playerName and avatar with defaults', () => {
+      const { roomId, player: host } = roomManager.createRoom('   ', '');
+      expect(host.name).toBe('Host');
+      expect(host.avatar).toBe('avatar_1');
+
+      const joined = roomManager.joinRoom(roomId, '   ', '');
+      expect(joined.player.name).toBe('Player 2');
+      expect(joined.player.avatar).toBe('avatar_1');
+    });
+
+    it('should throw Indonesian error when joining game in progress', () => {
+      const { roomId } = roomManager.createRoom('Host', 'avatar_1');
+      roomManager.joinRoom(roomId, 'Bob', 'avatar_2');
+      roomManager.joinRoom(roomId, 'Charlie', 'avatar_3');
+      roomManager.joinRoom(roomId, 'Dave', 'avatar_4');
+      roomManager.startGame(roomId);
+
+      expect(() => {
+        roomManager.joinRoom(roomId, 'Eve', 'avatar_5');
+      }).toThrow(/Tidak dapat bergabung: permainan sedang berlangsung/i);
     });
 
     it('should reconnect existing player if existingToken is provided and valid', () => {
@@ -121,7 +149,7 @@ describe('RoomManager', () => {
 
       expect(() => {
         roomManager.updateSettings(roomId, { civilianCount: 3 });
-      }).toThrow(/Cannot update settings while game is in progress/i);
+      }).toThrow(/Pengaturan tidak dapat diubah saat permainan sedang berlangsung/i);
     });
   });
 
@@ -317,6 +345,25 @@ describe('RoomManager', () => {
       expect(res.eliminatedPlayer?.id).toBe(mrWhite.id);
       expect(res.room.phase).toBe('MR_WHITE_GUESS');
     });
+
+    it('should throw Indonesian errors for invalid voting states and players', () => {
+      // Voter not active / not found
+      expect(() => {
+        roomManager.castVote(roomId, 'non-existent-voter', p2Id);
+      }).toThrow(/Pemain yang memilih tidak aktif dalam permainan/i);
+
+      // Target not active / not found
+      expect(() => {
+        roomManager.castVote(roomId, p1Id, 'non-existent-target');
+      }).toThrow(/Target voting tidak ditemukan atau sudah tereliminasi/i);
+
+      // Voting is not active when phase changes
+      const room = roomManager.getRoom(roomId)!;
+      room.phase = 'TURN_PHASE';
+      expect(() => {
+        roomManager.castVote(roomId, p1Id, p2Id);
+      }).toThrow(/Sesi voting belum aktif/i);
+    });
   });
 
   describe('handleMrWhiteGuess', () => {
@@ -379,6 +426,13 @@ describe('RoomManager', () => {
       expect(guessRes.winner).toBeUndefined();
       expect(guessRes.room.phase).toBe('TURN_PHASE');
       expect(guessRes.room.round).toBe(2);
+    });
+
+    it('should throw Indonesian error when Mr. White guess phase is not active', () => {
+      const { roomId } = roomManager.createRoom('Host', 'av1');
+      expect(() => {
+        roomManager.handleMrWhiteGuess(roomId, 'Nasi');
+      }).toThrow(/Fase tebak kata Mr. White tidak sedang aktif/i);
     });
   });
 

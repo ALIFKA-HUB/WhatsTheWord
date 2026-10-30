@@ -15,9 +15,15 @@ export function registerRoomHandlers(
       callback?: (res: any) => void
     ) => {
       try {
+        if (!payload || typeof payload !== 'object') {
+          throw new Error('Data permintaan tidak valid');
+        }
+        const safePlayerName = (payload.playerName || '').trim() || 'Host';
+        const safeAvatar = payload.avatar || '🕵️';
+
         const { roomId, playerToken, player, room } = roomManager.createRoom(
-          payload.playerName,
-          payload.avatar
+          safePlayerName,
+          safeAvatar
         );
 
         socket.join(roomId);
@@ -38,7 +44,7 @@ export function registerRoomHandlers(
         }
       } catch (err: any) {
         if (callback) {
-          callback({ success: false, error: err.message || 'Failed to create room' });
+          callback({ success: false, error: err.message || 'Gagal membuat ruangan' });
         }
       }
     }
@@ -57,10 +63,19 @@ export function registerRoomHandlers(
       callback?: (res: any) => void
     ) => {
       try {
+        if (!payload || typeof payload !== 'object') {
+          throw new Error('Data permintaan tidak valid');
+        }
+        if (!payload.roomId || typeof payload.roomId !== 'string' || !payload.roomId.trim()) {
+          throw new Error('Kode ruangan wajib diisi');
+        }
+        const safePlayerName = (payload.playerName || '').trim() || 'Agen Rahasia';
+        const safeAvatar = payload.avatar || '🕵️';
+
         const { playerToken, player, room } = roomManager.joinRoom(
           payload.roomId,
-          payload.playerName,
-          payload.avatar,
+          safePlayerName,
+          safeAvatar,
           payload.playerToken
         );
 
@@ -82,7 +97,7 @@ export function registerRoomHandlers(
         }
       } catch (err: any) {
         if (callback) {
-          callback({ success: false, error: err.message || 'Failed to join room' });
+          callback({ success: false, error: err.message || 'Gagal bergabung ke ruangan' });
         }
       }
     }
@@ -129,9 +144,12 @@ export function registerRoomHandlers(
       callback?: (res: any) => void
     ) => {
       try {
+        if (!payload || typeof payload !== 'object' || !payload.settings || typeof payload.settings !== 'object') {
+          throw new Error('Data pengaturan tidak valid');
+        }
         const roomId = socket.data.roomId;
         if (!roomId) {
-          throw new Error('Not connected to a room');
+          throw new Error('Tidak terhubung ke ruangan manapun');
         }
 
         const room = roomManager.updateSettings(roomId, payload.settings);
@@ -153,12 +171,15 @@ export function registerRoomHandlers(
     'player:reconnect',
     (payload: { playerToken: string }, callback?: (res: any) => void) => {
       try {
+        if (!payload || typeof payload !== 'object' || !payload.playerToken || typeof payload.playerToken !== 'string') {
+          throw new Error('Token pemain tidak valid');
+        }
         const result = roomManager.reconnectPlayer(payload.playerToken);
         if (!result) {
           if (callback) {
             callback({
               success: false,
-              error: 'Session expired or room not found',
+              error: 'Sesi telah berakhir atau ruangan tidak ditemukan',
             });
           }
           return;
