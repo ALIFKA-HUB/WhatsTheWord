@@ -99,6 +99,11 @@ export function registerRoomHandlers(
         const room = roomManager.leaveRoom(roomId, playerId);
         if (room) {
           io.to(roomId).emit('room:updated', room);
+        } else {
+          io.to(roomId).emit('room:deleted', {
+            roomId,
+            reason: 'Ruangan telah dibubarkan karena semua pemain telah keluar.',
+          });
         }
       }
 

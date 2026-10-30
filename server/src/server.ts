@@ -27,6 +27,7 @@ app.use(express.json());
 
 const roomManager = new RoomManager();
 const startTime = Date.now();
+const DISCONNECT_GRACE_MS = 60_000;
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
@@ -54,6 +55,21 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`[Socket.io] Client disconnected: ${socket.id}`);
+    const { roomId, playerId } = socket.data;
+    if (!roomId || !playerId) return;
+
+    // Beri grace period agar refresh/reconnect singkat tidak mengeluarkan pemain;
+    // ghost player (tab ditutup) dibersihkan setelah grace dan peserta lain diberi tahu.
+    roomManager.schedulePlayerCleanup(roomId, playerId, DISCONNECT_GRACE_MS, (expiredRoomId, _pid, remainingRoom) => {
+      if (remainingRoom) {
+        io.to(expiredRoomId).emit('room:updated', remainingRoom);
+      } else {
+        io.to(expiredRoomId).emit('room:deleted', {
+          roomId: expiredRoomId,
+          reason: 'Ruangan telah dibubarkan karena semua pemain telah keluar.',
+        });
+      }
+    });
   });
 });
 

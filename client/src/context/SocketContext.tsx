@@ -80,10 +80,15 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const socketRef = useRef<Socket | null>(null);
   const currentPlayerIdRef = useRef<string | null>(null);
+  const roomRef = useRef<RoomState | null>(null);
 
   useEffect(() => {
     currentPlayerIdRef.current = currentPlayer?.id || null;
   }, [currentPlayer]);
+
+  useEffect(() => {
+    roomRef.current = room;
+  }, [room]);
 
   // Establish socket connection on mount
   useEffect(() => {
@@ -131,7 +136,11 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     newSocket.on('connect_error', (err) => {
       setIsConnecting(false);
-      setError(`Gagal terhubung ke server: ${err.message}`);
+      // Hanya tandai error jika user sedang berada di room (koneksi drop di tengah game).
+      // Kegagalan koneksi latar di home cukup ditunjukkan indikator status, bukan banner.
+      if (roomRef.current) {
+        setError(`Koneksi ke server terputus: ${err.message}`);
+      }
     });
 
     // Realtime Game Events
@@ -143,6 +152,20 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           setCurrentPlayer(me);
         }
       }
+    });
+
+    newSocket.on('room:deleted', (payload: { roomId: string; reason?: string }) => {
+      sessionStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
+      sessionStorage.removeItem(STORAGE_KEYS.ROOM_ID);
+      localStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.ROOM_ID);
+      setRoom(null);
+      setCurrentPlayer(null);
+      setPlayerToken(null);
+      setLastVoteResult(null);
+      setLastMrWhiteResult(null);
+      setTieNotification(false);
+      setError(payload?.reason || 'Ruangan telah dibubarkan.');
     });
 
     newSocket.on('game:started', (startedRoom: RoomState) => {

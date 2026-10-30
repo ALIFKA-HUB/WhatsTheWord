@@ -41,12 +41,48 @@ export class RoomManager {
   private sessions: Map<string, RoomSession> = new Map();
   private roomLastActivity: Map<string, number> = new Map();
   private cleanupInterval: NodeJS.Timeout | null = null;
+  // Grace period disconnect: player dijadwalkan dikeluarkan setelah koneksi putus
+  // agar refresh/hiccup jaringan tidak menghilangkan kursi, tapi ghost player akhirnya dibersihkan.
+  private disconnectTimers: Map<string, NodeJS.Timeout> = new Map();
 
   constructor() {
     // Schedule periodic idle room cleanup every 15 minutes
     this.cleanupInterval = setInterval(() => {
       this.cleanupIdleRooms();
     }, 15 * 60 * 1000);
+  }
+
+  /**
+   * Schedules removal of a player whose socket disconnected. Cancelled if they
+   * reconnect (or explicitly leave) within the grace period.
+   */
+  public schedulePlayerCleanup(
+    roomId: string,
+    playerId: string,
+    graceMs: number,
+    onExpired: (roomId: string, playerId: string, room: RoomState | null) => void
+  ): void {
+    const key = `${roomId}:${playerId}`;
+    if (this.disconnectTimers.has(key)) return; // already scheduled (multi-tab / duplicate disconnect)
+
+    const timer = setTimeout(() => {
+      this.disconnectTimers.delete(key);
+      const room = this.leaveRoom(roomId, playerId);
+      onExpired(roomId, playerId, room);
+    }, graceMs);
+    this.disconnectTimers.set(key, timer);
+  }
+
+  /**
+   * Cancels a scheduled disconnect cleanup (player reconnected or left explicitly).
+   */
+  public cancelPlayerCleanup(roomId: string, playerId: string): void {
+    const key = `${roomId}:${playerId}`;
+    const timer = this.disconnectTimers.get(key);
+    if (timer) {
+      clearTimeout(timer);
+      this.disconnectTimers.delete(key);
+    }
   }
 
   /**
@@ -187,6 +223,9 @@ export class RoomManager {
     const room = this.rooms.get(normalizedRoomId);
 
     if (!room) return null;
+
+    // Leave eksplisit membatalkan cleanup yang dijadwalkan dari disconnect
+    this.cancelPlayerCleanup(normalizedRoomId, playerId);
 
     const playerIndex = room.players.findIndex((p) => p.id === playerId);
     if (playerIndex === -1) return room;
@@ -511,6 +550,9 @@ export class RoomManager {
     const player = room.players.find((p) => p.id === session.playerId);
     if (!player) return null;
 
+    // Reconnect berhasil membatalkan cleanup timer disconnect
+    this.cancelPlayerCleanup(session.roomId, session.playerId);
+
     this.roomLastActivity.set(session.roomId, Date.now());
     return { player, room };
   }
@@ -589,5 +631,9 @@ export class RoomManager {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
     }
+    for (const timer of this.disconnectTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.disconnectTimers.clear();
   }
 }

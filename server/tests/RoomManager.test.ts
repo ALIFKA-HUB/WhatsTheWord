@@ -138,6 +138,31 @@ describe('RoomManager', () => {
       const reconnectData = roomManager.reconnectPlayer('invalid-token-1234');
       expect(reconnectData).toBeNull();
     });
+
+    it('should cancel scheduled disconnect cleanup when player reconnects', () => {
+      const { roomId, playerToken, player } = roomManager.createRoom('Host', 'avatar_1');
+      let expiredCalled = false;
+
+      roomManager.schedulePlayerCleanup(roomId, player.id, 50, () => {
+        expiredCalled = true;
+      });
+
+      const reconnected = roomManager.reconnectPlayer(playerToken);
+      expect(reconnected).not.toBeNull();
+
+      // Wait past the grace duration
+      return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          try {
+            expect(expiredCalled).toBe(false);
+            expect(roomManager.getRoom(roomId)).toBeDefined();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }, 70);
+      });
+    });
   });
 
   describe('startGame and role distribution', () => {
