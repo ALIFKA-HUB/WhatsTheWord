@@ -8,14 +8,16 @@ import {
   BookOpen,
   ArrowRight,
   AlertCircle,
+  Pencil,
 } from 'lucide-react';
 
 import { Header } from '../components/common/Header';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
-import { AvatarPicker, PRESET_AVATARS } from '../components/game/AvatarPicker';
+import { PRESET_AVATARS } from '../components/game/AvatarPicker';
 import { CustomWordPackModal } from '../components/lobby/CustomWordPackModal';
+import { ProfileModal } from '../components/lobby/ProfileModal';
 import { useSocket } from '../hooks/useSocket';
 import { STORAGE_KEYS } from '../context/SocketContext';
 import { cn } from '../utils/cn';
@@ -52,6 +54,19 @@ export const HomePage: React.FC<HomePageProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isPackModalOpen, setIsPackModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  const handleSaveProfile = (name: string, avatar: string) => {
+    const nextName = name.trim() ? name.trim() : playerName;
+    setPlayerName(nextName);
+    setSelectedAvatar(avatar);
+    try {
+      localStorage.setItem(STORAGE_KEYS.SAVED_NAME, nextName);
+      localStorage.setItem(STORAGE_KEYS.SAVED_AVATAR, avatar);
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   // Auto-detect room code from URL query param ?room=XXXX or ?code=XXXX
   useEffect(() => {
@@ -273,26 +288,30 @@ export const HomePage: React.FC<HomePageProps> = ({
 
               {/* Minimal Form */}
               <div className="space-y-3 pt-1">
-                {/* Name & Avatar Row */}
+                {/* Profile Row: tap to edit in modal */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
-                    Nama &amp; Avatar Agen
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <AvatarPicker
-                      selectedAvatar={selectedAvatar}
-                      onSelectAvatar={setSelectedAvatar}
-                      showNicknameInput={false}
-                    />
-                    <input
-                      type="text"
-                      maxLength={18}
-                      value={playerName}
-                      onChange={(e) => setPlayerName(e.target.value)}
-                      placeholder="Nama kamu..."
-                      className="flex-1 px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 text-zinc-100 text-sm outline-none transition-all placeholder:text-zinc-600"
-                    />
-                  </div>
+                  <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
+                    Profil Agen
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsProfileModalOpen(true)}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900 active:scale-[0.99] transition-all text-left group"
+                    aria-label="Ubah profil agen: nama dan avatar"
+                  >
+                    <span className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-xl shrink-0">
+                      {selectedAvatar}
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-semibold text-zinc-100 truncate">
+                        {playerName}
+                      </span>
+                      <span className="block text-[11px] text-zinc-500">
+                        Tap untuk ubah nama &amp; avatar
+                      </span>
+                    </span>
+                    <Pencil className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300 shrink-0" />
+                  </button>
                 </div>
 
                 {/* Join Code Input */}
@@ -373,6 +392,15 @@ export const HomePage: React.FC<HomePageProps> = ({
       <CustomWordPackModal
         isOpen={isPackModalOpen}
         onClose={() => setIsPackModalOpen(false)}
+      />
+
+      {/* Profile Modal */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        initialName={playerName}
+        initialAvatar={selectedAvatar}
+        onSave={handleSaveProfile}
       />
     </div>
   );
