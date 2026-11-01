@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import {
-  Vote,
-  CheckCircle2,
-  AlertTriangle,
-  Skull,
-  UserCheck,
-  Lock,
-  Flame,
-} from 'lucide-react';
+import { CheckCircle, Flame, ListChecks, Lock, Skull, UserCheck, Warning } from '@phosphor-icons/react';
+import { PlayerToken } from './PlayerToken';
 import { Player } from '../../types/game.types';
 import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
@@ -89,14 +82,14 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
             initial={{ opacity: 0, scale: 0.95, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="p-4 rounded-2xl bg-amber-500/15 border-2 border-amber-500/40 text-amber-300 shadow-[0_0_25px_-5px_rgba(245,158,11,0.4)] flex items-start gap-3"
+            className="p-4 rounded-2xl bg-stamp-light border border-stamp text-stamp-dark shadow-print flex items-start gap-3"
           >
-            <AlertTriangle className="w-5 h-5 shrink-0 text-amber-400 mt-0.5 animate-bounce" />
+            <Warning className="w-5 h-5 shrink-0 text-stamp-dark mt-0.5 animate-bounce" weight="bold" />
             <div className="space-y-1">
-              <h4 className="text-sm font-black font-display text-amber-300 uppercase tracking-wide">
-                Instant Skip &mdash; Hasil Imbang!
+              <h4 className="text-sm font-bold font-display text-stamp-dark uppercase tracking-wide">
+                Instant Skip: Hasil Imbang!
               </h4>
-              <p className="text-xs text-amber-200/90 leading-relaxed font-sans">
+              <p className="text-xs text-stamp-dark leading-relaxed font-sans">
                 {tieMessage}
               </p>
             </div>
@@ -108,12 +101,12 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
       <div className="flex items-center justify-between px-2">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <Vote className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-sm sm:text-base font-bold text-slate-100 font-display">
+            <ListChecks className="w-4 h-4 text-stamp-dark" weight="bold" />
+            <h3 className="text-sm sm:text-base font-bold text-ink font-display">
               Fase Pemilihan Impostor
             </h3>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-ink-muted">
             {hasVoted
               ? 'Pilihanmu telah dikunci. Menunggu pemain lain...'
               : isAlive
@@ -125,13 +118,13 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
         {/* Live Vote Progress Counter */}
         <div className="flex flex-col items-end">
           <Badge
-            variant={totalVotesCount === livingPlayers.length ? 'emerald' : 'cyan'}
+            variant={totalVotesCount === livingPlayers.length ? 'emerald' : 'slate'}
             size="sm"
             className="font-mono"
           >
             {totalVotesCount}/{livingPlayers.length} Memilih
           </Badge>
-          <span className="text-[10px] text-slate-500 font-mono mt-0.5">Ronde {roundNumber}</span>
+          <span className="text-[11px] text-ink-muted font-mono mt-0.5">Ronde {roundNumber}</span>
         </div>
       </div>
 
@@ -150,32 +143,30 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
               whileTap={canVoteThis ? { scale: 0.98 } : undefined}
               onClick={() => canVoteThis && handleSelect(player.id)}
               className={cn(
-                'relative p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3',
+                'relative p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3 shadow-print-sm',
                 !isPlayerAlive
-                  ? 'bg-slate-950/40 border-white/5 opacity-50 cursor-not-allowed'
+                  ? 'bg-paper-muted border-rule opacity-50 cursor-not-allowed'
                   : isTargetSelected
-                  ? 'bg-rose-500/20 border-rose-500 shadow-[0_0_20px_-3px_rgba(244,63,94,0.45)] ring-1 ring-rose-400 cursor-pointer'
+                  ? 'bg-stamp-light border-stamp ring-2 ring-stamp cursor-pointer'
                   : canVoteThis
-                  ? 'bg-slate-900/80 border-white/10 hover:border-cyan-400/50 hover:bg-slate-800/80 cursor-pointer'
-                  : 'bg-slate-900/60 border-white/10 cursor-default'
+                  ? 'bg-cardstock border-rule hover:border-stamp hover:bg-cardstock-warm/80 cursor-pointer'
+                  : 'bg-paper-muted border-rule cursor-default'
               )}
             >
               <div className="flex items-center gap-3 min-w-0">
                 {/* Avatar */}
-                <div
-                  className={cn(
-                    'w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 border relative',
-                    !isPlayerAlive
-                      ? 'bg-slate-900 border-slate-700 text-slate-600'
-                      : isTargetSelected
-                      ? 'bg-rose-500/20 border-rose-400 shadow-md'
-                      : 'bg-cyan-500/10 border-cyan-500/30'
-                  )}
-                >
-                  {player.avatar}
+                <div className="relative shrink-0">
+                  <PlayerToken
+                    avatar={player.avatar}
+                    name={player.name}
+                    size="sm"
+                    showCode={false}
+                    eliminated={!isPlayerAlive}
+                    selected={isTargetSelected}
+                  />
                   {!isPlayerAlive && (
-                    <span className="absolute -bottom-1 -right-1 p-0.5 rounded bg-slate-900 border border-slate-700">
-                      <Skull className="w-3 h-3 text-rose-500" />
+                    <span className="absolute -bottom-1 -right-1 p-0.5 rounded bg-cardstock-warm border border-rule">
+                      <Skull className="w-3 h-3 text-stamp-dark" weight="bold" />
                     </span>
                   )}
                 </div>
@@ -187,16 +178,16 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
                       className={cn(
                         'text-sm font-bold truncate',
                         !isPlayerAlive
-                          ? 'line-through text-slate-500'
+                          ? 'line-through text-ink-muted'
                           : isTargetSelected
-                          ? 'text-rose-300'
-                          : 'text-slate-100'
+                          ? 'text-stamp-dark'
+                          : 'text-ink'
                       )}
                     >
                       {player.name}
                     </span>
                     {isMe && (
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/10 text-slate-300">
+                      <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-cardstock-warm border border-rule text-ink font-bold">
                         Kamu
                       </span>
                     )}
@@ -204,13 +195,13 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
 
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {!isPlayerAlive ? (
-                      <span className="text-[10px] text-rose-400 font-mono">Tereliminasi</span>
+                      <span className="text-[11px] text-stamp-dark font-mono font-bold">Tereliminasi</span>
                     ) : player.hasVoted ? (
-                      <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Sudah memilih
+                      <span className="text-[11px] text-teal-dark font-mono flex items-center gap-1 font-bold">
+                        <CheckCircle className="w-3.5 h-3.5 text-teal" weight="bold" /> Sudah memilih
                       </span>
                     ) : (
-                      <span className="text-[10px] text-slate-500 font-mono">Sedang berpikir...</span>
+                      <span className="text-[11px] text-ink-muted font-mono">Sedang berpikir...</span>
                     )}
                   </div>
                 </div>
@@ -219,13 +210,13 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
               {/* Right Selection Indicator */}
               <div className="shrink-0">
                 {isTargetSelected && (
-                  <span className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-md animate-pulse">
-                    <Flame className="w-3.5 h-3.5" />
+                  <span className="w-6 h-6 rounded-full bg-stamp text-ink flex items-center justify-center shadow-md animate-pulse">
+                    <Flame className="w-3.5 h-3.5" weight="bold" />
                   </span>
                 )}
                 {!isTargetSelected && player.hasVoted && isPlayerAlive && (
-                  <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
-                    <UserCheck className="w-3 h-3" />
+                  <span className="w-5 h-5 rounded-full bg-cardstock-warm text-ink border border-rule flex items-center justify-center">
+                    <UserCheck className="w-3 h-3 text-ink" weight="bold" />
                   </span>
                 )}
               </div>
@@ -236,7 +227,7 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
 
       {/* Error display */}
       {errorMessage && (
-        <p className="text-xs text-rose-400 text-center font-medium">{errorMessage}</p>
+        <p className="text-xs text-stamp-dark text-center font-medium">{errorMessage}</p>
       )}
 
       {/* Action Footer Button */}
@@ -249,7 +240,7 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
             disabled={!selectedTargetId}
             isLoading={isSubmitting}
             onClick={handleConfirmVote}
-            leftIcon={<Vote className="w-5 h-5" />}
+            leftIcon={<ListChecks className="w-5 h-5" />}
           >
             {selectedTargetId
               ? `Kunci Pilihan: ${players.find((p) => p.id === selectedTargetId)?.name}`
@@ -259,12 +250,12 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
       )}
 
       {hasVoted && (
-        <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-emerald-500/30 text-center space-y-1">
-          <div className="flex items-center justify-center gap-1.5 text-emerald-400 text-xs font-bold font-sans">
+        <div className="p-3.5 rounded-2xl bg-paper border border-rule text-center space-y-1">
+          <div className="flex items-center justify-center gap-1.5 text-ink text-xs font-bold font-sans">
             <Lock className="w-3.5 h-3.5" />
-            <span>Pilihan Terkunci &mdash; Menunggu Hasil Rekapitulasi</span>
+            <span>Pilihan Terkunci: Menunggu Hasil Rekapitulasi</span>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-ink-muted">
             Hasil eliminasi atau tie-break akan otomatis ditampilkan begitu semua pemain selesai memilih.
           </p>
         </div>

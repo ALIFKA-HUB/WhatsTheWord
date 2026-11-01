@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 280" width="800" height="280" role="img" aria-label="Ilustrasi dossier terbuka dengan kartu terungkap dan stempel">
+  <!-- Opened dossier folder with revealed cards and a rubber stamp. 2-ink riso, no gradients. -->
+  <rect width="800" height="280" fill="#FFF4E3"/>
+
+  <!-- table line -->
+  <line x1="0" y1="236" x2="800" y2="236" stroke="#243348" stroke-width="3"/>
+
+  <!-- folder back panel -->
+  <g transform="rotate(-2 400 150)">
+    <rect x="220" y="52" width="360" height="184" rx="10" fill="#D5D2C8" stroke="#243348" stroke-width="4"/>
+  </g>
+
+  <!-- papers sticking out -->
+  <g transform="rotate(3 400 120)">
+    <rect x="250" y="70" width="300" height="130" rx="4" fill="#FFFFFF" stroke="#243348" stroke-width="2.5"/>
+    <line x1="270" y1="96" x2="470" y2="96" stroke="#243348" stroke-width="2.5" opacity="0.7"/>
+    <line x1="270" y1="112" x2="450" y2="112" stroke="#243348" stroke-width="2.5" opacity="0.5"/>
+    <line x1="270" y1="128" x2="466" y2="128" stroke="#243348" stroke-width="2.5" opacity="0.5"/>
+  </g>
+
+  <!-- revealed word card inside folder -->
+  <g transform="rotate(-4 380 160)">
+    <rect x="300" y="112" width="150" height="96" rx="6" fill="#FFFFFF" stroke="#243348" stroke-width="4"/>
+    <rect x="312" y="124" width="126" height="40" rx="3" fill="none" stroke="#243348" stroke-width="2.5"/>
+    <text x="375" y="152" font-family="Archivo, Arial, sans-serif" font-size="20" font-weight="900" fill="#243348" text-anchor="middle" letter-spacing="3">???</text>
+    <rect x="312" y="176" width="86" height="14" rx="2" fill="#243348"/>
+  </g>
+
+  <!-- folder front flap -->
+  <g transform="rotate(1.5 400 190)">
+    <path d="M224 130 L576 130 L576 214 a12 12 0 0 1 -12 12 L236 226 a12 12 0 0 1 -12 -12 Z" fill="#FF6B6B" stroke="#243348" stroke-width="4"/>
+    <path d="M252 158 h180" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+    <path d="M252 176 h120" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+    <!-- folder tab -->
+    <rect x="250" y="112" width="110" height="26" rx="6" fill="#FF6B6B" stroke="#243348" stroke-width="4"/>
+  </g>
+
+  <!-- stamp verdict: pure shapes, no text -->
+  <g transform="rotate(-12 620 190)">
+    <rect x="560" y="164" width="150" height="56" rx="10" fill="none" stroke="#243348" stroke-width="5"/>
+    <rect x="572" y="176" width="126" height="8" rx="4" fill="#FF6B6B"/>
+    <rect x="572" y="192" width="90" height="8" rx="4" fill="#FF6B6B" opacity="0.75"/>
+    <rect x="572" y="206" width="106" height="8" rx="4" fill="#FF6B6B" opacity="0.5"/>
+  </g>
+
+  <!-- magnifying glass leaning on folder -->
+  <g>
+    <circle cx="660" cy="96" r="34" fill="#FFF4E3" fill-opacity="0.92" stroke="#243348" stroke-width="6"/>
+    <line x1="684" y1="120" x2="716" y2="158" stroke="#243348" stroke-width="9" stroke-linecap="round"/>
+  </g>
+
+  <!-- print noise -->
+  <g fill="#243348" opacity="0.5">
+    <circle cx="80" cy="60" r="2"/><circle cx="104" cy="48" r="1.5"/><circle cx="66" cy="84" r="1.5"/>
+    <circle cx="720" cy="40" r="2"/><circle cx="744" cy="56" r="1.5"/>
+  </g>
+</svg>

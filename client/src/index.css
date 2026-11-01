@@ -4,15 +4,20 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
-  
+
   html, body {
     margin: 0;
     padding: 0;
-    background-color: #09090b;
-    color: #f4f4f5;
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #FFF8EE;
+    /* Dot pattern locked to the page background itself: never overlays cards,
+       never scrolls (background-attachment: fixed = static behind content) */
+    background-image: radial-gradient(rgba(36, 51, 72, 0.055) 1.5px, transparent 0);
+    background-size: 22px 22px;
+    background-attachment: fixed;
+    color: #243348;
+    font-family: 'Nunito Variable', 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100dvh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -20,41 +25,104 @@
   }
 
   ::selection {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+    background-color: #4ECDC4;
+    color: #FFFFFF;
+  }
+
+  input, button, textarea, select {
+    font-family: inherit;
   }
 }
 
-/* Minimalist Card & Panel Utilities */
-.minimal-panel {
-  background-color: rgba(18, 18, 20, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Playful display heading (rounded, bold, friendly) */
+.font-condensed {
+  font-family: 'Nunito Variable', 'Nunito', sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
 }
 
-.minimal-card {
-  background-color: rgba(24, 24, 27, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Subtle warm dot pattern for page background (fixed layer) */
+.paper-grain {
+  background-image: radial-gradient(rgba(36, 51, 72, 0.05) 1.5px, transparent 0);
+  background-size: 22px 22px;
 }
 
-/* Custom Minimal Scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+/* Soft pastel dots for tokens / card backs */
+.halftone-dots {
+  background-image: radial-gradient(rgba(36, 51, 72, 0.14) 1.4px, transparent 1.4px);
+  background-size: 8px 8px;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+.halftone-dots-red {
+  background-image: radial-gradient(rgba(255, 107, 107, 0.3) 1.4px, transparent 1.4px);
+  background-size: 8px 8px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
+/* Card back pattern: soft candy stripes */
+.card-back-hatch {
+  background-color: #FFF4E3;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(78, 205, 196, 0.16) 0px,
+    rgba(78, 205, 196, 0.16) 6px,
+    transparent 6px,
+    transparent 14px
+  );
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+/* Friendly pill badges (legacy stamp classes, playful look) */
+.rubber-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-family: 'Nunito Variable', 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.72em;
+  letter-spacing: 0.02em;
+  background-color: #FFFFFF;
+  color: #243348;
+  box-shadow: 0 2px 8px rgba(36, 51, 72, 0.10);
+}
+
+.rubber-stamp-red {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-family: 'Nunito Variable', 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.72em;
+  letter-spacing: 0.02em;
+  background-color: #FF6B6B;
+  color: #243348;
+  box-shadow: 0 4px 0 0 #E55555;
+}
+
+/* Soft stacked paper edge */
+.paper-stack {
+  position: relative;
+}
+.paper-stack::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: -4px;
+  bottom: -4px;
+  background: #F3ECE0;
+  border-radius: 18px;
+  z-index: -1;
+  box-shadow: 0 6px 18px rgba(36, 51, 72, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

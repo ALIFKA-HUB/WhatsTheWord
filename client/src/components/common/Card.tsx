@@ -11,12 +11,13 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   interactive?: boolean;
 }
 
+/* Legacy glow props mapped to the print system: crimson = red-stamped card, others = ink card */
 const glowStyles: Record<CardGlow, string> = {
-  none: 'border-zinc-800/80 hover:border-zinc-700/80',
-  cyan: 'border-cyan-500/30 hover:border-cyan-400/50',
-  crimson: 'border-rose-500/30 hover:border-rose-400/50',
-  violet: 'border-purple-500/30 hover:border-purple-400/50',
-  amber: 'border-amber-500/30 hover:border-amber-400/50',
+  none: 'border-ink',
+  cyan: 'border-ink',
+  violet: 'border-ink',
+  amber: 'border-ink',
+  crimson: 'border-stamp shadow-print-red',
 };
 
 const paddingStyles: Record<CardPadding, string> = {
@@ -43,11 +44,12 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'relative rounded-2xl bg-zinc-900/60 backdrop-blur-md border transition-all duration-200 text-zinc-100 overflow-hidden',
+          'relative rounded-2xl bg-cardstock border-2 text-ink overflow-hidden',
           glowStyles[glow],
+          glow === 'none' && 'shadow-print',
           paddingStyles[padding],
-          hoverable && 'hover:bg-zinc-900/90 hover:border-zinc-700',
-          interactive && 'cursor-pointer active:scale-[0.99]',
+          hoverable && 'hover:shadow-print-lg transition-shadow',
+          interactive && 'cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-print-sm transition-all',
           className
         )}
         {...props}
@@ -71,7 +73,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTM
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-base sm:text-lg font-semibold tracking-tight text-zinc-100', className)}
+      className={cn('text-base sm:text-lg font-bold tracking-tight text-ink font-condensed', className)}
       {...props}
     />
   )
@@ -80,7 +82,7 @@ CardTitle.displayName = 'CardTitle';
 
 export const CardDescription = forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn('text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed', className)} {...props} />
+    <p ref={ref} className={cn('text-xs sm:text-sm text-ink-muted font-normal leading-relaxed', className)} {...props} />
   )
 );
 CardDescription.displayName = 'CardDescription';
@@ -94,7 +96,7 @@ CardContent.displayName = 'CardContent';
 
 export const CardFooter = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex items-center pt-4 border-t border-zinc-800/80', className)} {...props} />
+    <div ref={ref} className={cn('flex items-center pt-4 border-t-2 border-rule', className)} {...props} />
   )
 );
 CardFooter.displayName = 'CardFooter';

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Timer, AlertTriangle, Mic } from 'lucide-react';
+import { Microphone, Timer, Warning } from '@phosphor-icons/react';
 import { useGameSound } from '../../hooks/useGameSound';
 import { cn } from '../../utils/cn';
 
@@ -44,24 +44,24 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   const colorConfig = isUrgent
     ? {
         color: '#f43f5e',
-        textClass: 'text-rose-400',
-        strokeClass: 'stroke-rose-500',
-        bgClass: 'bg-rose-500/10 border-rose-500/30',
+        textClass: 'text-stamp-dark',
+        strokeClass: 'stroke-stamp',
+        bgClass: 'bg-stamp/10 border-stamp/30',
         glowClass: 'shadow-[0_0_20px_-3px_rgba(244,63,94,0.5)]',
       }
     : isWarning
     ? {
         color: '#f59e0b',
-        textClass: 'text-amber-400',
-        strokeClass: 'stroke-amber-500',
+        textClass: 'text-stamp-dark',
+        strokeClass: 'stroke-ink',
         bgClass: 'bg-amber-500/10 border-amber-500/30',
         glowClass: 'shadow-[0_0_20px_-3px_rgba(245,158,11,0.4)]',
       }
     : {
         color: '#06b6d4',
-        textClass: 'text-cyan-400',
+        textClass: 'text-stamp-dark',
         strokeClass: 'stroke-cyan-400',
-        bgClass: 'bg-cyan-500/10 border-cyan-500/30',
+        bgClass: 'bg-paper-muted border-ink',
         glowClass: 'shadow-[0_0_20px_-3px_rgba(6,182,212,0.4)]',
       };
 
@@ -109,11 +109,11 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     return (
       <div className={cn('w-full space-y-2', className)}>
         <div className="flex items-center justify-between text-xs font-mono">
-          <span className="text-slate-400 flex items-center gap-1.5">
+          <span className="text-ink-muted flex items-center gap-1.5">
             {speakerName ? (
               <>
-                <Mic className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                <span className="text-slate-200 font-semibold">{speakerName}</span>
+                <Microphone className="w-3.5 h-3.5 text-stamp-dark animate-pulse" />
+                <span className="text-ink font-semibold">{speakerName}</span>
               </>
             ) : (
               label || 'Waktu Tersisa'
@@ -125,7 +125,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         </div>
 
         {/* Linear Progress Bar */}
-        <div className="w-full h-2.5 rounded-full bg-slate-950/80 border border-white/10 overflow-hidden p-0.5">
+        <div className="w-full h-2.5 rounded-full bg-paper border border-rule overflow-hidden p-0.5">
           <motion.div
             initial={false}
             animate={{ width: `${progressRatio * 100}%` }}
@@ -145,14 +145,14 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     return (
       <div
         className={cn(
-          'inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border backdrop-blur-md transition-all',
+          'inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border  transition-all',
           colorConfig.bgClass,
           isUrgent && 'animate-pulse',
           className
         )}
       >
         {isUrgent ? (
-          <AlertTriangle className="w-4 h-4 text-rose-400 animate-bounce" />
+          <Warning className="w-4 h-4 text-stamp-dark animate-bounce" />
         ) : (
           <Timer className={cn('w-4 h-4', colorConfig.textClass)} />
         )}
@@ -179,7 +179,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
             stroke="currentColor"
             strokeWidth={strokeWidth}
             fill="transparent"
-            className="text-slate-800/80"
+            className="text-ink/20"
           />
 
           {/* Progress Indicator Circle */}
@@ -213,7 +213,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           >
             {clampedRemaining}
           </motion.span>
-          <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 mt-0.5">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-muted mt-0.5">
             detik
           </span>
         </div>
@@ -221,12 +221,12 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
 
       {/* Speaker or Custom Label Below */}
       {(speakerName || label) && (
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-slate-300 font-sans">
+        <div className="mt-3 flex items-center gap-1.5 text-xs text-ink font-sans">
           {speakerName ? (
             <>
-              <Mic className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <Microphone className="w-3.5 h-3.5 text-stamp-dark animate-pulse" />
               <span>
-                Giliran: <strong className="text-cyan-300">{speakerName}</strong>
+                Giliran: <strong className="text-stamp-dark">{speakerName}</strong>
               </span>
             </>
           ) : (

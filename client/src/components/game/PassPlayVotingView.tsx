@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import {
-  ArrowRight,
-  Vote,
-  AlertTriangle,
-  Send,
-  Users,
-} from 'lucide-react';
+import { ArrowRight, Eye, ListChecks, PaperPlaneRight, Users, Warning } from '@phosphor-icons/react';
+import { PlayerToken } from './PlayerToken';
+import { SecretCard } from './SecretCard';
 import { usePassPlay } from '../../context/PassPlayContext';
 import { useGameSound } from '../../hooks/useGameSound';
 import { Button } from '../common/Button';
@@ -43,6 +39,11 @@ export const PassPlayVotingView: React.FC = () => {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [votingMode, setVotingMode] = useState<'consensus' | 'individual'>('consensus');
   const [currentVoterId, setCurrentVoterId] = useState<string | null>(null);
+  const [selectedTargetForVoter, setSelectedTargetForVoter] = useState<string | null>(null);
+  const [isHandingOverSecretVote, setIsHandingOverSecretVote] = useState(false);
+
+  // Re-peek word state (Party QoL)
+  const [rePeekPlayer, setRePeekPlayer] = useState<Player | null>(null);
 
   // Mr White Guess Modal State
   const [mrWhiteGuessInput, setMrWhiteGuessInput] = useState('');
@@ -102,22 +103,30 @@ export const PassPlayVotingView: React.FC = () => {
     setSelectedSuspectId(null);
   };
 
-  // Handle Secret Individual Vote Cast
-  const handleCastIndividualVote = (targetId: string) => {
-    if (!currentVoterId) return;
+  // Handle Secret Individual Vote Selection
+  const handleSelectIndividualCandidate = (targetId: string) => {
+    setSelectedTargetForVoter(targetId);
+  };
+
+  const handleConfirmIndividualVote = () => {
+    if (!currentVoterId || !selectedTargetForVoter) return;
     try {
       playVoteBuzzer();
     } catch {
       // ignore
     }
-    castVote(currentVoterId, targetId);
+    castVote(currentVoterId, selectedTargetForVoter);
 
     // Find next alive voter
     const currentIdx = alivePlayers.findIndex((p) => p.id === currentVoterId);
     if (currentIdx < alivePlayers.length - 1) {
       setCurrentVoterId(alivePlayers[currentIdx + 1].id);
+      setSelectedTargetForVoter(null);
+      setIsHandingOverSecretVote(true);
     } else {
       setCurrentVoterId(null);
+      setSelectedTargetForVoter(null);
+      setIsHandingOverSecretVote(false);
     }
   };
 
@@ -134,14 +143,14 @@ export const PassPlayVotingView: React.FC = () => {
   return (
     <div className="w-full max-w-xl mx-auto space-y-6 font-sans">
       {/* 1. ROUND & GAME STATUS HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-paper-muted border border-rule">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono font-bold text-base text-zinc-100">
+          <div className="w-10 h-10 rounded-xl bg-cardstock-warm border border-rule flex items-center justify-center font-mono font-bold text-base text-ink">
             R{round}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-zinc-100">
+              <span className="text-sm font-bold text-ink">
                 {isWarmingUpRound
                   ? 'Pemanasan (Beri 1 Petunjuk)'
                   : phase === 'TURN_CLUE'
@@ -154,7 +163,7 @@ export const PassPlayVotingView: React.FC = () => {
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-ink-muted">
               {alivePlayers.length} Pemain Bertahan · Kategori: {settings.category}
             </p>
           </div>
@@ -162,8 +171,8 @@ export const PassPlayVotingView: React.FC = () => {
 
         {/* Ties Tracker Badge */}
         {consecutiveTies > 0 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-950/30 border border-amber-900/40 text-amber-300 text-xs font-mono">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stamp-light border border-amber-900/40 text-stamp-dark text-xs font-mono">
+            <Warning className="w-3.5 h-3.5 text-stamp-dark" />
             <span>Seri: {consecutiveTies}/{maxTies} (3x = Impostor Menang)</span>
           </div>
         )}
@@ -174,16 +183,16 @@ export const PassPlayVotingView: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-amber-950/30 border border-amber-900/50 text-amber-200 text-xs flex items-center justify-between"
+          className="p-4 rounded-xl bg-stamp-light border border-stamp text-stamp-dark text-xs flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <Warning className="w-4 h-4 text-stamp-dark shrink-0" />
             <div>
-              <p className="font-semibold text-amber-300">Suara Seri Terjadi!</p>
-              <p className="text-amber-200/80">{tieMessage || 'Tidak ada pemain yang gugur. Lanjut ronde berikutnya.'}</p>
+              <p className="font-semibold text-stamp-dark">Suara Seri Terjadi!</p>
+              <p className="text-ink-muted">{tieMessage || 'Tidak ada pemain yang gugur. Lanjut ronde berikutnya.'}</p>
             </div>
           </div>
-          <span className="font-mono text-xs font-bold text-amber-400">
+          <span className="font-mono text-xs font-bold text-stamp-dark">
             {consecutiveTies}/{maxTies}
           </span>
         </motion.div>
@@ -193,13 +202,13 @@ export const PassPlayVotingView: React.FC = () => {
       {phase === 'TURN_CLUE' && (
         <div className="space-y-4">
           {/* Table Turn Guide */}
-          <Card padding="md" className="space-y-3.5 border-zinc-800 bg-zinc-900/40">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-              <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                <Users className="w-4 h-4 text-zinc-400" />
+          <Card padding="md" className="space-y-3.5 border-ink bg-cardstock">
+            <div className="flex items-center justify-between border-b border-ink pb-3">
+              <span className="text-xs font-semibold text-ink uppercase tracking-wider flex items-center gap-2">
+                <Users className="w-4 h-4 text-ink-muted" />
                 Urutan Bicara di Meja
               </span>
-              <span className="text-xs text-zinc-500 font-mono">
+              <span className="text-xs text-ink-muted font-mono">
                 Bicara 1 kata/frasa berurutan
               </span>
             </div>
@@ -209,15 +218,25 @@ export const PassPlayVotingView: React.FC = () => {
               {orderedAlivePlayers.map((player, idx) => (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950/70 border border-zinc-800/80"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-paper border border-rule hover:border-rule transition-all"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="w-5 h-5 rounded-md bg-zinc-900 text-zinc-400 font-mono text-xs flex items-center justify-center">
+                    <span className="w-5 h-5 rounded-xl bg-cardstock-warm text-ink-muted font-mono text-xs flex items-center justify-center">
                       {idx + 1}
                     </span>
-                    <span className="text-lg">{player.avatar}</span>
-                    <span className="text-sm font-semibold text-zinc-200">{player.name}</span>
+                    <PlayerToken avatar={player.avatar} name={player.name} size="sm" showCode={false} />
+                    <span className="text-sm font-semibold text-ink">{player.name}</span>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setRePeekPlayer(player)}
+                    title="Lupa kata? Klik untuk intip rahasia"
+                    className="p-1.5 px-2 rounded-lg border border-rule bg-cardstock hover:bg-cardstock-warm text-ink-muted hover:text-ink text-xs flex items-center gap-1 active:scale-95 transition-all shadow-print-sm"
+                  >
+                    <Eye className="w-3.5 h-3.5" weight="bold" />
+                    <span className="text-[11px] font-mono font-bold">Intip</span>
+                  </button>
                 </div>
               ))}
             </div>
@@ -241,7 +260,7 @@ export const PassPlayVotingView: React.FC = () => {
                 size="lg"
                 fullWidth
                 onClick={() => startVotingPhase()}
-                rightIcon={<Vote className="w-4 h-4" />}
+                rightIcon={<ListChecks className="w-4 h-4" />}
               >
                 Semua Sudah Bicara · Mulai Voting Eliminasi
               </Button>
@@ -254,7 +273,7 @@ export const PassPlayVotingView: React.FC = () => {
       {phase === 'VOTING' && (
         <div className="space-y-4">
           {/* Mode Switcher */}
-          <div className="grid grid-cols-2 p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-medium">
+          <div className="grid grid-cols-2 p-1 rounded-xl bg-paper border border-rule text-xs font-medium">
             <button
               type="button"
               onClick={() => {
@@ -263,10 +282,10 @@ export const PassPlayVotingView: React.FC = () => {
                 setCurrentVoterId(null);
               }}
               className={cn(
-                'py-1.5 rounded-lg transition-all',
+                'py-1.5 rounded-2xl transition-all',
                 votingMode === 'consensus'
-                  ? 'bg-zinc-800 text-zinc-100 font-semibold'
-                  : 'text-zinc-500 hover:text-zinc-300'
+                  ? 'bg-cardstock-warm text-ink font-semibold'
+                  : 'text-ink-muted hover:text-ink'
               )}
             >
               Diskusi Terbuka (Konsensus)
@@ -278,10 +297,10 @@ export const PassPlayVotingView: React.FC = () => {
                 setCurrentVoterId(alivePlayers[0]?.id || null);
               }}
               className={cn(
-                'py-1.5 rounded-lg transition-all',
+                'py-1.5 rounded-2xl transition-all',
                 votingMode === 'individual'
-                  ? 'bg-zinc-800 text-zinc-100 font-semibold'
-                  : 'text-zinc-500 hover:text-zinc-300'
+                  ? 'bg-cardstock-warm text-ink font-semibold'
+                  : 'text-ink-muted hover:text-ink'
               )}
             >
               Voting Rahasia (Oper HP)
@@ -290,12 +309,12 @@ export const PassPlayVotingView: React.FC = () => {
 
           {/* Consensus Mode */}
           {votingMode === 'consensus' && (
-            <Card padding="md" className="space-y-3.5 border-zinc-800 bg-zinc-900/40">
+            <Card padding="md" className="space-y-3.5 border-ink bg-cardstock">
               <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-zinc-200">
+                <h3 className="text-sm font-semibold text-ink">
                   Pilih Pemain yang Dicurigai
                 </h3>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-ink-muted">
                   Diskusikan di dunia nyata. Klik avatar pemain yang disepakati untuk dieliminasi:
                 </p>
               </div>
@@ -306,18 +325,16 @@ export const PassPlayVotingView: React.FC = () => {
                     key={player.id}
                     type="button"
                     onClick={() => handleOpenConfirmModal(player.id)}
-                    className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/70 border border-zinc-800 hover:border-rose-700/60 hover:bg-zinc-900 transition-all text-left group active:scale-[0.98]"
+                    className="flex items-center justify-between p-3 rounded-xl bg-paper border border-rule hover:border-stamp hover:bg-cardstock-warm transition-all text-left group active:scale-[0.98]"
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="text-2xl group-hover:scale-110 transition-transform">
-                        {player.avatar}
-                      </span>
+                      <PlayerToken avatar={player.avatar} name={player.name} size="md" showCode={false} />
                       <div>
-                        <p className="text-sm font-semibold text-zinc-200">{player.name}</p>
-                        <p className="text-[10px] text-zinc-500">Klik untuk eliminasi</p>
+                        <p className="text-sm font-semibold text-ink">{player.name}</p>
+                        <p className="text-[11px] text-ink-muted">Klik untuk eliminasi</p>
                       </div>
                     </div>
-                    <span className="text-xs font-medium text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-xs font-medium text-stamp-dark opacity-0 group-hover:opacity-100 transition-opacity">
                       Eliminasi →
                     </span>
                   </button>
@@ -327,17 +344,41 @@ export const PassPlayVotingView: React.FC = () => {
           )}
 
           {/* Individual Secret Voting Mode */}
-          {votingMode === 'individual' && currentVoterPlayer && (
-            <Card padding="md" className="space-y-4 border-zinc-800 bg-zinc-900/40">
-              <div className="space-y-1 border-b border-zinc-800/80 pb-3">
-                <span className="text-[11px] font-mono uppercase text-zinc-400 font-semibold">
+          {votingMode === 'individual' && currentVoterPlayer && isHandingOverSecretVote && (
+            <Card padding="md" className="space-y-4 border-ink bg-cardstock text-center py-8 px-6">
+              <PlayerToken avatar={currentVoterPlayer.avatar} name={currentVoterPlayer.name} size="xl" className="mx-auto" />
+              <div className="space-y-1">
+                <span className="rubber-stamp-red -rotate-2 text-xs">Giliran Pemilih</span>
+                <h3 className="text-xl sm:text-2xl font-bold text-ink pt-1">
+                  Oper HP ke {currentVoterPlayer.name}
+                </h3>
+                <p className="text-xs text-ink-muted max-w-[280px] mx-auto">
+                  Pemain lain dilarang mengintip! Tekan tombol di bawah saat HP sudah di tangan <strong>{currentVoterPlayer.name}</strong>.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={() => setIsHandingOverSecretVote(false)}
+                rightIcon={<ArrowRight className="w-4 h-4" weight="bold" />}
+              >
+                Saya {currentVoterPlayer.name}, Siap Memilih
+              </Button>
+            </Card>
+          )}
+
+          {votingMode === 'individual' && currentVoterPlayer && !isHandingOverSecretVote && (
+            <Card padding="md" className="space-y-4 border-ink bg-cardstock">
+              <div className="space-y-1 border-b border-ink pb-3">
+                <span className="text-[11px] font-mono uppercase text-ink-muted font-semibold">
                   Oper HP ke:
                 </span>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <span>{currentVoterPlayer.avatar}</span>
-                  <span>{currentVoterPlayer.name}</span>
-                </h3>
-                <p className="text-xs text-zinc-400">
+                <div className="flex items-center gap-2.5 pt-1">
+                  <PlayerToken avatar={currentVoterPlayer.avatar} name={currentVoterPlayer.name} size="sm" showCode={false} />
+                  <h3 className="text-lg font-bold text-ink">{currentVoterPlayer.name}</h3>
+                </div>
+                <p className="text-xs text-ink-muted">
                   Pilih secara rahasia siapa yang menurutmu adalah Impostor:
                 </p>
               </div>
@@ -345,17 +386,40 @@ export const PassPlayVotingView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {alivePlayers
                   .filter((p) => p.id !== currentVoterPlayer.id)
-                  .map((candidate) => (
-                    <button
-                      key={candidate.id}
-                      type="button"
-                      onClick={() => handleCastIndividualVote(candidate.id)}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-950/80 border border-zinc-800 hover:border-zinc-500 hover:bg-zinc-900 transition-all text-left active:scale-95"
-                    >
-                      <span className="text-2xl">{candidate.avatar}</span>
-                      <span className="text-sm font-semibold text-zinc-200">{candidate.name}</span>
-                    </button>
-                  ))}
+                  .map((candidate) => {
+                    const isSelected = selectedTargetForVoter === candidate.id;
+                    return (
+                      <button
+                        key={candidate.id}
+                        type="button"
+                        onClick={() => handleSelectIndividualCandidate(candidate.id)}
+                        className={cn(
+                          'flex items-center gap-3 p-3 rounded-xl border transition-all text-left active:scale-95',
+                          isSelected
+                            ? 'bg-stamp-light border-stamp text-stamp-dark ring-2 ring-stamp shadow-print-sm'
+                            : 'bg-paper border-rule hover:border-stamp hover:bg-cardstock-warm text-ink'
+                        )}
+                      >
+                        <PlayerToken avatar={candidate.avatar} name={candidate.name} size="sm" showCode={false} />
+                        <span className="text-sm font-semibold">{candidate.name}</span>
+                      </button>
+                    );
+                  })}
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  variant="danger"
+                  size="lg"
+                  fullWidth
+                  disabled={!selectedTargetForVoter}
+                  onClick={handleConfirmIndividualVote}
+                  rightIcon={<ArrowRight className="w-4 h-4" weight="bold" />}
+                >
+                  {selectedTargetForVoter
+                    ? `Kunci Pilihan: ${alivePlayers.find((p) => p.id === selectedTargetForVoter)?.name}`
+                    : 'Pilih Satu Pemain di Atas'}
+                </Button>
               </div>
             </Card>
           )}
@@ -383,15 +447,20 @@ export const PassPlayVotingView: React.FC = () => {
         size="sm"
       >
         <div className="space-y-4 p-2 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-3xl mx-auto">
-            {players.find((p) => p.id === selectedSuspectId)?.avatar}
+          <div className="py-2 flex justify-center">
+            <PlayerToken
+              avatar={players.find((p) => p.id === selectedSuspectId)?.avatar}
+              name={players.find((p) => p.id === selectedSuspectId)?.name}
+              size="lg"
+              className="mx-auto"
+            />
           </div>
 
           <div className="space-y-1">
-            <h4 className="text-lg font-bold text-white">
+            <h4 className="text-lg font-bold text-ink">
               Eliminasi {players.find((p) => p.id === selectedSuspectId)?.name}?
             </h4>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-ink-muted">
               Pemain ini akan dikeluarkan dari putaran. Jika dia adalah Mr. White, dia berhak 1x menebak kata warga!
             </p>
           </div>
@@ -425,18 +494,18 @@ export const PassPlayVotingView: React.FC = () => {
         size="md"
       >
         <div className="space-y-4 p-2 font-sans">
-          <div className="p-3 rounded-xl bg-purple-950/30 border border-purple-900/40 text-xs text-purple-200 space-y-1">
-            <p className="font-semibold text-purple-300">
+          <div className="p-3 rounded-xl bg-paper-muted border border-dashed border-ink text-ink-muted space-y-1">
+            <p className="font-semibold text-ink-muted">
               {pendingEliminatedPlayer?.name} adalah Mr. White!
             </p>
-            <p className="text-purple-300/80">
+            <p className="text-ink-muted/80">
               Tebak kata rahasia yang dimiliki Warga! Jika benar, kamu <strong>langsung menang seketika</strong>!
             </p>
           </div>
 
           <form onSubmit={handleMrWhiteSubmit} className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider block">
+              <label className="text-xs font-semibold text-ink uppercase tracking-wider block">
                 Tebakan Kata Warga (Sisa {mrWhiteTimerSeconds}s):
               </label>
               <input
@@ -445,7 +514,7 @@ export const PassPlayVotingView: React.FC = () => {
                 value={mrWhiteGuessInput}
                 onChange={(e) => setMrWhiteGuessInput(e.target.value)}
                 placeholder="Ketik kata warga di sini..."
-                className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-zinc-100 text-sm outline-none placeholder:text-zinc-600"
+                className="w-full px-4 py-2.5 rounded-xl bg-paper border border-rule focus:border-teal focus:ring-2 focus:ring-teal/30 text-ink text-sm outline-none placeholder:text-ink-faint"
               />
             </div>
 
@@ -464,12 +533,41 @@ export const PassPlayVotingView: React.FC = () => {
                 variant="primary"
                 size="md"
                 className="w-2/3"
-                rightIcon={<Send className="w-4 h-4" />}
+                rightIcon={<PaperPlaneRight className="w-4 h-4" />}
               >
                 Kirim Tebakan 🎯
               </Button>
             </div>
           </form>
+        </div>
+      </Modal>
+
+      {/* 7. PARTY RE-PEEK WORD MODAL */}
+      <Modal
+        isOpen={rePeekPlayer !== null}
+        onClose={() => setRePeekPlayer(null)}
+        title={`Intip Rahasia: ${rePeekPlayer?.name || 'Pemain'}`}
+        size="sm"
+      >
+        <div className="space-y-4 p-2 text-center">
+          <p className="text-xs text-ink-muted">
+            Pastikan hanya <strong className="text-ink">{rePeekPlayer?.name}</strong> yang melihat layar saat kartu ditahan.
+          </p>
+          {rePeekPlayer && (
+            <SecretCard
+              word={rePeekPlayer.word}
+              role={rePeekPlayer.role}
+              category={settings.category === 'Semua Kategori' ? undefined : settings.category}
+            />
+          )}
+          <Button
+            variant="secondary"
+            size="md"
+            fullWidth
+            onClick={() => setRePeekPlayer(null)}
+          >
+            Tutup &amp; Kembali ke Meja
+          </Button>
         </div>
       </Modal>
     </div>

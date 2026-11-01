@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { RoomManager } from '../src/managers/RoomManager.js';
 import { GameSettings, WordPair } from '../src/types/game.types.js';
 
@@ -470,6 +470,77 @@ describe('RoomManager', () => {
         expect(roomManager.getRoom(roomId)).toBeUndefined();
       } finally {
         Date.now = realDateNow;
+      }
+    });
+  });
+
+  describe('schedulePlayerCleanup (disconnect grace period)', () => {
+    it('should remove ghost player after grace period and migrate host', () => {
+      vi.useFakeTimers();
+      try {
+        const { roomId, player } = roomManager.createRoom('Host', 'av1');
+        roomManager.joinRoom(roomId, 'Ghost', 'av2');
+
+        let expiredRoom: ReturnType<typeof roomManager.getRoom> | null | undefined;
+        roomManager.schedulePlayerCleanup(roomId, player.id, 60_000, (_rid, _pid, room) => {
+          expiredRoom = room;
+        });
+
+        vi.advanceTimersByTime(59_999);
+        expect(roomManager.getRoom(roomId)?.players).toHaveLength(2);
+
+        vi.advanceTimersByTime(1);
+        expect(expiredRoom).toBeDefined();
+        expect(expiredRoom!.players).toHaveLength(1);
+        expect(expiredRoom!.players[0].name).toBe('Ghost');
+        expect(expiredRoom!.players[0].isHost).toBe(true);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('should not remove player if cleanup is cancelled (reconnect within grace)', () => {
+      vi.useFakeTimers();
+      try {
+        const { roomId, player } = roomManager.createRoom('Host', 'av1');
+        roomManager.schedulePlayerCleanup(roomId, player.id, 60_000, () => {});
+
+        roomManager.cancelPlayerCleanup(roomId, player.id);
+        vi.advanceTimersByTime(120_000);
+        expect(roomManager.getRoom(roomId)?.players).toHaveLength(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('should return null room when last player is cleaned up (room disbanded)', () => {
+      vi.useFakeTimers();
+      try {
+        const { roomId, player } = roomManager.createRoom('Solo', 'av1');
+        let disbanded: string | null = null;
+        roomManager.schedulePlayerCleanup(roomId, player.id, 30_000, (rid, _pid, room) => {
+          disbanded = room === null ? rid : null;
+        });
+
+        vi.advanceTimersByTime(30_000);
+        expect(disbanded).toBe(roomId);
+        expect(roomManager.getRoom(roomId)).toBeUndefined();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('explicit leave cancels the scheduled cleanup', () => {
+      vi.useFakeTimers();
+      try {
+        const { roomId, player } = roomManager.createRoom('Host', 'av1');
+        roomManager.schedulePlayerCleanup(roomId, player.id, 60_000, () => {});
+
+        roomManager.leaveRoom(roomId, player.id);
+        vi.advanceTimersByTime(120_000);
+        expect(roomManager.getRoom(roomId)).toBeUndefined();
+      } finally {
+        vi.useRealTimers();
       }
     });
   });

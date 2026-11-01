@@ -1,18 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import {
-  Plus,
-  Trash2,
-  Share2,
-  Copy,
-  Check,
-  Search,
-  BookOpen,
-  Sparkles,
-  Save,
-  FolderOpen,
-  AlertCircle,
-} from 'lucide-react';
+import { Plus, Trash, ShareNetwork, Copy, Check, MagnifyingGlass, BookOpen, Sparkle, FloppyDisk, FolderOpen, WarningCircle } from '@phosphor-icons/react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
@@ -114,7 +102,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
     });
   };
 
-  // Save Custom Pack
+  // FloppyDisk Custom Pack
   const handleSavePack = async () => {
     setValidationError(null);
     if (!title.trim()) {
@@ -206,8 +194,8 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
       size="xl"
       title={
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-cyan-400" />
-          <span className="font-black text-lg sm:text-xl font-display bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+          <Sparkle className="w-5 h-5 text-stamp-dark" weight="bold" />
+          <span className="font-condensed text-lg sm:text-xl text-ink">
             Paket Kata Kustom
           </span>
         </div>
@@ -216,7 +204,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
     >
       <div className="space-y-5">
         {/* Navigation Tabs */}
-        <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-950/80 rounded-xl border border-white/10">
+        <div className="grid grid-cols-3 gap-1.5 p-1 bg-paper rounded-xl border border-rule">
           <button
             type="button"
             onClick={() => {
@@ -224,10 +212,10 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
               setSaveSuccessPack(null);
             }}
             className={cn(
-              'flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all',
+              'flex items-center justify-center gap-1.5 py-2 px-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all',
               activeTab === 'CREATE'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                ? 'bg-stamp-light text-stamp-dark border border-stamp shadow-sm'
+                : 'text-ink-muted hover:text-ink hover:bg-paper-muted'
             )}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -238,13 +226,13 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
             type="button"
             onClick={() => setActiveTab('IMPORT')}
             className={cn(
-              'flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all',
+              'flex items-center justify-center gap-1.5 py-2 px-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all',
               activeTab === 'IMPORT'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                ? 'bg-stamp-light text-stamp-dark border border-stamp shadow-sm'
+                : 'text-ink-muted hover:text-ink hover:bg-paper-muted'
             )}
           >
-            <Share2 className="w-3.5 h-3.5" />
+            <ShareNetwork className="w-3.5 h-3.5" />
             <span className="truncate">Impor Kode</span>
           </button>
 
@@ -252,10 +240,10 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
             type="button"
             onClick={() => setActiveTab('SAVED')}
             className={cn(
-              'flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all',
+              'flex items-center justify-center gap-1.5 py-2 px-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all',
               activeTab === 'SAVED'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                ? 'bg-stamp-light text-stamp-dark border border-stamp shadow-sm'
+                : 'text-ink-muted hover:text-ink hover:bg-paper-muted'
             )}
           >
             <FolderOpen className="w-3.5 h-3.5" />
@@ -270,22 +258,22 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-4"
+                className="p-5 rounded-2xl bg-cardstock border border-rule text-center space-y-4"
               >
-                <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                <div className="w-12 h-12 mx-auto rounded-2xl bg-paper-muted border border-rule flex items-center justify-center text-ink">
                   <Check className="w-6 h-6 stroke-[3]" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-emerald-300 font-display">
+                  <h3 className="text-base font-bold text-ink font-display">
                     Paket Berhasil Dibuat & Disimpan!
                   </h3>
-                  <p className="text-xs text-slate-300 mt-1">
+                  <p className="text-xs text-ink mt-1">
                     Bagikan kode share berikut ke temanmu untuk memainkan paket kata ini:
                   </p>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 p-3 bg-slate-950/80 rounded-xl border border-white/10 max-w-xs mx-auto">
-                  <span className="font-mono text-xl font-black text-cyan-300 tracking-widest">
+                <div className="flex items-center justify-center gap-2 p-3 bg-paper rounded-xl border border-rule max-w-xs mx-auto">
+                  <span className="font-mono text-xl font-black text-stamp-dark tracking-widest">
                     {saveSuccessPack.shareCode}
                   </span>
                   <Button
@@ -294,7 +282,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     onClick={() => handleCopyCode(saveSuccessPack.shareCode)}
                     leftIcon={
                       copiedCode === saveSuccessPack.shareCode ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <Check className="w-3.5 h-3.5 text-ink" />
                       ) : (
                         <Copy className="w-3.5 h-3.5" />
                       )
@@ -333,49 +321,49 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Judul Paket</label>
+                    <label className="text-xs font-semibold text-ink">Judul Paket</label>
                     <input
                       type="text"
                       placeholder="e.g. Kantor & Rekan Kerja"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       maxLength={30}
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950/70 border border-white/10 text-slate-100 placeholder:text-slate-600 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                      className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal/30"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Nama Pembuat / Author</label>
+                    <label className="text-xs font-semibold text-ink">Nama Pembuat / Author</label>
                     <input
                       type="text"
                       placeholder="e.g. Agent007"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       maxLength={20}
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950/70 border border-white/10 text-slate-100 placeholder:text-slate-600 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                      className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal/30"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Label Kategori</label>
+                  <label className="text-xs font-semibold text-ink">Label Kategori</label>
                   <input
                     type="text"
                     placeholder="e.g. Keseharian, Film, Teknologi"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     maxLength={20}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-950/70 border border-white/10 text-slate-100 placeholder:text-slate-600 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                    className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal/30"
                   />
                 </div>
 
                 {/* Word Pairs Builder */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-slate-300">
+                    <label className="text-xs font-semibold text-ink">
                       Pasangan Kata Rahasia ({pairs.length} pasang)
                     </label>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-ink-muted">
                       Warga vs Undercover (Mirip tapi beda)
                     </span>
                   </div>
@@ -384,9 +372,9 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     {pairs.map((pair, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 p-2 rounded-xl bg-slate-950/50 border border-white/5"
+                        className="flex items-center gap-2 p-2 rounded-xl bg-paper-muted border border-rule"
                       >
-                        <span className="text-[11px] font-mono font-bold text-slate-500 w-5 text-center">
+                        <span className="text-[11px] font-mono font-bold text-ink-muted w-5 text-center">
                           #{index + 1}
                         </span>
                         <input
@@ -395,25 +383,25 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                           value={pair.civilian}
                           onChange={(e) => handlePairChange(index, 'civilian', e.target.value)}
                           maxLength={25}
-                          className="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-cyan-500/20 text-cyan-200 placeholder:text-slate-600 text-xs focus:outline-none focus:border-cyan-400"
+                          className="flex-1 px-3 py-1.5 rounded-2xl bg-cardstock-warm border border-rule text-ink placeholder:text-ink-faint text-xs focus:outline-none focus:border-ink"
                         />
-                        <span className="text-slate-600 text-xs font-bold">vs</span>
+                        <span className="text-ink-faint text-xs font-bold">vs</span>
                         <input
                           type="text"
                           placeholder="Kata Undercover (e.g. Teh)"
                           value={pair.undercover}
                           onChange={(e) => handlePairChange(index, 'undercover', e.target.value)}
                           maxLength={25}
-                          className="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-rose-500/20 text-rose-200 placeholder:text-slate-600 text-xs focus:outline-none focus:border-rose-400"
+                          className="flex-1 px-3 py-1.5 rounded-2xl bg-cardstock-warm border border-stamp text-stamp-dark placeholder:text-ink-faint text-xs focus:outline-none focus:border-stamp"
                         />
                         {pairs.length > 1 && (
                           <button
                             type="button"
                             onClick={() => handleRemovePair(index)}
-                            className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition-colors"
+                            className="p-1.5 text-ink-muted hover:text-stamp-dark rounded-2xl hover:bg-stamp-light transition-colors"
                             title="Hapus baris ini"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
@@ -426,26 +414,26 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     size="sm"
                     onClick={handleAddPair}
                     leftIcon={<Plus className="w-3.5 h-3.5" />}
-                    className="w-full text-xs font-semibold py-2 border-dashed border-white/20"
+                    className="w-full text-xs font-semibold py-2 border-dashed border-ink"
                   >
                     Tambah Pasangan Kata
                   </Button>
                 </div>
 
                 {validationError && (
-                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
-                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-stamp-light border border-stamp text-stamp-dark text-xs">
+                    <WarningCircle className="w-4 h-4 shrink-0 text-stamp-dark" />
                     <span>{validationError}</span>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400">
+                <div className="flex items-center justify-between pt-2 border-t border-ink">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-ink-muted">
                     <input
                       type="checkbox"
                       checked={isPublic}
                       onChange={(e) => setIsPublic(e.target.checked)}
-                      className="rounded border-white/20 bg-slate-900 text-cyan-500 focus:ring-cyan-500"
+                      className="rounded border-ink bg-cardstock-warm text-stamp-500 focus:ring-cyan-500"
                     />
                     <span>Bisa dicari oleh publik via Share Code</span>
                   </label>
@@ -456,7 +444,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     size="md"
                     isLoading={isSaving}
                     onClick={handleSavePack}
-                    leftIcon={<Save className="w-4 h-4" />}
+                    leftIcon={<FloppyDisk className="w-4 h-4" />}
                   >
                     Simpan & Dapatkan Kode
                   </Button>
@@ -470,7 +458,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
         {activeTab === 'IMPORT' && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300">
+              <label className="text-xs font-semibold text-ink">
                 Masukkan Kode Share (6 Karakter)
               </label>
               <div className="flex gap-2">
@@ -480,14 +468,14 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                   value={importCode}
                   onChange={(e) => setImportCode(e.target.value.toUpperCase())}
                   maxLength={10}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-slate-950/70 border border-white/10 text-cyan-300 font-mono text-base tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-paper border border-rule text-stamp-dark font-mono text-base tracking-widest placeholder:text-ink-faint focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal/30"
                 />
                 <Button
                   variant="primary"
                   size="md"
                   isLoading={isSearching}
                   onClick={handleImportPack}
-                  leftIcon={<Search className="w-4 h-4" />}
+                  leftIcon={<MagnifyingGlass className="w-4 h-4" />}
                 >
                   Cari
                 </Button>
@@ -495,8 +483,8 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
             </div>
 
             {importError && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-stamp-light border border-stamp text-stamp-dark text-xs">
+                <WarningCircle className="w-4 h-4 shrink-0 text-stamp-dark" />
                 <span>{importError}</span>
               </div>
             )}
@@ -505,16 +493,16 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 rounded-2xl bg-slate-950/60 border border-cyan-500/30 space-y-3"
+                className="p-4 rounded-2xl bg-paper border border-rule space-y-3"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <h4 className="text-base font-bold text-cyan-300 font-display">
+                    <h4 className="text-base font-bold text-stamp-dark font-display">
                       {importedPack.title}
                     </h4>
-                    <p className="text-xs text-slate-400">
-                      Oleh: <span className="text-slate-200">{importedPack.authorName}</span> &bull;{' '}
-                      <span className="font-mono text-cyan-400">{importedPack.shareCode}</span>
+                    <p className="text-xs text-ink-muted">
+                      Oleh: <span className="text-ink">{importedPack.authorName}</span> &bull;{' '}
+                      <span className="font-mono text-stamp-dark">{importedPack.shareCode}</span>
                     </p>
                   </div>
                   <Badge variant="cyan" size="sm">
@@ -522,21 +510,21 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                   </Badge>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-900/80 border border-white/5 space-y-1.5">
-                  <span className="text-[10px] uppercase font-mono text-slate-500 block">
+                <div className="p-2.5 rounded-xl bg-cardstock border border-rule space-y-1.5">
+                  <span className="text-[11px] uppercase font-mono text-ink-muted block">
                     Contoh Pasangan Kata:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {importedPack.wordPairs.slice(0, 4).map((p, idx) => (
                       <span
                         key={idx}
-                        className="text-xs px-2 py-0.5 rounded-md bg-white/5 text-slate-300 font-mono"
+                        className="text-xs px-2 py-0.5 rounded-xl bg-paper-muted text-ink font-mono"
                       >
                         {p.civilianWord} / {p.undercoverWord}
                       </span>
                     ))}
                     {importedPack.wordPairs.length > 4 && (
-                      <span className="text-xs text-slate-500 self-center">
+                      <span className="text-xs text-ink-muted self-center">
                         +{importedPack.wordPairs.length - 4} lainnya
                       </span>
                     )}
@@ -561,12 +549,12 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
         {activeTab === 'SAVED' && (
           <div className="space-y-3">
             {isLoadingSaved ? (
-              <div className="text-center py-8 text-slate-500 text-xs animate-pulse">
+              <div className="text-center py-8 text-ink-muted text-xs animate-pulse">
                 Memuat koleksi paket kata...
               </div>
             ) : savedPacks.length === 0 ? (
-              <div className="text-center py-8 text-slate-500 space-y-2">
-                <BookOpen className="w-8 h-8 mx-auto text-slate-600" />
+              <div className="text-center py-8 text-ink-muted space-y-2">
+                <BookOpen className="w-8 h-8 mx-auto text-ink-faint" />
                 <p className="text-xs">Belum ada paket kustom yang tersimpan.</p>
                 <Button
                   variant="secondary"
@@ -583,18 +571,18 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                   <div
                     key={pack.id || pack.shareCode}
                     onClick={() => handleSelectAndClose(pack)}
-                    className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-white/10 hover:border-cyan-500/40 hover:bg-slate-900/80 transition-all cursor-pointer group"
+                    className="flex items-center justify-between p-3 rounded-xl bg-paper border border-rule hover:border-stamp hover:bg-cardstock transition-all cursor-pointer group"
                   >
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-200 group-hover:text-cyan-300 transition-colors">
+                        <span className="text-sm font-bold text-ink group-hover:text-stamp-dark transition-colors">
                           {pack.title}
                         </span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                        <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-stamp/10 text-stamp-dark border border-rule">
                           {pack.shareCode}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-ink-muted">
                         Oleh: {pack.authorName} &bull; {pack.wordPairs.length} pasangan kata
                       </p>
                     </div>
@@ -607,11 +595,11 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                           e.stopPropagation();
                           handleCopyCode(pack.shareCode);
                         }}
-                        className="h-7 w-7 text-slate-400 hover:text-cyan-400"
+                        className="h-7 w-7 text-ink-muted hover:text-stamp-dark"
                         title="Salin Kode Share"
                       >
                         {copiedCode === pack.shareCode ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <Check className="w-3.5 h-3.5 text-ink" />
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
@@ -621,10 +609,10 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={(e) => handleDeletePack(e, pack.id)}
-                        className="h-7 w-7 text-slate-500 hover:text-rose-400"
+                        className="h-7 w-7 text-ink-muted hover:text-stamp-dark"
                         title="Hapus dari lokal"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>

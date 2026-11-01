@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { Eye, EyeOff, ShieldAlert, Lock, KeyRound } from 'lucide-react';
+import { Eye, EyeClosed, Warning } from '@phosphor-icons/react';
 import { PlayerRole } from '../../types/game.types';
-import { RoleBadge } from '../common/Badge';
 import { useGameSound } from '../../hooks/useGameSound';
 import { cn } from '../../utils/cn';
 
@@ -14,6 +13,11 @@ export interface SecretCardProps {
   className?: string;
 }
 
+/**
+ * Physical envelope/sleeve secret card.
+ * Press & hold slides the inner cardstock card out of the kraft pocket;
+ * releasing slides it back inside immediately.
+ */
 export const SecretCard: React.FC<SecretCardProps> = ({
   role = 'CIVILIAN',
   word,
@@ -59,7 +63,7 @@ export const SecretCard: React.FC<SecretCardProps> = ({
 
   return (
     <div className={cn('w-full max-w-sm mx-auto select-none font-sans', className)}>
-      {/* Interactive Press & Hold Container */}
+      {/* Kraft sleeve */}
       <div
         onMouseDown={startHold}
         onMouseUp={endHold}
@@ -68,115 +72,103 @@ export const SecretCard: React.FC<SecretCardProps> = ({
         onTouchEnd={endHold}
         onTouchCancel={endHold}
         onContextMenu={(e) => e.preventDefault()}
-        className={cn(
-          'relative overflow-hidden rounded-2xl p-6 sm:p-7 cursor-pointer transition-all duration-200',
-          'bg-zinc-900/60 border backdrop-blur-md shadow-sm',
-          isHolding
-            ? isMrWhite
-              ? 'border-purple-600 bg-zinc-900/90 scale-[1.01]'
-              : 'border-zinc-400 bg-zinc-900/90 scale-[1.01]'
-            : 'border-zinc-800 hover:border-zinc-700 active:scale-[0.99]'
-        )}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            if (e.type === 'keydown') startHold();
+          }
+        }}
+        onKeyUp={endHold}
+        aria-label="Tahan untuk mengintip kata rahasia"
+        className="relative overflow-hidden rounded-2xl border-2 border-rule bg-paper-muted shadow-print-lg cursor-pointer h-[340px]"
       >
-        {/* Content Box */}
-        <div className="relative z-10 flex flex-col items-center text-center space-y-4">
-          {/* Top Status Header */}
-          <div className="flex items-center justify-between w-full text-xs font-mono">
-            <span className="text-zinc-500 uppercase flex items-center gap-1.5 font-medium">
-              <Lock className="w-3 h-3 text-zinc-400" />
-              KARTU RAHASIA
+        {/* thumb notch cut-out */}
+        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 rounded-b-full bg-paper border-x-2 border-b-2 border-rule z-20 flex items-center justify-center" aria-hidden="true">
+          <span className="w-6 h-1 rounded-full bg-rule" />
+        </span>
+
+        {/* Inner secret card: tucked inside the pocket, slides up when holding */}
+        <motion.div
+          initial={false}
+          animate={{ y: isHolding ? -6 : 148 }}
+          transition={{ type: 'spring', stiffness: 340, damping: 28 }}
+          className="absolute inset-x-3 top-3 z-0 bg-cardstock border-2 border-rule rounded-xl p-4 min-h-[320px] flex flex-col"
+        >
+          {/* inner card header tab */}
+          <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-rule">
+            <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-ink-muted">
+              Dokumen Agen
             </span>
             {category && (
-              <span className="px-2 py-0.5 rounded-md bg-zinc-950 border border-zinc-800 text-zinc-400 text-[11px]">
+              <span className="px-2 py-0.5 rounded-lg bg-paper border border-rule font-mono text-[11px] font-bold uppercase tracking-wider text-ink">
                 {category}
               </span>
             )}
           </div>
 
-          {/* Secret Word & Role Mask Container */}
-          <div className="relative w-full min-h-[140px] flex flex-col items-center justify-center p-4 rounded-xl bg-zinc-950/80 border border-zinc-800/80 overflow-hidden">
-            {/* Unmasked Content (Visible when holding) */}
-            <motion.div
-              initial={false}
-              animate={{
-                filter: isHolding ? 'blur(0px)' : 'blur(16px)',
-                opacity: isHolding ? 1 : 0,
-                scale: isHolding ? 1 : 0.95,
-              }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-              className="flex flex-col items-center justify-center space-y-2.5 pointer-events-none"
-            >
-              {isMrWhite ? (
-                <>
-                  <RoleBadge role="MR_WHITE" size="md" />
-                  <div className="text-center space-y-1">
-                    <p className="text-3xl font-mono font-bold text-purple-300 tracking-widest">
-                      ???
-                    </p>
-                    <p className="text-xs text-zinc-400 max-w-[240px] leading-relaxed">
-                      Kamu adalah <span className="font-semibold text-purple-300">Mr. White (Buta Kata)</span>. Kamu tidak punya kata. Simak petunjuk pemain lain dan tebak kata warga!
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center space-y-2 py-1">
-                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-400">
-                    Kata Rahasia Kamu
-                  </span>
-                  <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight uppercase">
-                    {word || 'Kata Rahasia'}
-                  </p>
-                  <p className="text-xs text-zinc-400 max-w-[240px] leading-relaxed">
-                    Ingat kata ini dan berikan 1 petunjuk tanpa dicurigai pemain lain.
-                  </p>
-                </div>
-              )}
-            </motion.div>
-
-            {/* Masked Prompt (Visible when NOT holding) */}
-            <motion.div
-              initial={false}
-              animate={{
-                opacity: isHolding ? 0 : 1,
-                scale: isHolding ? 0.95 : 1,
-              }}
-              transition={{ duration: 0.15 }}
-              className="absolute inset-0 flex flex-col items-center justify-center space-y-2 p-4 text-center pointer-events-none"
-            >
-              <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
-                <KeyRound className="w-5 h-5" />
+          {/* Secret content with opacity transition so zero leak when closed */}
+          <div className={cn("transition-opacity duration-200 my-auto", isHolding ? "opacity-100" : "opacity-0")}>
+            {isMrWhite ? (
+              <div className="rounded-xl border border-dashed border-rule bg-paper p-4 text-center space-y-2 min-h-[140px] flex flex-col items-center justify-center">
+                <span className="rubber-stamp text-xs -rotate-2">Mr. White · Tanpa Kata</span>
+                <p className="text-xs text-ink-muted max-w-[240px] leading-relaxed">
+                  Kamu tidak mendapat kata. Dengarkan petunjuk pemain lain dan menebaklah saat terdesak!
+                </p>
               </div>
-              <p className="text-sm font-bold text-zinc-200">
-                Tahan untuk Intip Kata
-              </p>
-              <p className="text-[11px] text-zinc-500">
-                Tekan dan tahan layar untuk membaca
-              </p>
-            </motion.div>
-          </div>
-
-          {/* Hold Feedback Indicator */}
-          <div className="w-full flex items-center justify-center gap-2">
-            {isHolding ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-300">
-                <Eye className="w-3.5 h-3.5" />
-                Melepas layar akan langsung menutup kata
-              </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500">
-                <EyeOff className="w-3.5 h-3.5" />
-                Kata tersembunyi dengan aman
-              </span>
+              <div className="text-center py-2">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-ink-muted mb-1.5">
+                  Kata Rahasia Kamu
+                </p>
+                <p className="font-condensed text-4xl sm:text-5xl text-ink tracking-tight py-2 border-y-2 border-rule">
+                  {word || 'Kata Rahasia'}
+                </p>
+                <p className="text-[11px] text-ink-muted max-w-[250px] leading-relaxed mx-auto mt-2">
+                  Rahasiakan kata ini. Jangan sampai terlihat pemain lain.
+                </p>
+              </div>
             )}
           </div>
 
-          {/* Privacy Notice */}
-          <div className="w-full pt-3 border-t border-zinc-800/80 flex items-center justify-center gap-1.5 text-[11px] text-zinc-500">
-            <ShieldAlert className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-            <span>Pastikan layar tidak diintip pemain di sebelahmu</span>
+          {/* Decorative bottom lines */}
+          <div className="mt-auto space-y-1.5 opacity-30 pt-2" aria-hidden="true">
+            <div className="h-1.5 w-3/4 mx-auto bg-ink/20 rounded-full" />
+            <div className="h-1.5 w-1/2 mx-auto bg-ink/20 rounded-full" />
           </div>
+        </motion.div>
+
+        {/* Pocket flap (front of the envelope) - covers bottom 210px */}
+        <div className="absolute inset-x-0 bottom-0 h-[210px] z-10 card-back-hatch border-t-2 border-rule flex flex-col items-center justify-center gap-2 px-4 shadow-[0_-4px_12px_rgba(36,51,72,0.06)]">
+          <span className="rubber-stamp-red -rotate-2 text-xs">Dokumen Rahasia</span>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-ink-muted text-center max-w-[200px]">
+            Tahan kartu untuk geser &amp; intip
+          </p>
         </div>
       </div>
+
+      {/* Hold feedback */}
+      <div className="w-full flex items-center justify-center gap-2 mt-4">
+        {isHolding ? (
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-stamp-dark font-mono uppercase tracking-wide">
+            <Eye className="w-3.5 h-3.5" weight="bold" />
+            Melepas menutup kata
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-xs text-ink-muted font-mono uppercase tracking-wide">
+            <EyeClosed className="w-3.5 h-3.5" weight="bold" />
+            Kata tersembunyi dengan aman
+          </span>
+        )}
+      </div>
+
+      {/* Privacy notice */}
+      <div className="w-full mt-2 pt-3 border-t-2 border-rule flex items-center justify-center gap-1.5 text-[11px] text-ink-muted">
+        <Warning className="w-3.5 h-3.5 shrink-0" weight="bold" />
+        <span>Pastikan layar tidak diintip pemain di sebelahmu</span>
+      </div>
+
     </div>
   );
 };

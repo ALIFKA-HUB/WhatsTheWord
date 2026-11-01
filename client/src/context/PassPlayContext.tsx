@@ -71,10 +71,10 @@ const DEFAULT_SETTINGS: GameSettings = {
 };
 
 const DEFAULT_INITIAL_PLAYERS: Player[] = [
-  { id: 'p1', name: 'Agent Cyber', avatar: '🕵️', isHost: true, isAlive: true, hasVoted: false },
-  { id: 'p2', name: 'Neon Fox', avatar: '🦊', isHost: false, isAlive: true, hasVoted: false },
-  { id: 'p3', name: 'Shadow Byte', avatar: '🤖', isHost: false, isAlive: true, hasVoted: false },
-  { id: 'p4', name: 'Phantom V', avatar: '⚡', isHost: false, isAlive: true, hasVoted: false },
+  { id: 'p1', name: 'Penjaga Meja', avatar: 'token-eye', isHost: true, isAlive: true, hasVoted: false },
+  { id: 'p2', name: 'Tuan Kertas', avatar: 'token-triangle', isHost: false, isAlive: true, hasVoted: false },
+  { id: 'p3', name: 'Nona Tinta', avatar: 'token-detective', isHost: false, isAlive: true, hasVoted: false },
+  { id: 'p4', name: 'Saksi Kunci', avatar: 'token-bolt', isHost: false, isAlive: true, hasVoted: false },
 ];
 
 export const PassPlayContext = createContext<PassPlayContextType | null>(null);
