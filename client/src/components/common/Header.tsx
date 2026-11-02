@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       className={cn(
-        'w-full z-40 px-4 py-3 bg-cardstock/95 border-b border-rule transition-colors duration-200',
+        'w-full z-40 px-4 py-3 bg-cardstock border-b border-rule shadow-sm transition-colors duration-200',
         sticky && 'sticky top-0',
         className
       )}
@@ -82,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
         {roomCode && (
           <button
             onClick={handleCopyRoomCode}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-light text-teal-dark border border-teal/40 shadow-print-sm hover:bg-teal/20 transition-colors cursor-pointer text-left active:translate-y-[1px] shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-light text-teal-dark border border-teal shadow-print-sm hover:bg-paper-muted transition-colors cursor-pointer text-left active:translate-y-[1px] shrink-0"
             title="Klik untuk salin kode meja"
           >
             <span className="text-xs font-semibold text-ink-muted">Meja</span>

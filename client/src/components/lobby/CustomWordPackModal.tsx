@@ -328,7 +328,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       maxLength={30}
-                      className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal/30"
+                      className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
                     />
                   </div>
 
@@ -340,7 +340,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       maxLength={20}
-                      className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal/30"
+                      className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
                     />
                   </div>
                 </div>
@@ -353,7 +353,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     maxLength={20}
-                    className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal/30"
+                    className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
                   />
                 </div>
 
@@ -468,7 +468,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                   value={importCode}
                   onChange={(e) => setImportCode(e.target.value.toUpperCase())}
                   maxLength={10}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-paper border border-rule text-stamp-dark font-mono text-base tracking-widest placeholder:text-ink-faint focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal/30"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-paper border border-rule text-stamp-dark font-mono text-base tracking-widest placeholder:text-ink-faint focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal"
                 />
                 <Button
                   variant="primary"
@@ -571,14 +571,14 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                   <div
                     key={pack.id || pack.shareCode}
                     onClick={() => handleSelectAndClose(pack)}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule hover:border-teal/50 hover:bg-cardstock transition-colors cursor-pointer group"
+                    className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule hover:border-teal hover:bg-cardstock transition-colors cursor-pointer group"
                   >
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-bold text-ink group-hover:text-teal-dark transition-colors">
                           {pack.title}
                         </span>
-                        <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-teal-light text-teal-dark border border-teal/40">
+                        <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-teal-light text-teal-dark border border-teal">
                           {pack.shareCode}
                         </span>
                       </div>

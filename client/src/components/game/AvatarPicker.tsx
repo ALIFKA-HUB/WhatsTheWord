@@ -100,7 +100,7 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
               placeholder="Tulis nama panggilan…"
               disabled={disabled}
               maxLength={15}
-              className="w-full pl-4 pr-12 py-2.5 bg-cardstock border border-rule rounded-xl text-ink placeholder:text-ink-faint focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal/30 text-sm font-semibold transition-colors"
+              className="w-full pl-4 pr-12 py-2.5 bg-cardstock border border-rule rounded-xl text-ink placeholder:text-ink-faint focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal text-sm font-semibold transition-colors"
             />
             <button
               type="button"

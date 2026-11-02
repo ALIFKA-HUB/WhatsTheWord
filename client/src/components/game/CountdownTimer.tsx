@@ -44,18 +44,18 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     ? {
         strokeColor: 'var(--color-accent-3)',
         textClass: 'text-stamp-dark',
-        bgClass: 'bg-stamp-light border-stamp/40',
+        bgClass: 'bg-stamp-light border-stamp',
       }
     : isWarning
     ? {
         strokeColor: 'var(--color-accent-deep)',
         textClass: 'text-sun-dark',
-        bgClass: 'bg-sun-light border-sun/50',
+        bgClass: 'bg-sun-light border-sun',
       }
     : {
         strokeColor: 'var(--color-mint-deep)',
         textClass: 'text-teal-dark',
-        bgClass: 'bg-teal-light border-teal/40',
+        bgClass: 'bg-teal-light border-teal',
       };
 
   useEffect(() => {

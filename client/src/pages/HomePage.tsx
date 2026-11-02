@@ -188,7 +188,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="w-11 h-11 rounded-2xl bg-teal-light border border-teal/40 text-teal-dark flex items-center justify-center shrink-0 shadow-print-sm">
+                  <span className="w-11 h-11 rounded-2xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center shrink-0 shadow-print-sm">
                     <DeviceMobile className="w-6 h-6" weight="bold" />
                   </span>
                   <div>
@@ -243,7 +243,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3">
-                  <span className="w-11 h-11 rounded-2xl bg-sun-light border border-sun/50 text-sun-dark flex items-center justify-center shrink-0 shadow-print-sm">
+                  <span className="w-11 h-11 rounded-2xl bg-sun-light border border-sun text-sun-dark flex items-center justify-center shrink-0 shadow-print-sm">
                     <WifiHigh className="w-6 h-6" weight="bold" />
                   </span>
                   <div>
@@ -260,10 +260,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                   className={cn(
                     'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border',
                     isConnected
-                      ? 'bg-teal-light text-teal-dark border-teal/40'
+                      ? 'bg-teal-light text-teal-dark border-teal'
                       : isConnecting
                       ? 'bg-paper-muted text-ink-muted border-rule'
-                      : 'bg-stamp-light text-stamp-dark border-stamp/40'
+                      : 'bg-stamp-light text-stamp-dark border-stamp'
                   )}
                 >
                   {isConnected ? (
@@ -292,7 +292,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <span className="block text-sm font-bold text-ink truncate">{playerName}</span>
                   <span className="block text-xs text-ink-muted">Pion: {token.name}</span>
                 </span>
-                <span className="text-xs font-semibold text-teal-dark bg-teal-light px-2.5 py-1 rounded-full border border-teal/30">
+                <span className="text-xs font-semibold text-teal-dark bg-teal-light px-2.5 py-1 rounded-full border border-teal">
                   Ubah Profil
                 </span>
               </button>
@@ -346,7 +346,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     value={roomCodeInput}
                     onChange={(e) => setRoomCodeInput(e.target.value.toUpperCase())}
                     placeholder="KOP1"
-                    className="w-full px-3 py-2.5 rounded-2xl bg-paper border border-rule font-mono text-xl font-bold text-center text-ink placeholder:text-ink-faint/50 focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal/30 transition-colors"
+                    className="w-full px-3 py-2.5 rounded-2xl bg-paper border border-rule font-mono text-xl font-bold text-center text-ink placeholder:text-ink-faint/50 focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal transition-colors"
                   />
                 </div>
               ) : (
@@ -361,7 +361,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               )}
 
               {(formError || error) && (
-                <div className="p-3 rounded-2xl bg-stamp-light border border-stamp/50 text-stamp-dark text-xs font-semibold flex items-center gap-2">
+                <div className="p-3 rounded-2xl bg-stamp-light border border-stamp text-stamp-dark text-xs font-semibold flex items-center gap-2">
                   {formError || error}
                 </div>
               )}

@@ -81,7 +81,7 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
             initial={{ opacity: 0, scale: 0.98, y: -6 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            className="p-4 rounded-2xl bg-stamp-light border border-stamp/50 text-stamp-dark shadow-print-sm flex items-start gap-3"
+            className="p-4 rounded-2xl bg-stamp-light border border-stamp text-stamp-dark shadow-print-sm flex items-start gap-3"
           >
             <Warning className="w-5 h-5 shrink-0 text-stamp-dark mt-0.5" weight="bold" />
             <div className="space-y-1">
@@ -147,7 +147,7 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
                   : isTargetSelected
                   ? 'bg-stamp-light border-stamp ring-1 ring-stamp cursor-pointer'
                   : canVoteThis
-                  ? 'bg-cardstock border-rule hover:border-stamp/60 hover:bg-paper-muted/60 cursor-pointer'
+                  ? 'bg-cardstock border-rule hover:border-stamp hover:bg-paper-muted cursor-pointer'
                   : 'bg-paper-muted border-rule cursor-default'
               )}
             >
@@ -211,7 +211,7 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
                   </span>
                 )}
                 {!isTargetSelected && player.hasVoted && isPlayerAlive && (
-                  <span className="w-5 h-5 rounded-full bg-teal-light text-teal-dark border border-teal/40 flex items-center justify-center">
+                  <span className="w-5 h-5 rounded-full bg-teal-light text-teal-dark border border-teal flex items-center justify-center">
                     <UserCheck className="w-3 h-3" weight="bold" />
                   </span>
                 )}

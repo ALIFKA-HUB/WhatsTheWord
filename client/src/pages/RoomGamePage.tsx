@@ -406,7 +406,7 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
             className="space-y-6"
           >
             <div className="p-6 sm:p-8 rounded-3xl border border-rule bg-cardstock text-center space-y-4 shadow-print relative overflow-hidden">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-sun-light border border-sun/50 flex items-center justify-center text-sun-dark shadow-print-sm">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-sun-light border border-sun flex items-center justify-center text-sun-dark shadow-print-sm">
                 <Trophy className="w-7 h-7" weight="bold" />
               </div>
 

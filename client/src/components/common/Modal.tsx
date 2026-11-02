@@ -73,7 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-ink/60 -z-10"
+            className="fixed inset-0 bg-black/50 -z-10"
             onClick={() => closeOnOutsideClick && onClose()}
             aria-hidden="true"
           />

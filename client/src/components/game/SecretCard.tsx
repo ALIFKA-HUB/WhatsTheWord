@@ -134,8 +134,8 @@ export const SecretCard: React.FC<SecretCardProps> = ({
 
           {/* Decorative bottom lines */}
           <div className="mt-auto space-y-1.5 opacity-25 pt-2" aria-hidden="true">
-            <div className="h-1.5 w-3/4 mx-auto bg-ink/20 rounded-full" />
-            <div className="h-1.5 w-1/2 mx-auto bg-ink/20 rounded-full" />
+            <div className="h-1.5 w-3/4 mx-auto bg-ink rounded-full" />
+            <div className="h-1.5 w-1/2 mx-auto bg-ink rounded-full" />
           </div>
         </motion.div>
 

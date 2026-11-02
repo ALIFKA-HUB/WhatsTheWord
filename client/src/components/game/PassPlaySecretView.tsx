@@ -83,7 +83,7 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
               className={cn(
                 'w-2.5 h-2.5 rounded-full border border-rule transition-colors',
                 idx === safeRevealIndex && 'bg-teal-dark border-teal-dark',
-                idx < safeRevealIndex && 'bg-ink/40',
+                idx < safeRevealIndex && 'bg-ink-muted border-ink-muted',
                 idx > safeRevealIndex && 'bg-cardstock'
               )}
             />
@@ -177,7 +177,7 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
             className="w-full paper-stack"
           >
             <div className="bg-cardstock border border-rule shadow-print rounded-3xl p-6 sm:p-8 text-center space-y-5">
-              <div className="w-14 h-14 rounded-2xl bg-teal-light border border-teal/40 shadow-print-sm flex items-center justify-center text-teal-dark mx-auto">
+              <div className="w-14 h-14 rounded-2xl bg-teal-light border border-teal shadow-print-sm flex items-center justify-center text-teal-dark mx-auto">
                 <SealCheck className="w-7 h-7" weight="bold" />
               </div>
 

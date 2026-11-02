@@ -13,10 +13,10 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const glowStyles: Record<CardGlow, string> = {
   none: 'border-rule',
-  cyan: 'border-teal/50',
+  cyan: 'border-teal',
   violet: 'border-rule',
-  amber: 'border-sun/60',
-  crimson: 'border-stamp/60 shadow-print-red',
+  amber: 'border-sun',
+  crimson: 'border-stamp shadow-print-red',
 };
 
 const paddingStyles: Record<CardPadding, string> = {

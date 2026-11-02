@@ -378,7 +378,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             <Card padding="md" className="space-y-4">
               <div className="flex items-center justify-between border-b border-rule pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-2xl bg-teal-light border border-teal/40 text-teal-dark flex items-center justify-center shadow-print-sm">
+                  <div className="w-9 h-9 rounded-2xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center shadow-print-sm">
                     <Users className="w-5 h-5" weight="bold" />
                   </div>
                   <div>
@@ -431,7 +431,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             <Card padding="md" className="space-y-3.5">
               <div className="flex items-center justify-between border-b border-rule pb-3">
                 <span className="text-sm font-bold text-ink flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal/40 text-teal-dark flex items-center justify-center">
+                  <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center">
                     <ShieldCheck className="w-4 h-4" weight="bold" />
                   </span>
                   Komposisi Peran
@@ -544,12 +544,12 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             <Card padding="md" className="space-y-4">
               <div className="flex items-center justify-between border-b border-rule pb-3">
                 <span className="text-sm font-bold text-ink flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal/40 text-teal-dark flex items-center justify-center">
+                  <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center">
                     <BookOpen className="w-4 h-4" weight="bold" />
                   </span>
                   Pilih Kategori Kata
                 </span>
-                <span className="text-xs font-semibold text-teal-dark bg-teal-light px-2.5 py-0.5 rounded-full border border-teal/40">
+                <span className="text-xs font-semibold text-teal-dark bg-teal-light px-2.5 py-0.5 rounded-full border border-teal">
                   {settings.category || 'Acak / Misteri'}
                 </span>
               </div>
@@ -566,7 +566,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                         'p-3.5 rounded-2xl border cursor-pointer transition-colors',
                         isSelected
                           ? 'bg-teal-light border-teal-dark text-ink shadow-print-sm'
-                          : 'bg-paper border-rule text-ink hover:border-teal/60 hover:bg-paper-muted/60'
+                          : 'bg-paper border-rule text-ink hover:border-teal hover:bg-paper-muted'
                       )}
                     >
                       <div className="flex items-center gap-2.5">
@@ -591,7 +591,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                         'p-3.5 rounded-2xl border cursor-pointer transition-colors',
                         isSelected
                           ? 'bg-teal-light border-teal-dark text-ink shadow-print-sm'
-                          : 'bg-paper border-rule text-ink hover:border-teal/60 hover:bg-paper-muted/60'
+                          : 'bg-paper border-rule text-ink hover:border-teal hover:bg-paper-muted'
                       )}
                     >
                       <div className="flex items-center gap-2.5">
@@ -636,7 +636,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                           'p-2.5 sm:p-3 pt-4 rounded-2xl text-center border transition-colors relative',
                           isSelected
                             ? 'bg-teal-light border-teal-dark text-ink font-bold shadow-print-sm'
-                            : 'bg-paper border-rule text-ink-muted hover:text-ink hover:border-teal/50'
+                            : 'bg-paper border-rule text-ink-muted hover:text-ink hover:border-teal'
                         )}
                       >
                         {opt.recommended && (

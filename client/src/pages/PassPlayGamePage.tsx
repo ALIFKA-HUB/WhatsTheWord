@@ -106,7 +106,7 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
               {/* Victory Celebration Banner */}
               <div className="text-center space-y-4 p-6 sm:p-8 rounded-3xl bg-cardstock border border-rule shadow-print relative overflow-hidden">
                 <div className="flex flex-col items-center space-y-3">
-                  <div className="w-14 h-14 rounded-2xl bg-sun-light border border-sun/50 flex items-center justify-center text-sun-dark">
+                  <div className="w-14 h-14 rounded-2xl bg-sun-light border border-sun flex items-center justify-center text-sun-dark">
                     <Trophy className="w-7 h-7" weight="bold" />
                   </div>
 
@@ -157,7 +157,7 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-stamp-light/50 border border-stamp/40 text-center space-y-1">
+                    <div className="p-4 rounded-2xl bg-stamp-light border border-stamp text-center space-y-1">
                       <span className="text-xs text-stamp-dark font-semibold">
                         Kata Impostor (Undercover)
                       </span>
@@ -192,7 +192,7 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
                         key={p.id}
                         className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
                           isWinner
-                            ? 'bg-teal-light/40 border-teal/50'
+                            ? 'bg-teal-light border-teal'
                             : 'bg-paper border-rule opacity-80'
                         }`}
                       >

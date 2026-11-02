@@ -137,7 +137,7 @@ export const PassPlayVotingView: React.FC = () => {
       {/* 1. ROUND & GAME STATUS HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-3xl bg-cardstock border border-rule shadow-print-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-teal-light border border-teal/40 flex items-center justify-center font-mono font-bold text-base text-teal-dark">
+          <div className="w-10 h-10 rounded-2xl bg-teal-light border border-teal flex items-center justify-center font-mono font-bold text-base text-teal-dark">
             R{round}
           </div>
           <div>
@@ -163,7 +163,7 @@ export const PassPlayVotingView: React.FC = () => {
 
         {/* Ties Tracker Badge */}
         {consecutiveTies > 0 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stamp-light border border-stamp/40 text-stamp-dark text-xs font-semibold">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stamp-light border border-stamp text-stamp-dark text-xs font-semibold">
             <Warning className="w-3.5 h-3.5 text-stamp-dark" />
             <span>Seri: {consecutiveTies}/{maxTies} (3x = Impostor menang)</span>
           </div>
@@ -175,7 +175,7 @@ export const PassPlayVotingView: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-2xl bg-stamp-light border border-stamp/50 text-stamp-dark text-xs flex items-center justify-between"
+          className="p-4 rounded-2xl bg-stamp-light border border-stamp text-stamp-dark text-xs flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
             <Warning className="w-4 h-4 text-stamp-dark shrink-0" />
@@ -315,7 +315,7 @@ export const PassPlayVotingView: React.FC = () => {
                     key={player.id}
                     type="button"
                     onClick={() => handleOpenConfirmModal(player.id)}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule hover:border-stamp/60 hover:bg-stamp-light/30 transition-colors text-left group active:translate-y-[1px] whitespace-nowrap"
+                    className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule hover:border-stamp hover:bg-stamp-light transition-colors text-left group active:translate-y-[1px] whitespace-nowrap"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <PlayerToken avatar={player.avatar} name={player.name} size="md" showCode={false} />
@@ -323,7 +323,7 @@ export const PassPlayVotingView: React.FC = () => {
                         <p className="text-sm font-semibold text-ink truncate">{player.name}</p>
                       </div>
                     </div>
-                    <span className="text-xs font-semibold text-stamp-dark bg-stamp-light px-2.5 py-1 rounded-full border border-stamp/30 ml-2">
+                    <span className="text-xs font-semibold text-stamp-dark bg-stamp-light px-2.5 py-1 rounded-full border border-stamp ml-2">
                       Eliminasi
                     </span>
                   </button>
@@ -386,7 +386,7 @@ export const PassPlayVotingView: React.FC = () => {
                           'flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left active:translate-y-[1px]',
                           isSelected
                             ? 'bg-stamp-light border-stamp text-stamp-dark ring-1 ring-stamp shadow-print-sm'
-                            : 'bg-paper border-rule hover:border-stamp/50 hover:bg-paper-muted/60 text-ink'
+                            : 'bg-paper border-rule hover:border-stamp hover:bg-paper-muted text-ink'
                         )}
                       >
                         <PlayerToken avatar={candidate.avatar} name={candidate.name} size="sm" showCode={false} />
@@ -503,7 +503,7 @@ export const PassPlayVotingView: React.FC = () => {
                 value={mrWhiteGuessInput}
                 onChange={(e) => setMrWhiteGuessInput(e.target.value)}
                 placeholder="Ketik kata warga di sini…"
-                className="w-full px-4 py-2.5 rounded-xl bg-paper border border-rule focus:border-teal-dark focus:ring-2 focus:ring-teal/30 text-ink text-sm outline-none placeholder:text-ink-faint"
+                className="w-full px-4 py-2.5 rounded-xl bg-paper border border-rule focus:border-teal-dark focus:ring-2 focus:ring-teal text-ink text-sm outline-none placeholder:text-ink-faint"
               />
             </div>
 

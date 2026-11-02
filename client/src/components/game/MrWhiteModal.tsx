@@ -75,7 +75,7 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
       className="border border-rule shadow-print-lg"
       title={
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-sun-light border border-sun/50 flex items-center justify-center text-sun-dark shadow-print-sm">
+          <div className="w-8 h-8 rounded-xl bg-sun-light border border-sun flex items-center justify-center text-sun-dark shadow-print-sm">
             <Question className="w-5 h-5" weight="bold" />
           </div>
           <div>
@@ -101,7 +101,7 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
 
         {isMrWhite ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="p-4 rounded-2xl bg-stamp-light border border-stamp/40 text-center space-y-1">
+            <div className="p-4 rounded-2xl bg-stamp-light border border-stamp text-center space-y-1">
               <p className="text-sm font-bold text-stamp-dark font-display">
                 Kamu Terpilih untuk Dieliminasi!
               </p>
@@ -121,12 +121,12 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
                 onChange={(e) => setGuessInput(e.target.value)}
                 placeholder="Ketik tebakan kata di sini…"
                 maxLength={30}
-                className="w-full px-4 py-3 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-base font-bold focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal/30 text-center"
+                className="w-full px-4 py-3 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-base font-bold focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal text-center"
               />
             </div>
 
             {errorMsg && (
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-stamp-light border border-stamp/50 text-stamp-dark text-xs">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-stamp-light border border-stamp text-stamp-dark text-xs">
                 <WarningCircle className="w-4 h-4 shrink-0 text-stamp-dark" weight="bold" />
                 <span>{errorMsg}</span>
               </div>

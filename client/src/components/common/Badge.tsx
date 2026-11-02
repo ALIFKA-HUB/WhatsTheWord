@@ -22,11 +22,11 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  cyan: 'bg-teal-light text-teal-dark border-teal/40',
-  crimson: 'bg-stamp-light text-stamp-dark border-stamp/40',
+  cyan: 'bg-teal-light text-teal-dark border-teal',
+  crimson: 'bg-stamp-light text-stamp-dark border-stamp',
   violet: 'bg-paper-muted text-ink-muted border-rule',
-  amber: 'bg-sun-light text-sun-dark border-sun/50',
-  emerald: 'bg-teal-light text-teal-dark border-teal/40',
+  amber: 'bg-sun-light text-sun-dark border-sun',
+  emerald: 'bg-teal-light text-teal-dark border-teal',
   slate: 'bg-paper-muted text-ink-muted border-rule',
   outline: 'bg-transparent text-ink-muted border-rule',
 };

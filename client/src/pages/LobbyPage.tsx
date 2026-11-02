@@ -191,7 +191,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
           <div className="lg:col-span-7 space-y-4">
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2.5">
-                <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal/40 text-teal-dark flex items-center justify-center">
+                <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center">
                   <Users className="w-4 h-4" weight="bold" />
                 </span>
                 <h3 className="text-base font-bold text-ink font-display">
@@ -215,7 +215,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                     className={cn(
                       'p-3.5 rounded-2xl border transition-colors flex items-center justify-between gap-3',
                       isMe
-                        ? 'bg-teal-light/40 border-teal/50 shadow-print-sm'
+                        ? 'bg-teal-light border-teal shadow-print-sm'
                         : 'bg-cardstock border-rule shadow-print-sm'
                     )}
                   >
@@ -379,7 +379,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                         </button>
                       </div>
                     ) : (
-                      <span className="font-semibold text-stamp-dark px-2.5 py-0.5 rounded-full bg-stamp-light border border-stamp/40">
+                      <span className="font-semibold text-stamp-dark px-2.5 py-0.5 rounded-full bg-stamp-light border border-stamp">
                         {settings.undercoverCount} orang
                       </span>
                     )}
@@ -398,7 +398,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                           onChange={(e) => handleUpdateRoles(settings.undercoverCount, e.target.checked)}
                           className="rounded border-rule text-teal-dark focus:ring-teal"
                         />
-                        <span className={cn("text-xs font-semibold px-2.5 py-0.5 rounded-full border", settings.enableMrWhite ? "bg-sun-light border-sun/50 text-sun-dark" : "bg-paper-muted border-rule text-ink-muted")}>
+                        <span className={cn("text-xs font-semibold px-2.5 py-0.5 rounded-full border", settings.enableMrWhite ? "bg-sun-light border-sun text-sun-dark" : "bg-paper-muted border-rule text-ink-muted")}>
                           {settings.enableMrWhite ? 'Aktif (1)' : 'Nonaktif'}
                         </span>
                       </label>

@@ -96,7 +96,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             }}
             placeholder="Tulis nama panggilan…"
             maxLength={NAME_MAX_LENGTH}
-            className="w-full px-4 py-2.5 bg-cardstock border border-rule rounded-xl text-ink placeholder:text-ink-faint focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal/30 text-sm font-semibold transition-colors"
+            className="w-full px-4 py-2.5 bg-cardstock border border-rule rounded-xl text-ink placeholder:text-ink-faint focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal text-sm font-semibold transition-colors"
           />
           {!canSave && (
             <p className="text-xs font-semibold text-stamp-dark">
