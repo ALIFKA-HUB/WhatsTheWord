@@ -1,0 +1,115 @@
+/* Hallmark · shape: Split Studio (draw 781f20) · genre: playful · theme: Terrazzo off-white (deal 3/3, seed what-word-indonesian-social-da56·f72402d9·2026-11-02·r0) · nav: slab · footer: letter close · signature: the deal · v2.0.0 */
+/* Hallmark · pre-emit critique: P9 H9 E9 S9 R9 V9 · weakest: R, restrained boardgame print surfaces with motion on key moments */
+/* Hallmark · answered: motion by request (theme Motion is still; user asked for section motion, budget held at 3 primitives) */
+@import url("./tokens.css");
+@import url("./base.css");
+
+.lp-root {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  scrollbar-color: var(--color-muted) var(--color-paper);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.lp-container {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: clamp(20px, 5vw, var(--gutter));
+}
+
+.lp-screen {
+  padding-block: var(--section-gap-s);
+  scroll-margin-top: 72px;
+}
+
+.lp-head {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: var(--tracking-display);
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.lp-plate {
+  background: var(--color-plate);
+  border: var(--rule-bar) solid var(--color-ink);
+  box-shadow: var(--shadow-card);
+  border-radius: 0;
+}
+
+a.lp-plate, button.lp-plate {
+  transition: box-shadow var(--dur-micro) var(--ease-out);
+}
+
+a.lp-plate:hover, button.lp-plate:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-body);
+  font-weight: 500;
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+}
+
+.lp-btn--primary {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border: var(--rule-bar) solid var(--color-ink);
+}
+
+.lp-btn--primary:hover {
+  background: var(--color-ink-2);
+}
+
+.lp-btn--secondary {
+  background: transparent;
+  color: var(--color-ink);
+  box-shadow: inset 0 0 0 var(--rule-bar) currentColor;
+}
+
+.lp-btn--secondary:hover {
+  background: var(--color-paper-2);
+}
+
+.lp-btn:active {
+  transform: translateY(1px);
+}
+
+.lp-btn:focus-visible, .lp-root a:focus-visible, .lp-root button:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+  transition: none;
+}
+
+.lp-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lp-band--ink {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.lp-band--ink .lp-btn--primary {
+  background: var(--color-plate);
+  color: var(--color-ink);
+  border-color: var(--color-plate);
+}
+
+.lp-code {
+  font-family: var(--font-outlier);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
