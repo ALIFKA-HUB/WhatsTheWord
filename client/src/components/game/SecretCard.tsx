@@ -123,7 +123,7 @@ export const SecretCard: React.FC<SecretCardProps> = ({
                   Kata rahasia kamu
                 </p>
                 <p className="font-condensed text-4xl sm:text-5xl text-ink tracking-tight py-2.5 border-y border-rule">
-                  {word || 'Kata Rahasia'}
+                  {isHolding ? (word || 'Kata Rahasia') : '••••••••'}
                 </p>
                 <p className="text-xs text-ink-muted max-w-[250px] leading-relaxed mx-auto mt-2">
                   Ingat kata ini baik-baik dan jangan sampai terlihat pemain lain.

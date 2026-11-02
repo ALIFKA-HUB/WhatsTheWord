@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { RoomManager } from '../managers/RoomManager.js';
 import { GameSettings } from '../types/game.types.js';
+import { broadcastRoomState, sanitizeRoomForPlayer } from '../utils/sanitize.js';
 
 export function registerRoomHandlers(
   io: Server,
@@ -31,7 +32,7 @@ export function registerRoomHandlers(
         socket.data.playerId = player.id;
         socket.data.playerToken = playerToken;
 
-        io.to(roomId).emit('room:updated', room);
+        broadcastRoomState(io, room, 'room:updated');
 
         if (callback) {
           callback({
@@ -39,7 +40,7 @@ export function registerRoomHandlers(
             roomId,
             playerToken,
             player,
-            room,
+            room: sanitizeRoomForPlayer(room, player.id),
           });
         }
       } catch (err: any) {
@@ -85,14 +86,14 @@ export function registerRoomHandlers(
         socket.data.playerId = player.id;
         socket.data.playerToken = playerToken;
 
-        io.to(normalizedRoomId).emit('room:updated', room);
+        broadcastRoomState(io, room, 'room:updated');
 
         if (callback) {
           callback({
             success: true,
             playerToken,
             player,
-            room,
+            room: sanitizeRoomForPlayer(room, player.id),
           });
         }
       } catch (err: any) {
@@ -113,7 +114,7 @@ export function registerRoomHandlers(
         socket.leave(roomId);
         const room = roomManager.leaveRoom(roomId, playerId);
         if (room) {
-          io.to(roomId).emit('room:updated', room);
+          broadcastRoomState(io, room, 'room:updated');
         } else {
           io.to(roomId).emit('room:deleted', {
             roomId,
@@ -151,12 +152,25 @@ export function registerRoomHandlers(
         if (!roomId) {
           throw new Error('Tidak terhubung ke ruangan manapun');
         }
+        const playerId = socket.data.playerId;
+        if (!playerId) {
+          throw new Error('Tidak teridentifikasi sebagai pemain di ruangan ini');
+        }
+
+        const existingRoom = roomManager.getRoom(roomId);
+        if (!existingRoom) {
+          throw new Error(`Ruangan tidak ditemukan: ${roomId}`);
+        }
+        const player = existingRoom.players.find((p) => p.id === playerId);
+        if (!player || !player.isHost) {
+          throw new Error('Hanya host yang dapat mengubah pengaturan ruangan');
+        }
 
         const room = roomManager.updateSettings(roomId, payload.settings);
-        io.to(roomId).emit('room:updated', room);
+        broadcastRoomState(io, room, 'room:updated');
 
         if (callback) {
-          callback({ success: true, room });
+          callback({ success: true, room: sanitizeRoomForPlayer(room, playerId) });
         }
       } catch (err: any) {
         if (callback) {
@@ -191,13 +205,13 @@ export function registerRoomHandlers(
         socket.data.playerId = player.id;
         socket.data.playerToken = payload.playerToken;
 
-        io.to(room.roomId).emit('room:updated', room);
+        broadcastRoomState(io, room, 'room:updated');
 
         if (callback) {
           callback({
             success: true,
             player,
-            room,
+            room: sanitizeRoomForPlayer(room, player.id),
           });
         }
       } catch (err: any) {

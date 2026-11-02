@@ -280,11 +280,11 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </span>
               </div>
 
-              {/* Profile Selector Bar */}
+              {/* Profile Selector Bar - Clean Hairline Row */}
               <button
                 type="button"
                 onClick={() => setIsProfileModalOpen(true)}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl border border-rule bg-paper hover:bg-paper-muted active:translate-y-[1px] transition-colors text-left"
+                className="w-full flex items-center gap-3 py-2.5 px-1 border-y border-rule hover:bg-paper-muted/60 active:translate-y-[1px] transition-colors text-left"
                 aria-label="Ubah profil pemain: nama dan pion"
               >
                 <PlayerToken avatar={selectedAvatar} name={playerName} size="sm" showCode={false} />

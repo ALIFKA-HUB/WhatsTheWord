@@ -56,12 +56,13 @@ describe('Anti-Slop Pre-Flight Audit (design-taste-frontend)', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('guarantees SecretCard has leak-proof geometry and opacity transition', () => {
+  it('guarantees SecretCard has leak-proof geometry and opacity transition and DOM bullet mask', () => {
     const secretCardPath = path.join(srcDir, 'components', 'game', 'SecretCard.tsx');
     const content = fs.readFileSync(secretCardPath, 'utf-8');
     expect(content).toContain('h-[210px]');
     expect(content).toContain('opacity-100');
     expect(content).toContain('opacity-0');
+    expect(content).toContain("isHolding ? (word || 'Kata Rahasia') : '••••••••'");
   });
 
   it('has zero class syntax typos like "-xl" in pages and components', () => {

@@ -7,6 +7,7 @@ import { RoomManager } from './managers/RoomManager.js';
 import { registerRoomHandlers } from './handlers/roomHandler.js';
 import { registerGameHandlers } from './handlers/gameHandler.js';
 import { registerVoteHandlers } from './handlers/voteHandler.js';
+import { broadcastRoomState } from './utils/sanitize.js';
 
 dotenv.config({ path: '../.env' });
 dotenv.config();
@@ -62,7 +63,7 @@ io.on('connection', (socket) => {
     // ghost player (tab ditutup) dibersihkan setelah grace dan peserta lain diberi tahu.
     roomManager.schedulePlayerCleanup(roomId, playerId, DISCONNECT_GRACE_MS, (expiredRoomId, _pid, remainingRoom) => {
       if (remainingRoom) {
-        io.to(expiredRoomId).emit('room:updated', remainingRoom);
+        broadcastRoomState(io, remainingRoom, 'room:updated');
       } else {
         io.to(expiredRoomId).emit('room:deleted', {
           roomId: expiredRoomId,

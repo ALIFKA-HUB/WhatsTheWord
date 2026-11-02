@@ -194,12 +194,24 @@ export class RoomManager {
       throw new Error('Tidak dapat bergabung: permainan sedang berlangsung');
     }
 
+    if (room.players.length >= 20) {
+      throw new Error('Ruangan sudah penuh (maksimal 20 pemain)');
+    }
+
+    const cleanName = (playerName || '').trim() || `Player ${room.players.length + 1}`;
+    const isDuplicate = room.players.some(
+      (p) => p.name.trim().toLowerCase() === cleanName.toLowerCase()
+    );
+    if (isDuplicate) {
+      throw new Error(`Nama "${cleanName}" sudah digunakan dalam ruangan ini`);
+    }
+
     const playerId = randomUUID();
     const playerToken = randomUUID();
 
     const newPlayer: Player = {
       id: playerId,
-      name: (playerName || '').trim() || `Player ${room.players.length + 1}`,
+      name: cleanName,
       avatar: avatar || 'avatar_1',
       isHost: room.players.length === 0,
       isAlive: true,
@@ -274,6 +286,22 @@ export class RoomManager {
 
     if (room.phase !== 'LOBBY') {
       throw new Error('Pengaturan tidak dapat diubah saat permainan sedang berlangsung');
+    }
+
+    const totalPlayers = room.players.length;
+    const prospectiveUndercover = settings.undercoverCount ?? room.settings.undercoverCount ?? 1;
+    const prospectiveEnableMrWhite = settings.enableMrWhite ?? room.settings.enableMrWhite ?? false;
+    const prospectiveMrWhite = prospectiveEnableMrWhite
+      ? (settings.mrWhiteCount ?? room.settings.mrWhiteCount ?? 0)
+      : 0;
+
+    if (totalPlayers >= 4) {
+      const maxUndercover = Math.max(1, Math.floor((totalPlayers - prospectiveMrWhite - 1) / 2));
+      if (prospectiveUndercover > maxUndercover) {
+        throw new Error(
+          `Konfigurasi peran tidak valid: Maksimal ${maxUndercover} Undercover untuk ${totalPlayers} pemain.`
+        );
+      }
     }
 
     room.settings = {
