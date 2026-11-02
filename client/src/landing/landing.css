@@ -155,10 +155,12 @@ a.lp-plate:hover, button.lp-plate:hover {
 
 /* View timeline progressive enhancement (Section 03) */
 @supports (animation-timeline: view()) {
-  .lp-round-step {
-    animation: lp-step-highlight linear both;
-    animation-timeline: view();
-    animation-range: entry 10% cover 30%;
+  @media (prefers-reduced-motion: no-preference) {
+    .lp-round-step {
+      animation: lp-step-highlight linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 30%;
+    }
   }
 }
 
