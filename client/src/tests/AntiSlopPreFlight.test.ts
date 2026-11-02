@@ -74,4 +74,12 @@ describe('Anti-Slop Pre-Flight Audit (design-taste-frontend)', () => {
     }
     expect(offenders).toEqual([]);
   });
+
+  it('guarantees CustomWordPackModal has zero AI sparkle icons and zero color token leaks', () => {
+    const modalPath = path.join(srcDir, 'components', 'lobby', 'CustomWordPackModal.tsx');
+    const content = fs.readFileSync(modalPath, 'utf-8');
+    expect(content).not.toContain('Sparkle');
+    expect(content).not.toContain('cyan-');
+    expect(content).not.toContain('stamp-500');
+  });
 });

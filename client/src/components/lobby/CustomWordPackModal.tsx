@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { Plus, Trash, ShareNetwork, Copy, Check, MagnifyingGlass, BookOpen, Sparkle, FloppyDisk, FolderOpen, WarningCircle } from '@phosphor-icons/react';
+import { Plus, Trash, Check, WarningCircle } from '@phosphor-icons/react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
-import { Badge } from '../common/Badge';
 import { WordPair, CustomWordPack } from '../../types/game.types';
 import { wordPackService } from '../../services/wordPackService';
 import { cn } from '../../utils/cn';
-
 
 export interface CustomWordPackModalProps {
   isOpen: boolean;
@@ -102,7 +100,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
     });
   };
 
-  // FloppyDisk Custom Pack
+  // Save Custom Pack
   const handleSavePack = async () => {
     setValidationError(null);
     if (!title.trim()) {
@@ -193,18 +191,20 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
       onClose={onClose}
       size="xl"
       title={
-        <div className="flex items-center gap-2">
-          <Sparkle className="w-5 h-5 text-stamp-dark" weight="bold" />
-          <span className="font-condensed text-lg sm:text-xl text-ink">
+        <div className="flex items-center gap-2.5">
+          <span className="font-condensed text-xl text-ink">
             Paket Kata Kustom
+          </span>
+          <span className="px-2.5 py-0.5 rounded-full bg-teal-light text-teal-dark border border-teal text-xs font-bold">
+            Koleksi
           </span>
         </div>
       }
-      subtitle="Buat, bagikan, dan impor kata rahasia unik bersama temanmu"
+      subtitle="Kelola kata rahasia buatanmu, bagikan kode 6 karakter, atau gunakan paket komunitas"
     >
       <div className="space-y-5">
-        {/* Navigation Tabs */}
-        <div className="grid grid-cols-3 gap-1.5 p-1 bg-paper-muted rounded-full border border-rule">
+        {/* Navigation Tabs - Clean Segmented Switcher */}
+        <div className="grid grid-cols-3 gap-1 p-1 bg-paper-muted rounded-xl border border-rule">
           <button
             type="button"
             onClick={() => {
@@ -212,42 +212,39 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
               setSaveSuccessPack(null);
             }}
             className={cn(
-              'flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs sm:text-sm font-semibold transition-colors',
+              'py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-colors text-center',
               activeTab === 'CREATE'
-                ? 'bg-cardstock text-ink border border-rule shadow-print-sm'
+                ? 'bg-cardstock text-ink border border-rule shadow-print-sm font-bold'
                 : 'text-ink-muted hover:text-ink'
             )}
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="truncate">Buat Baru</span>
+            Buat Paket
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('IMPORT')}
             className={cn(
-              'flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs sm:text-sm font-semibold transition-colors',
+              'py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-colors text-center',
               activeTab === 'IMPORT'
-                ? 'bg-cardstock text-ink border border-rule shadow-print-sm'
+                ? 'bg-cardstock text-ink border border-rule shadow-print-sm font-bold'
                 : 'text-ink-muted hover:text-ink'
             )}
           >
-            <ShareNetwork className="w-3.5 h-3.5" />
-            <span className="truncate">Impor Kode</span>
+            Impor Kode
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('SAVED')}
             className={cn(
-              'flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs sm:text-sm font-semibold transition-colors',
+              'py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-colors text-center',
               activeTab === 'SAVED'
-                ? 'bg-cardstock text-ink border border-rule shadow-print-sm'
+                ? 'bg-cardstock text-ink border border-rule shadow-print-sm font-bold'
                 : 'text-ink-muted hover:text-ink'
             )}
           >
-            <FolderOpen className="w-3.5 h-3.5" />
-            <span className="truncate">Koleksi ({savedPacks.length})</span>
+            Koleksi ({savedPacks.length})
           </button>
         </div>
 
@@ -256,53 +253,47 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
           <div className="space-y-4">
             {saveSuccessPack ? (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-5 rounded-2xl bg-cardstock border border-rule text-center space-y-4"
+                className="p-6 rounded-2xl bg-cardstock border border-rule text-center space-y-4 shadow-print"
               >
-                <div className="w-12 h-12 mx-auto rounded-2xl bg-paper-muted border border-rule flex items-center justify-center text-ink">
-                  <Check className="w-6 h-6 stroke-[3]" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-light text-teal-dark border border-teal text-xs font-bold">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" /> Paket Siap Dimainkan
                 </div>
+
                 <div>
-                  <h3 className="text-base font-bold text-ink font-display">
-                    Paket Berhasil Dibuat & Disimpan!
+                  <h3 className="text-lg font-bold text-ink font-display">
+                    {saveSuccessPack.title}
                   </h3>
-                  <p className="text-xs text-ink mt-1">
-                    Bagikan kode share berikut ke temanmu untuk memainkan paket kata ini:
+                  <p className="text-xs text-ink-muted mt-1">
+                    Bagikan kode 6 karakter berikut ke temanmu:
                   </p>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 p-3 bg-paper rounded-xl border border-rule max-w-xs mx-auto">
-                  <span className="font-mono text-xl font-black text-stamp-dark tracking-widest">
+                <div className="flex items-center justify-center gap-3 p-4 bg-paper rounded-xl border border-rule max-w-sm mx-auto">
+                  <span className="font-mono text-2xl font-black text-ink tracking-[0.25em]">
                     {saveSuccessPack.shareCode}
                   </span>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={() => handleCopyCode(saveSuccessPack.shareCode)}
-                    leftIcon={
-                      copiedCode === saveSuccessPack.shareCode ? (
-                        <Check className="w-3.5 h-3.5 text-ink" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )
-                    }
                   >
-                    {copiedCode === saveSuccessPack.shareCode ? 'Tersalin' : 'Salin'}
+                    {copiedCode === saveSuccessPack.shareCode ? 'Tersalin' : 'Salin Kode'}
                   </Button>
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
                   <Button
                     variant="primary"
-                    size="sm"
+                    size="md"
                     onClick={() => handleSelectAndClose(saveSuccessPack)}
                   >
                     Gunakan Paket Ini Sekarang
                   </Button>
                   <Button
                     variant="secondary"
-                    size="sm"
+                    size="md"
                     onClick={() => {
                       setSaveSuccessPack(null);
                       setTitle('');
@@ -324,84 +315,84 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     <label className="text-xs font-semibold text-ink">Judul Paket</label>
                     <input
                       type="text"
-                      placeholder="e.g. Kantor & Rekan Kerja"
+                      placeholder="Contoh: Kantor & Rekan Kerja"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       maxLength={30}
-                      className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
+                      className="w-full px-3.5 py-2 rounded-xl bg-cardstock border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-ink">Nama Pembuat / Author</label>
+                    <label className="text-xs font-semibold text-ink">Nama Pembuat</label>
                     <input
                       type="text"
-                      placeholder="e.g. Agent007"
+                      placeholder="Contoh: DetektifKucing"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       maxLength={20}
-                      className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
+                      className="w-full px-3.5 py-2 rounded-xl bg-cardstock border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-ink">Label Kategori</label>
+                  <label className="text-xs font-semibold text-ink">Kategori</label>
                   <input
                     type="text"
-                    placeholder="e.g. Keseharian, Film, Teknologi"
+                    placeholder="Contoh: Makanan, Kantor, Film"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     maxLength={20}
-                    className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
+                    className="w-full px-3.5 py-2 rounded-xl bg-cardstock border border-rule text-ink placeholder:text-ink-faint text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
                   />
                 </div>
 
-                {/* Word Pairs Builder */}
+                {/* Word Pairs Ruled Ledger */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-ink">
-                      Pasangan Kata Rahasia ({pairs.length} pasang)
-                    </label>
-                    <span className="text-[11px] text-ink-muted">
-                      Warga vs Undercover (Mirip tapi beda)
+                  <div className="flex items-center justify-between pb-1 border-b border-rule">
+                    <span className="text-xs font-semibold text-ink">
+                      Daftar Pasangan Kata ({pairs.length} pasang)
+                    </span>
+                    <span className="text-xs text-ink-muted">
+                      Warga vs Penyamar (mirip tapi beda)
                     </span>
                   </div>
 
-                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
                     {pairs.map((pair, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 p-2 rounded-xl bg-paper-muted border border-rule"
+                        className="flex items-center gap-2 py-1.5 px-2 rounded-xl bg-paper border border-rule"
                       >
-                        <span className="text-[11px] font-mono font-bold text-ink-muted w-5 text-center">
-                          #{index + 1}
+                        <span className="text-xs font-mono font-bold text-ink-muted w-6 text-center shrink-0">
+                          {String(index + 1).padStart(2, '0')}
                         </span>
                         <input
                           type="text"
-                          placeholder="Kata Warga (e.g. Kopi)"
+                          placeholder="Kata Warga (mis. Kopi)"
                           value={pair.civilian}
                           onChange={(e) => handlePairChange(index, 'civilian', e.target.value)}
                           maxLength={25}
-                          className="flex-1 px-3 py-1.5 rounded-2xl bg-cardstock-warm border border-rule text-ink placeholder:text-ink-faint text-xs focus:outline-none focus:border-ink"
+                          className="flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-cardstock border border-rule text-ink placeholder:text-ink-faint text-xs focus:outline-none focus:border-teal"
                         />
-                        <span className="text-ink-faint text-xs font-bold">vs</span>
+                        <span className="text-ink-muted text-xs font-bold shrink-0">vs</span>
                         <input
                           type="text"
-                          placeholder="Kata Undercover (e.g. Teh)"
+                          placeholder="Kata Penyamar (mis. Teh)"
                           value={pair.undercover}
                           onChange={(e) => handlePairChange(index, 'undercover', e.target.value)}
                           maxLength={25}
-                          className="flex-1 px-3 py-1.5 rounded-2xl bg-cardstock-warm border border-stamp text-stamp-dark placeholder:text-ink-faint text-xs focus:outline-none focus:border-stamp"
+                          className="flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-cardstock border border-rule text-stamp-dark placeholder:text-ink-faint text-xs focus:outline-none focus:border-stamp"
                         />
                         {pairs.length > 1 && (
                           <button
                             type="button"
                             onClick={() => handleRemovePair(index)}
-                            className="p-1.5 text-ink-muted hover:text-stamp-dark rounded-2xl hover:bg-stamp-light transition-colors"
+                            className="p-1.5 text-ink-muted hover:text-stamp-dark rounded-lg hover:bg-stamp-light transition-colors shrink-0"
                             title="Hapus baris ini"
                           >
-                            <Trash className="w-3.5 h-3.5" />
+                            <Trash className="w-4 h-4" />
                           </button>
                         )}
                       </div>
@@ -414,7 +405,7 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     size="sm"
                     onClick={handleAddPair}
                     leftIcon={<Plus className="w-3.5 h-3.5" />}
-                    className="w-full text-xs font-semibold py-2 border-dashed border-ink"
+                    className="w-full text-xs font-semibold py-2"
                   >
                     Tambah Pasangan Kata
                   </Button>
@@ -427,15 +418,15 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-2 border-t border-ink">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs text-ink-muted">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-rule">
+                  <label className="flex items-center gap-2.5 cursor-pointer text-xs text-ink-muted select-none">
                     <input
                       type="checkbox"
                       checked={isPublic}
                       onChange={(e) => setIsPublic(e.target.checked)}
-                      className="rounded border-ink bg-cardstock-warm text-stamp-500 focus:ring-cyan-500"
+                      className="w-4 h-4 rounded border-rule accent-teal-dark cursor-pointer"
                     />
-                    <span>Bisa dicari oleh publik via Share Code</span>
+                    <span>Dapat dicari orang lain melalui kode share</span>
                   </label>
 
                   <Button
@@ -444,9 +435,8 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     size="md"
                     isLoading={isSaving}
                     onClick={handleSavePack}
-                    leftIcon={<FloppyDisk className="w-4 h-4" />}
                   >
-                    Simpan & Dapatkan Kode
+                    Simpan dan Buat Kode
                   </Button>
                 </div>
               </>
@@ -464,20 +454,19 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="e.g. 8K29PX"
+                  placeholder="MISAL: 8K29PX"
                   value={importCode}
                   onChange={(e) => setImportCode(e.target.value.toUpperCase())}
                   maxLength={10}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-paper border border-rule text-stamp-dark font-mono text-base tracking-widest placeholder:text-ink-faint focus:outline-none focus:border-ink focus:border-teal focus:ring-2 focus:ring-teal"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-cardstock border border-rule text-ink font-mono text-base tracking-widest placeholder:text-ink-faint focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal"
                 />
                 <Button
                   variant="primary"
                   size="md"
                   isLoading={isSearching}
                   onClick={handleImportPack}
-                  leftIcon={<MagnifyingGlass className="w-4 h-4" />}
                 >
-                  Cari
+                  Cari Paket
                 </Button>
               </div>
             </div>
@@ -491,26 +480,26 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
 
             {importedPack && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 rounded-2xl bg-paper border border-rule space-y-3"
+                className="p-4 rounded-2xl bg-cardstock border border-rule space-y-3 shadow-print-sm"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h4 className="text-base font-bold text-teal-dark font-display">
+                    <h4 className="text-base font-bold text-ink font-display">
                       {importedPack.title}
                     </h4>
-                    <p className="text-xs text-ink-muted">
-                      Oleh: <span className="text-ink">{importedPack.authorName}</span>, kode{' '}
-                      <span className="font-mono text-teal-dark">{importedPack.shareCode}</span>
+                    <p className="text-xs text-ink-muted mt-0.5">
+                      Pembuat: <span className="text-ink font-medium">{importedPack.authorName}</span>, kode{' '}
+                      <span className="font-mono text-teal-dark font-bold">{importedPack.shareCode}</span>
                     </p>
                   </div>
-                  <Badge variant="cyan" size="sm">
-                    {importedPack.wordPairs.length} Kata
-                  </Badge>
+                  <span className="px-2.5 py-0.5 rounded-full bg-teal-light text-teal-dark border border-teal text-xs font-bold shrink-0">
+                    {importedPack.wordPairs.length} Pasang
+                  </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-cardstock border border-rule space-y-1.5">
+                <div className="p-3 rounded-xl bg-paper border border-rule space-y-2">
                   <span className="text-xs font-semibold text-ink-muted block">
                     Contoh pasangan kata:
                   </span>
@@ -518,13 +507,13 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     {importedPack.wordPairs.slice(0, 4).map((p, idx) => (
                       <span
                         key={idx}
-                        className="text-xs px-2.5 py-0.5 rounded-full bg-paper-muted text-ink font-medium"
+                        className="text-xs px-2.5 py-1 rounded-full bg-cardstock border border-rule text-ink font-medium"
                       >
                         {p.civilianWord} / {p.undercoverWord}
                       </span>
                     ))}
                     {importedPack.wordPairs.length > 4 && (
-                      <span className="text-xs text-ink-muted self-center">
+                      <span className="text-xs text-ink-muted self-center font-medium">
                         +{importedPack.wordPairs.length - 4} lainnya
                       </span>
                     )}
@@ -553,67 +542,64 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                 Memuat koleksi paket kata…
               </div>
             ) : savedPacks.length === 0 ? (
-              <div className="text-center py-8 text-ink-muted space-y-2">
-                <BookOpen className="w-8 h-8 mx-auto text-ink-faint" />
+              <div className="text-center py-8 text-ink-muted space-y-3">
                 <p className="text-xs">Belum ada paket kustom yang tersimpan.</p>
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => setActiveTab('CREATE')}
-                  leftIcon={<Plus className="w-3.5 h-3.5" />}
                 >
                   Buat Paket Pertamamu
                 </Button>
               </div>
             ) : (
-              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
                 {savedPacks.map((pack) => (
                   <div
                     key={pack.id || pack.shareCode}
-                    onClick={() => handleSelectAndClose(pack)}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule hover:border-teal hover:bg-cardstock transition-colors cursor-pointer group"
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-cardstock border border-rule hover:border-teal transition-colors shadow-print-sm"
                   >
-                    <div className="space-y-0.5">
+                    <div className="space-y-1 min-w-0 pr-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-ink group-hover:text-teal-dark transition-colors">
+                        <span className="text-sm font-bold text-ink truncate">
                           {pack.title}
                         </span>
-                        <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-teal-light text-teal-dark border border-teal">
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-teal-light text-teal-dark border border-teal shrink-0">
                           {pack.shareCode}
                         </span>
                       </div>
-                      <p className="text-xs text-ink-muted">
-                        Oleh: {pack.authorName}, {pack.wordPairs.length} pasangan kata
+                      <p className="text-xs text-ink-muted truncate">
+                        {pack.authorName} &bull; {pack.wordPairs.length} pasangan kata
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <Button
-                        variant="ghost"
-                        size="icon"
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleSelectAndClose(pack)}
+                      >
+                        Pilih
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCopyCode(pack.shareCode);
                         }}
-                        className="h-7 w-7 text-ink-muted hover:text-stamp-dark"
                         title="Salin Kode Share"
                       >
-                        {copiedCode === pack.shareCode ? (
-                          <Check className="w-3.5 h-3.5 text-ink" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
+                        {copiedCode === pack.shareCode ? 'Tersalin' : 'Salin'}
                       </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
+                      <button
+                        type="button"
                         onClick={(e) => handleDeletePack(e, pack.id)}
-                        className="h-7 w-7 text-ink-muted hover:text-stamp-dark"
-                        title="Hapus dari lokal"
+                        className="p-2 text-ink-muted hover:text-stamp-dark rounded-lg hover:bg-stamp-light transition-colors"
+                        title="Hapus dari penyimpanan"
                       >
-                        <Trash className="w-3.5 h-3.5" />
-                      </Button>
+                        <Trash className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))}
