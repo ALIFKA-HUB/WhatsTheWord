@@ -67,30 +67,29 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={() => {}} // modal cannot be dismissed by clicking outside during emergency guess
+      onClose={() => {}}
       closeOnOutsideClick={false}
       closeOnEscape={false}
       showCloseButton={false}
       size="md"
-      className="border-2 border-rule shadow-print-lg"
+      className="border border-rule shadow-print-lg"
       title={
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-cardstock-warm border border-rule flex items-center justify-center text-stamp-dark shadow-print-sm">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-sun-light border border-sun/50 flex items-center justify-center text-sun-dark shadow-print-sm">
             <Question className="w-5 h-5" weight="bold" />
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-black font-display text-ink">
-              {isMrWhite ? 'TEBAK KATA RAHASIA WARGA!' : 'MR. WHITE TERTANGKAP!'}
+            <h3 className="text-base sm:text-lg font-bold font-display text-ink">
+              {isMrWhite ? 'Tebak Kata Rahasia Warga!' : 'Mr. White Tertangkap!'}
             </h3>
-            <p className="text-[11px] text-ink-muted font-mono uppercase tracking-wider">
-              Kesempatan Darurat Butakata
+            <p className="text-xs text-ink-muted font-normal">
+              Kesempatan menebak kata rahasia
             </p>
           </div>
         </div>
       }
     >
       <div className="space-y-5">
-        {/* Countdown Timer */}
         <div className="flex justify-center">
           <CountdownTimer
             totalSeconds={initialSeconds}
@@ -101,34 +100,33 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
         </div>
 
         {isMrWhite ? (
-          /* Mr White Interface */
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="p-4 rounded-xl bg-stamp-light border border-stamp text-center space-y-1">
+            <div className="p-4 rounded-2xl bg-stamp-light border border-stamp/40 text-center space-y-1">
               <p className="text-sm font-bold text-stamp-dark font-display">
-                Kamu Terpilih Tereliminasi!
+                Kamu Terpilih untuk Dieliminasi!
               </p>
               <p className="text-xs text-ink-muted leading-relaxed font-sans">
-                Namun, kamu tetap bisa <strong className="text-ink">MENANG</strong> secara instan jika berhasil menebak <span className="text-stamp-dark font-bold">Kata Rahasia Warga</span>!
+                Namun, kamu tetap bisa <strong className="text-ink">menang seketika</strong> jika berhasil menebak <span className="text-stamp-dark font-bold">kata rahasia Warga</span>!
               </p>
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-ink">
-                Tuliskan Kata Rahasia Warga (Fuzzy Tolerance Aktif):
+                Tuliskan Kata Rahasia Warga:
               </label>
               <input
                 type="text"
                 autoFocus
                 value={guessInput}
                 onChange={(e) => setGuessInput(e.target.value)}
-                placeholder="Ketik tebakan kata di sini..."
+                placeholder="Ketik tebakan kata di sini…"
                 maxLength={30}
-                className="w-full px-4 py-3 rounded-xl bg-paper border-2 border-rule text-ink placeholder:text-ink-faint text-base font-bold focus:outline-none focus:border-stamp focus:ring-2 focus:ring-stamp/30 tracking-wide text-center"
+                className="w-full px-4 py-3 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-base font-bold focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal/30 text-center"
               />
             </div>
 
             {errorMsg && (
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-stamp-light border border-stamp text-stamp-dark text-xs">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-stamp-light border border-stamp/50 text-stamp-dark text-xs">
                 <WarningCircle className="w-4 h-4 shrink-0 text-stamp-dark" weight="bold" />
                 <span>{errorMsg}</span>
               </div>
@@ -136,7 +134,7 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
 
             <Button
               type="submit"
-              variant="danger"
+              variant="primary"
               size="lg"
               fullWidth
               disabled={!guessInput.trim() || remainingSeconds === 0}
@@ -148,7 +146,6 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
             </Button>
           </form>
         ) : (
-          /* Spectator / Other Players Interface */
           <div className="text-center space-y-4 py-2">
             <PlayerToken
               avatar={mrWhitePlayer?.avatar}
@@ -162,13 +159,13 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
                 <span className="text-stamp-dark font-bold">{mrWhitePlayer?.name || 'Mr. White'}</span> sedang menebak kata rahasia!
               </p>
               <p className="text-xs text-ink-muted max-w-xs mx-auto leading-relaxed">
-                Jika tebakannya benar, Mr. White mencuri kemenangan! Jika salah, warga atau undercover yang bertahan akan menang.
+                Jika tebakannya benar, Mr. White mencuri kemenangan! Jika salah, warga atau impostor yang bertahan akan menang.
               </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-paper border border-rule flex items-center justify-center gap-2 text-xs text-ink-muted font-mono">
-              <span className="inline-block w-2 h-2 rounded-full bg-stamp animate-ping" />
-              <span>Menunggu input Mr. White...</span>
+            <div className="p-3 rounded-xl bg-paper border border-rule flex items-center justify-center gap-2 text-xs text-ink-muted font-medium">
+              <span className="inline-block w-2 h-2 rounded-full bg-sun-dark" />
+              <span>Menunggu tebakan Mr. White…</span>
             </div>
           </div>
         )}

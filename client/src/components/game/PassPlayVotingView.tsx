@@ -34,7 +34,6 @@ export const PassPlayVotingView: React.FC = () => {
 
   const { playVoteBuzzer, playElimination } = useGameSound();
 
-  // Voting Selection State
   const [selectedSuspectId, setSelectedSuspectId] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [votingMode, setVotingMode] = useState<'consensus' | 'individual'>('consensus');
@@ -42,10 +41,8 @@ export const PassPlayVotingView: React.FC = () => {
   const [selectedTargetForVoter, setSelectedTargetForVoter] = useState<string | null>(null);
   const [isHandingOverSecretVote, setIsHandingOverSecretVote] = useState(false);
 
-  // Re-peek word state (Party QoL)
   const [rePeekPlayer, setRePeekPlayer] = useState<Player | null>(null);
 
-  // Mr White Guess Modal State
   const [mrWhiteGuessInput, setMrWhiteGuessInput] = useState('');
   const [mrWhiteTimerSeconds, setMrWhiteTimerSeconds] = useState(45);
 
@@ -58,7 +55,6 @@ export const PassPlayVotingView: React.FC = () => {
   const isWarmingUpRound = round < votingStartRound;
   const maxTies = settings.maxConsecutiveTies || 3;
 
-  // Mr White 45s countdown timer ticker
   useEffect(() => {
     if (phase !== 'MR_WHITE_GUESS') return;
 
@@ -78,14 +74,12 @@ export const PassPlayVotingView: React.FC = () => {
     return () => clearInterval(interval);
   }, [phase]);
 
-  // Handle auto-skip when Mr White timer expires
   useEffect(() => {
     if (phase === 'MR_WHITE_GUESS' && mrWhiteTimerSeconds === 0) {
       skipMrWhiteGuess();
     }
   }, [phase, mrWhiteTimerSeconds, skipMrWhiteGuess]);
 
-  // Handle Consensus Quick Eliminate
   const handleOpenConfirmModal = (playerId: string) => {
     setSelectedSuspectId(playerId);
     setIsConfirmModalOpen(true);
@@ -103,7 +97,6 @@ export const PassPlayVotingView: React.FC = () => {
     setSelectedSuspectId(null);
   };
 
-  // Handle Secret Individual Vote Selection
   const handleSelectIndividualCandidate = (targetId: string) => {
     setSelectedTargetForVoter(targetId);
   };
@@ -117,7 +110,6 @@ export const PassPlayVotingView: React.FC = () => {
     }
     castVote(currentVoterId, selectedTargetForVoter);
 
-    // Find next alive voter
     const currentIdx = alivePlayers.findIndex((p) => p.id === currentVoterId);
     if (currentIdx < alivePlayers.length - 1) {
       setCurrentVoterId(alivePlayers[currentIdx + 1].id);
@@ -143,9 +135,9 @@ export const PassPlayVotingView: React.FC = () => {
   return (
     <div className="w-full max-w-xl mx-auto space-y-6 font-sans">
       {/* 1. ROUND & GAME STATUS HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-paper-muted border border-rule">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-3xl bg-cardstock border border-rule shadow-print-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-cardstock-warm border border-rule flex items-center justify-center font-mono font-bold text-base text-ink">
+          <div className="w-10 h-10 rounded-2xl bg-teal-light border border-teal/40 flex items-center justify-center font-mono font-bold text-base text-teal-dark">
             R{round}
           </div>
           <div>
@@ -164,16 +156,16 @@ export const PassPlayVotingView: React.FC = () => {
               )}
             </div>
             <p className="text-xs text-ink-muted">
-              {alivePlayers.length} Pemain Bertahan · Kategori: {settings.category}
+              {alivePlayers.length} pemain bertahan, kategori {settings.category}
             </p>
           </div>
         </div>
 
         {/* Ties Tracker Badge */}
         {consecutiveTies > 0 && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stamp-light border border-amber-900/40 text-stamp-dark text-xs font-mono">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stamp-light border border-stamp/40 text-stamp-dark text-xs font-semibold">
             <Warning className="w-3.5 h-3.5 text-stamp-dark" />
-            <span>Seri: {consecutiveTies}/{maxTies} (3x = Impostor Menang)</span>
+            <span>Seri: {consecutiveTies}/{maxTies} (3x = Impostor menang)</span>
           </div>
         )}
       </div>
@@ -183,7 +175,7 @@ export const PassPlayVotingView: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-stamp-light border border-stamp text-stamp-dark text-xs flex items-center justify-between"
+          className="p-4 rounded-2xl bg-stamp-light border border-stamp/50 text-stamp-dark text-xs flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
             <Warning className="w-4 h-4 text-stamp-dark shrink-0" />
@@ -201,27 +193,26 @@ export const PassPlayVotingView: React.FC = () => {
       {/* 3. DISCUSSION & TABLE ORDER PHASE */}
       {phase === 'TURN_CLUE' && (
         <div className="space-y-4">
-          {/* Table Turn Guide */}
-          <Card padding="md" className="space-y-3.5 border-ink bg-cardstock">
-            <div className="flex items-center justify-between border-b border-ink pb-3">
-              <span className="text-xs font-semibold text-ink uppercase tracking-wider flex items-center gap-2">
-                <Users className="w-4 h-4 text-ink-muted" />
+          <Card padding="md" className="space-y-3.5">
+            <div className="flex items-center justify-between border-b border-rule pb-3">
+              <span className="text-sm font-bold text-ink flex items-center gap-2">
+                <Users className="w-4 h-4 text-teal-dark" weight="bold" />
                 Urutan Bicara di Meja
               </span>
-              <span className="text-xs text-ink-muted font-mono">
-                Bicara 1 kata/frasa berurutan
+              <span className="text-xs text-ink-muted">
+                Sebutkan 1 petunjuk secara berurutan
               </span>
             </div>
 
             {/* Speaking Order List */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {orderedAlivePlayers.map((player, idx) => (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-paper border border-rule hover:border-rule transition-all"
+                  className="flex items-center justify-between p-2.5 rounded-2xl bg-paper border border-rule transition-colors"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="w-5 h-5 rounded-xl bg-cardstock-warm text-ink-muted font-mono text-xs flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-xl bg-paper-muted text-ink-muted font-mono text-xs font-bold flex items-center justify-center">
                       {idx + 1}
                     </span>
                     <PlayerToken avatar={player.avatar} name={player.name} size="sm" showCode={false} />
@@ -232,17 +223,16 @@ export const PassPlayVotingView: React.FC = () => {
                     type="button"
                     onClick={() => setRePeekPlayer(player)}
                     title="Lupa kata? Klik untuk intip rahasia"
-                    className="p-1.5 px-2 rounded-lg border border-rule bg-cardstock hover:bg-cardstock-warm text-ink-muted hover:text-ink text-xs flex items-center gap-1 active:scale-95 transition-all shadow-print-sm"
+                    className="p-1.5 px-2.5 rounded-full border border-rule bg-cardstock hover:bg-paper-muted text-ink-muted hover:text-ink text-xs flex items-center gap-1 active:translate-y-[1px] transition-colors shadow-print-sm"
                   >
                     <Eye className="w-3.5 h-3.5" weight="bold" />
-                    <span className="text-[11px] font-mono font-bold">Intip</span>
+                    <span className="text-xs font-semibold">Intip</span>
                   </button>
                 </div>
               ))}
             </div>
           </Card>
 
-          {/* Action to proceed to voting or next round */}
           <div className="pt-2">
             {isWarmingUpRound ? (
               <Button
@@ -252,7 +242,7 @@ export const PassPlayVotingView: React.FC = () => {
                 onClick={() => startVotingPhase()}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
-                Selesai Pemanasan · Lanjut ke Ronde {round + 1}
+                Selesai Pemanasan, Lanjut ke Ronde {round + 1}
               </Button>
             ) : (
               <Button
@@ -262,7 +252,7 @@ export const PassPlayVotingView: React.FC = () => {
                 onClick={() => startVotingPhase()}
                 rightIcon={<ListChecks className="w-4 h-4" />}
               >
-                Semua Sudah Bicara · Mulai Voting Eliminasi
+                Semua Sudah Bicara, Mulai Voting Eliminasi
               </Button>
             )}
           </div>
@@ -273,7 +263,7 @@ export const PassPlayVotingView: React.FC = () => {
       {phase === 'VOTING' && (
         <div className="space-y-4">
           {/* Mode Switcher */}
-          <div className="grid grid-cols-2 p-1 rounded-xl bg-paper border border-rule text-xs font-medium">
+          <div className="grid grid-cols-2 p-1 rounded-full bg-paper-muted border border-rule text-xs font-medium">
             <button
               type="button"
               onClick={() => {
@@ -282,13 +272,13 @@ export const PassPlayVotingView: React.FC = () => {
                 setCurrentVoterId(null);
               }}
               className={cn(
-                'py-1.5 rounded-2xl transition-all',
+                'py-2 px-3 rounded-full transition-colors whitespace-nowrap',
                 votingMode === 'consensus'
-                  ? 'bg-cardstock-warm text-ink font-semibold'
+                  ? 'bg-cardstock text-ink font-bold shadow-print-sm'
                   : 'text-ink-muted hover:text-ink'
               )}
             >
-              Diskusi Terbuka (Konsensus)
+              Konsensus Meja
             </button>
             <button
               type="button"
@@ -297,9 +287,9 @@ export const PassPlayVotingView: React.FC = () => {
                 setCurrentVoterId(alivePlayers[0]?.id || null);
               }}
               className={cn(
-                'py-1.5 rounded-2xl transition-all',
+                'py-2 px-3 rounded-full transition-colors whitespace-nowrap',
                 votingMode === 'individual'
-                  ? 'bg-cardstock-warm text-ink font-semibold'
+                  ? 'bg-cardstock text-ink font-bold shadow-print-sm'
                   : 'text-ink-muted hover:text-ink'
               )}
             >
@@ -309,13 +299,13 @@ export const PassPlayVotingView: React.FC = () => {
 
           {/* Consensus Mode */}
           {votingMode === 'consensus' && (
-            <Card padding="md" className="space-y-3.5 border-ink bg-cardstock">
+            <Card padding="md" className="space-y-3.5">
               <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-ink">
+                <h3 className="text-sm font-bold text-ink">
                   Pilih Pemain yang Dicurigai
                 </h3>
                 <p className="text-xs text-ink-muted">
-                  Diskusikan di dunia nyata. Klik avatar pemain yang disepakati untuk dieliminasi:
+                  Diskusikan bersama, lalu pilih pemain yang disepakati untuk dieliminasi:
                 </p>
               </div>
 
@@ -325,17 +315,16 @@ export const PassPlayVotingView: React.FC = () => {
                     key={player.id}
                     type="button"
                     onClick={() => handleOpenConfirmModal(player.id)}
-                    className="flex items-center justify-between p-3 rounded-xl bg-paper border border-rule hover:border-stamp hover:bg-cardstock-warm transition-all text-left group active:scale-[0.98]"
+                    className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule hover:border-stamp/60 hover:bg-stamp-light/30 transition-colors text-left group active:translate-y-[1px] whitespace-nowrap"
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       <PlayerToken avatar={player.avatar} name={player.name} size="md" showCode={false} />
-                      <div>
-                        <p className="text-sm font-semibold text-ink">{player.name}</p>
-                        <p className="text-[11px] text-ink-muted">Klik untuk eliminasi</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-ink truncate">{player.name}</p>
                       </div>
                     </div>
-                    <span className="text-xs font-medium text-stamp-dark opacity-0 group-hover:opacity-100 transition-opacity">
-                      Eliminasi →
+                    <span className="text-xs font-semibold text-stamp-dark bg-stamp-light px-2.5 py-1 rounded-full border border-stamp/30 ml-2">
+                      Eliminasi
                     </span>
                   </button>
                 ))}
@@ -345,14 +334,14 @@ export const PassPlayVotingView: React.FC = () => {
 
           {/* Individual Secret Voting Mode */}
           {votingMode === 'individual' && currentVoterPlayer && isHandingOverSecretVote && (
-            <Card padding="md" className="space-y-4 border-ink bg-cardstock text-center py-8 px-6">
+            <Card padding="md" className="space-y-4 text-center py-8 px-6">
               <PlayerToken avatar={currentVoterPlayer.avatar} name={currentVoterPlayer.name} size="xl" className="mx-auto" />
-              <div className="space-y-1">
-                <span className="rubber-stamp-red -rotate-2 text-xs">Giliran Pemilih</span>
+              <div className="space-y-1.5">
+                <span className="rubber-stamp text-xs">Giliran Memilih</span>
                 <h3 className="text-xl sm:text-2xl font-bold text-ink pt-1">
                   Oper HP ke {currentVoterPlayer.name}
                 </h3>
-                <p className="text-xs text-ink-muted max-w-[280px] mx-auto">
+                <p className="text-xs sm:text-sm text-ink-muted max-w-[280px] mx-auto">
                   Pemain lain dilarang mengintip! Tekan tombol di bawah saat HP sudah di tangan <strong>{currentVoterPlayer.name}</strong>.
                 </p>
               </div>
@@ -369,10 +358,10 @@ export const PassPlayVotingView: React.FC = () => {
           )}
 
           {votingMode === 'individual' && currentVoterPlayer && !isHandingOverSecretVote && (
-            <Card padding="md" className="space-y-4 border-ink bg-cardstock">
-              <div className="space-y-1 border-b border-ink pb-3">
-                <span className="text-[11px] font-mono uppercase text-ink-muted font-semibold">
-                  Oper HP ke:
+            <Card padding="md" className="space-y-4">
+              <div className="space-y-1 border-b border-rule pb-3">
+                <span className="text-xs text-ink-muted font-semibold">
+                  Pemilih saat ini:
                 </span>
                 <div className="flex items-center gap-2.5 pt-1">
                   <PlayerToken avatar={currentVoterPlayer.avatar} name={currentVoterPlayer.name} size="sm" showCode={false} />
@@ -383,7 +372,7 @@ export const PassPlayVotingView: React.FC = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {alivePlayers
                   .filter((p) => p.id !== currentVoterPlayer.id)
                   .map((candidate) => {
@@ -394,10 +383,10 @@ export const PassPlayVotingView: React.FC = () => {
                         type="button"
                         onClick={() => handleSelectIndividualCandidate(candidate.id)}
                         className={cn(
-                          'flex items-center gap-3 p-3 rounded-xl border transition-all text-left active:scale-95',
+                          'flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left active:translate-y-[1px]',
                           isSelected
-                            ? 'bg-stamp-light border-stamp text-stamp-dark ring-2 ring-stamp shadow-print-sm'
-                            : 'bg-paper border-rule hover:border-stamp hover:bg-cardstock-warm text-ink'
+                            ? 'bg-stamp-light border-stamp text-stamp-dark ring-1 ring-stamp shadow-print-sm'
+                            : 'bg-paper border-rule hover:border-stamp/50 hover:bg-paper-muted/60 text-ink'
                         )}
                       >
                         <PlayerToken avatar={candidate.avatar} name={candidate.name} size="sm" showCode={false} />
@@ -433,7 +422,7 @@ export const PassPlayVotingView: React.FC = () => {
               onClick={() => processElimination()}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Semua Suara Masuk · Buka Hasil Voting
+              Semua Suara Masuk, Buka Hasil Voting
             </Button>
           )}
         </div>
@@ -490,31 +479,31 @@ export const PassPlayVotingView: React.FC = () => {
       <Modal
         isOpen={phase === 'MR_WHITE_GUESS'}
         onClose={() => {}}
-        title="Penebusan Mr. White (Buta Kata)"
+        title="Kesempatan Tebak Kata (Mr. White)"
         size="md"
       >
         <div className="space-y-4 p-2 font-sans">
-          <div className="p-3 rounded-xl bg-paper-muted border border-dashed border-ink text-ink-muted space-y-1">
-            <p className="font-semibold text-ink-muted">
+          <div className="p-3.5 rounded-2xl bg-paper-muted border border-dashed border-rule text-ink-muted space-y-1">
+            <p className="font-semibold text-ink">
               {pendingEliminatedPlayer?.name} adalah Mr. White!
             </p>
-            <p className="text-ink-muted/80">
+            <p className="text-xs text-ink-muted">
               Tebak kata rahasia yang dimiliki Warga! Jika benar, kamu <strong>langsung menang seketika</strong>!
             </p>
           </div>
 
           <form onSubmit={handleMrWhiteSubmit} className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-ink uppercase tracking-wider block">
-                Tebakan Kata Warga (Sisa {mrWhiteTimerSeconds}s):
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-ink block">
+                Tebakan Kata Warga (sisa {mrWhiteTimerSeconds} detik):
               </label>
               <input
                 type="text"
                 autoFocus
                 value={mrWhiteGuessInput}
                 onChange={(e) => setMrWhiteGuessInput(e.target.value)}
-                placeholder="Ketik kata warga di sini..."
-                className="w-full px-4 py-2.5 rounded-xl bg-paper border border-rule focus:border-teal focus:ring-2 focus:ring-teal/30 text-ink text-sm outline-none placeholder:text-ink-faint"
+                placeholder="Ketik kata warga di sini…"
+                className="w-full px-4 py-2.5 rounded-xl bg-paper border border-rule focus:border-teal-dark focus:ring-2 focus:ring-teal/30 text-ink text-sm outline-none placeholder:text-ink-faint"
               />
             </div>
 
@@ -535,7 +524,7 @@ export const PassPlayVotingView: React.FC = () => {
                 className="w-2/3"
                 rightIcon={<PaperPlaneRight className="w-4 h-4" />}
               >
-                Kirim Tebakan 🎯
+                Kirim Tebakan
               </Button>
             </div>
           </form>
@@ -546,7 +535,7 @@ export const PassPlayVotingView: React.FC = () => {
       <Modal
         isOpen={rePeekPlayer !== null}
         onClose={() => setRePeekPlayer(null)}
-        title={`Intip Rahasia: ${rePeekPlayer?.name || 'Pemain'}`}
+        title={`Intip Kata: ${rePeekPlayer?.name || 'Pemain'}`}
         size="sm"
       >
         <div className="space-y-4 p-2 text-center">

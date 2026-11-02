@@ -21,21 +21,20 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   icon?: React.ReactNode;
 }
 
-/* Print palette: variants map to ink / stamp / paper treatments */
 const variantStyles: Record<BadgeVariant, string> = {
-  cyan: 'bg-cardstock text-ink border-ink',
-  crimson: 'bg-stamp-light text-stamp-dark border-stamp',
-  violet: 'bg-paper-muted text-ink-muted border-dashed border-ink',
-  amber: 'bg-cardstock text-ink border-ink shadow-print-sm',
-  emerald: 'bg-cardstock text-ink border-ink',
+  cyan: 'bg-teal-light text-teal-dark border-teal/40',
+  crimson: 'bg-stamp-light text-stamp-dark border-stamp/40',
+  violet: 'bg-paper-muted text-ink-muted border-rule',
+  amber: 'bg-sun-light text-sun-dark border-sun/50',
+  emerald: 'bg-teal-light text-teal-dark border-teal/40',
   slate: 'bg-paper-muted text-ink-muted border-rule',
   outline: 'bg-transparent text-ink-muted border-rule',
 };
 
 const sizeStyles: Record<BadgeSize, string> = {
-  sm: 'text-[11px] px-2 py-0.5 rounded-lg gap-1 font-bold font-mono uppercase tracking-wider',
-  md: 'text-xs px-2.5 py-1 rounded-lg gap-1.5 font-bold font-mono uppercase tracking-wider',
-  lg: 'text-sm px-3 py-1.5 rounded-xl gap-2 font-bold font-mono uppercase tracking-wider',
+  sm: 'text-xs px-2.5 py-0.5 rounded-full gap-1 font-semibold',
+  md: 'text-xs px-3 py-1 rounded-full gap-1.5 font-semibold',
+  lg: 'text-sm px-3.5 py-1.5 rounded-full gap-2 font-semibold',
 };
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -50,7 +49,7 @@ export const Badge: React.FC<BadgeProps> = ({
   return (
     <span
       className={cn(
-        'inline-flex items-center select-none border-2 transition-all',
+        'inline-flex items-center select-none border transition-colors',
         variantStyles[variant],
         sizeStyles[size],
         className
@@ -59,7 +58,6 @@ export const Badge: React.FC<BadgeProps> = ({
     >
       {pulse && (
         <span className="relative flex h-1.5 w-1.5 shrink-0 mr-0.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75" />
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current" />
         </span>
       )}
@@ -88,12 +86,12 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
     case 'CIVILIAN':
       return (
         <Badge
-          variant="slate"
+          variant="emerald"
           size={size}
-          icon={showIcon ? <ShieldCheck className="w-3.5 h-3.5 text-ink" weight="bold" /> : undefined}
+          icon={showIcon ? <ShieldCheck className="w-3.5 h-3.5 text-teal-dark" weight="bold" /> : undefined}
           className={className}
         >
-          {indonesian ? 'WARGA' : 'Civilian'}
+          {indonesian ? 'Warga' : 'Civilian'}
         </Badge>
       );
     case 'UNDERCOVER':
@@ -104,7 +102,7 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
           icon={showIcon ? <Detective className="w-3.5 h-3.5 text-stamp-dark" weight="bold" /> : undefined}
           className={className}
         >
-          {indonesian ? 'IMPOSTOR' : 'Undercover'}
+          {indonesian ? 'Impostor' : 'Undercover'}
         </Badge>
       );
     case 'MR_WHITE':
@@ -115,7 +113,7 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
           icon={showIcon ? <Question className="w-3.5 h-3.5 text-ink-muted" weight="bold" /> : undefined}
           className={className}
         >
-          {indonesian ? 'MR. WHITE' : 'Mr. White'}
+          {indonesian ? 'Mr. White' : 'Mr. White'}
         </Badge>
       );
     default:
@@ -132,19 +130,19 @@ export interface StatusBadgeProps {
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', className }) => {
   switch (status) {
     case 'alive':
-      return <Badge variant="emerald" size={size} icon={<CheckCircle className="w-3.5 h-3.5" weight="bold" />} className={className}>BERTAHAN</Badge>;
+      return <Badge variant="emerald" size={size} icon={<CheckCircle className="w-3.5 h-3.5" weight="bold" />} className={className}>Bertahan</Badge>;
     case 'eliminated':
-      return <Badge variant="crimson" size={size} icon={<XCircle className="w-3.5 h-3.5" weight="bold" />} className={className}>GUGUR</Badge>;
+      return <Badge variant="crimson" size={size} icon={<XCircle className="w-3.5 h-3.5" weight="bold" />} className={className}>Gugur</Badge>;
     case 'speaking':
-      return <Badge variant="amber" size={size} pulse icon={<Microphone className="w-3.5 h-3.5" weight="bold" />} className={className}>BICARA</Badge>;
+      return <Badge variant="amber" size={size} pulse icon={<Microphone className="w-3.5 h-3.5" weight="bold" />} className={className}>Bicara</Badge>;
     case 'voted':
-      return <Badge variant="cyan" size={size} icon={<HandWaving className="w-3.5 h-3.5" weight="bold" />} className={className}>MEMILIH</Badge>;
+      return <Badge variant="cyan" size={size} icon={<HandWaving className="w-3.5 h-3.5" weight="bold" />} className={className}>Memilih</Badge>;
     case 'host':
-      return <Badge variant="amber" size={size} icon={<Crown className="w-3.5 h-3.5" weight="bold" />} className={className}>HOST</Badge>;
+      return <Badge variant="amber" size={size} icon={<Crown className="w-3.5 h-3.5" weight="bold" />} className={className}>Host</Badge>;
     case 'online':
-      return <Badge variant="emerald" size={size} icon={<WifiHigh className="w-3.5 h-3.5" weight="bold" />} className={className}>ONLINE</Badge>;
+      return <Badge variant="emerald" size={size} icon={<WifiHigh className="w-3.5 h-3.5" weight="bold" />} className={className}>Online</Badge>;
     case 'disconnected':
-      return <Badge variant="slate" size={size} icon={<WifiSlash className="w-3.5 h-3.5" weight="bold" />} className={className}>TERPUTUS</Badge>;
+      return <Badge variant="slate" size={size} icon={<WifiSlash className="w-3.5 h-3.5" weight="bold" />} className={className}>Terputus</Badge>;
     default:
       return null;
   }

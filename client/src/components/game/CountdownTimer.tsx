@@ -36,40 +36,31 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   const clampedRemaining = Math.max(0, Math.min(remainingSeconds, safeTotal));
   const progressRatio = clampedRemaining / safeTotal;
 
-  // Color logic based on remaining seconds
   const isUrgent = clampedRemaining <= 5 && clampedRemaining > 0;
   const isWarning = clampedRemaining > 5 && clampedRemaining < 15;
   const isSafe = clampedRemaining >= 15;
 
   const colorConfig = isUrgent
     ? {
-        color: '#f43f5e',
+        strokeColor: 'var(--color-accent-3)',
         textClass: 'text-stamp-dark',
-        strokeClass: 'stroke-stamp',
-        bgClass: 'bg-stamp/10 border-stamp/30',
-        glowClass: 'shadow-[0_0_20px_-3px_rgba(244,63,94,0.5)]',
+        bgClass: 'bg-stamp-light border-stamp/40',
       }
     : isWarning
     ? {
-        color: '#f59e0b',
-        textClass: 'text-stamp-dark',
-        strokeClass: 'stroke-ink',
-        bgClass: 'bg-amber-500/10 border-amber-500/30',
-        glowClass: 'shadow-[0_0_20px_-3px_rgba(245,158,11,0.4)]',
+        strokeColor: 'var(--color-accent-deep)',
+        textClass: 'text-sun-dark',
+        bgClass: 'bg-sun-light border-sun/50',
       }
     : {
-        color: '#06b6d4',
-        textClass: 'text-stamp-dark',
-        strokeClass: 'stroke-cyan-400',
-        bgClass: 'bg-paper-muted border-ink',
-        glowClass: 'shadow-[0_0_20px_-3px_rgba(6,182,212,0.4)]',
+        strokeColor: 'var(--color-mint-deep)',
+        textClass: 'text-teal-dark',
+        bgClass: 'bg-teal-light border-teal/40',
       };
 
-  // Synchronized Audio Ticks
   useEffect(() => {
     if (!soundEnabled || isMuted) return;
 
-    // Trigger tick when seconds value changes
     if (
       lastTickedSecondRef.current !== clampedRemaining &&
       clampedRemaining >= 0 &&
@@ -93,14 +84,12 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     }
   }, [clampedRemaining, totalSeconds, soundEnabled, isMuted, playTick, playUrgentTick]);
 
-  // Format seconds to mm:ss
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Circular SVG Math
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - progressRatio * circumference;
@@ -108,33 +97,32 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   if (variant === 'linear') {
     return (
       <div className={cn('w-full space-y-2', className)}>
-        <div className="flex items-center justify-between text-xs font-mono">
+        <div className="flex items-center justify-between text-xs">
           <span className="text-ink-muted flex items-center gap-1.5">
             {speakerName ? (
               <>
-                <Microphone className="w-3.5 h-3.5 text-stamp-dark animate-pulse" />
+                <Microphone className="w-3.5 h-3.5 text-teal-dark" />
                 <span className="text-ink font-semibold">{speakerName}</span>
               </>
             ) : (
-              label || 'Waktu Tersisa'
+              label || 'Waktu tersisa'
             )}
           </span>
-          <span className={cn('font-bold text-sm tracking-wider', colorConfig.textClass)}>
+          <span className={cn('font-mono font-bold text-sm', colorConfig.textClass)}>
             {formatTime(clampedRemaining)}
           </span>
         </div>
 
-        {/* Linear Progress Bar */}
-        <div className="w-full h-2.5 rounded-full bg-paper border border-rule overflow-hidden p-0.5">
-          <motion.div
-            initial={false}
-            animate={{ width: `${progressRatio * 100}%` }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className={cn('h-full rounded-full transition-colors duration-300', {
-              'bg-gradient-to-r from-rose-600 to-rose-400': isUrgent,
-              'bg-gradient-to-r from-amber-600 to-amber-400': isWarning,
-              'bg-gradient-to-r from-cyan-600 to-cyan-400': isSafe,
-            })}
+        {/* Linear Progress Bar (uses transform scaleX to respect Floor rule against animating width) */}
+        <div className="w-full h-2.5 rounded-full bg-paper-muted border border-rule overflow-hidden p-0.5">
+          <div
+            style={{ transform: `scaleX(${progressRatio})` }}
+            className={cn(
+              'h-full w-full origin-left rounded-full transition-transform duration-300 ease-out',
+              isUrgent && 'bg-stamp',
+              isWarning && 'bg-sun',
+              isSafe && 'bg-teal'
+            )}
           />
         </div>
       </div>
@@ -145,19 +133,18 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     return (
       <div
         className={cn(
-          'inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border  transition-all',
+          'inline-flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors',
           colorConfig.bgClass,
-          isUrgent && 'animate-pulse',
           className
         )}
       >
         {isUrgent ? (
-          <Warning className="w-4 h-4 text-stamp-dark animate-bounce" />
+          <Warning className="w-4 h-4 text-stamp-dark" weight="bold" />
         ) : (
-          <Timer className={cn('w-4 h-4', colorConfig.textClass)} />
+          <Timer className={cn('w-4 h-4', colorConfig.textClass)} weight="bold" />
         )}
-        <span className={cn('text-sm font-mono font-bold tracking-wide', colorConfig.textClass)}>
-          {clampedRemaining}s
+        <span className={cn('text-xs font-mono font-bold', colorConfig.textClass)}>
+          {clampedRemaining} dtk
         </span>
       </div>
     );
@@ -170,8 +157,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         className="relative flex items-center justify-center"
         style={{ width: size, height: size }}
       >
-        <svg width={size} height={size} className="transform -rotate-90">
-          {/* Background Track Circle */}
+        <svg width={size} height={size} className="transform -rotate-90" aria-hidden="true">
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -179,15 +165,14 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
             stroke="currentColor"
             strokeWidth={strokeWidth}
             fill="transparent"
-            className="text-ink/20"
+            className="text-rule"
           />
 
-          {/* Progress Indicator Circle */}
           <motion.circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke={colorConfig.color}
+            stroke={colorConfig.strokeColor}
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             initial={false}
@@ -199,34 +184,28 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           />
         </svg>
 
-        {/* Center Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <motion.span
-            key={clampedRemaining}
-            initial={{ scale: isUrgent ? 1.2 : 1 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', damping: 15, stiffness: 400 }}
+          <span
             className={cn(
-              'text-2xl sm:text-3xl font-black font-mono tracking-tight leading-none',
+              'text-2xl sm:text-3xl font-black font-mono leading-none',
               colorConfig.textClass
             )}
           >
             {clampedRemaining}
-          </motion.span>
-          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-muted mt-0.5">
+          </span>
+          <span className="text-xs text-ink-muted font-medium mt-0.5">
             detik
           </span>
         </div>
       </div>
 
-      {/* Speaker or Custom Label Below */}
       {(speakerName || label) && (
         <div className="mt-3 flex items-center gap-1.5 text-xs text-ink font-sans">
           {speakerName ? (
             <>
-              <Microphone className="w-3.5 h-3.5 text-stamp-dark animate-pulse" />
+              <Microphone className="w-3.5 h-3.5 text-teal-dark" weight="bold" />
               <span>
-                Giliran: <strong className="text-stamp-dark">{speakerName}</strong>
+                Giliran: <strong className="text-ink">{speakerName}</strong>
               </span>
             </>
           ) : (

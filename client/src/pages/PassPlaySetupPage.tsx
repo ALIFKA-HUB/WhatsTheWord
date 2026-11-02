@@ -24,9 +24,9 @@ import { Header } from '../components/common/Header';
 import { cn } from '../utils/cn';
 
 const TURN_DURATION_OPTIONS = [
-  { label: '30s', value: 30, desc: 'Cepat & Intens' },
-  { label: '45s', value: 45, desc: 'Standar' },
-  { label: '60s', value: 60, desc: 'Santai' },
+  { label: '30 dtk', value: 30, desc: 'Cepat & Intens' },
+  { label: '45 dtk', value: 45, desc: 'Standar' },
+  { label: '60 dtk', value: 60, desc: 'Santai' },
   { label: 'Bebas', value: 0, desc: 'Tanpa Timer' },
 ];
 
@@ -94,12 +94,12 @@ const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
 
   return (
     <div className="space-y-3 select-none">
-      <div className="flex items-center justify-between text-xs font-mono">
-        <span className="text-ink-muted">
-          Geser Jumlah Pemain:
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-ink-muted font-medium">
+          Geser jumlah pemain:
         </span>
-        <span className="text-ink font-semibold px-2 py-0.5 rounded-xl bg-cardstock-warm border border-rule">
-          {value} Pemain
+        <span className="text-ink font-semibold px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule">
+          {value} pemain
         </span>
       </div>
 
@@ -113,36 +113,36 @@ const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
         className="relative h-9 flex items-center cursor-pointer touch-none group"
       >
         {/* Background Track */}
-        <div className="w-full h-2 rounded-full bg-cardstock-warm border border-rule relative overflow-hidden">
-          {/* Active Fill */}
+        <div className="w-full h-2.5 rounded-full bg-paper-muted border border-rule relative overflow-hidden">
           <div
-            className="h-full bg-ink transition-all duration-75"
-            style={{ width: `${percentage}%` }}
+            className="h-full w-full origin-left bg-teal-dark transition-transform duration-75"
+            style={{ transform: `scaleX(${percentage / 100})` }}
           />
         </div>
 
         {/* Draggable Thumb Knob */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none transition-transform duration-75"
-          style={{ left: `${percentage}%` }}
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none"
+          style={{ insetInlineStart: `${percentage}%` }}
         >
           <div
-            className={`w-6 h-6 rounded-full bg-ink border-2 border-cardstock shadow-print-sm flex items-center justify-center transition-all ${
+            className={cn(
+              'w-6 h-6 rounded-full bg-teal-dark border-2 border-cardstock shadow-print-sm flex items-center justify-center transition-transform',
               isDragging ? 'scale-125' : 'group-hover:scale-110'
-            }`}
+            )}
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-paper" />
+            <div className="w-1.5 h-1.5 rounded-full bg-cardstock" />
           </div>
         </div>
       </div>
 
       {/* Discrete Scale Markers */}
-      <div className="flex justify-between text-[11px] font-mono text-ink-muted px-0.5">
-        <span className={value === 3 ? 'text-ink font-bold' : ''}>3 Min</span>
+      <div className="flex justify-between text-xs text-ink-muted px-0.5">
+        <span className={value === 3 ? 'text-ink font-bold' : ''}>3 min</span>
         <span className={value === 5 ? 'text-ink font-bold' : ''}>5</span>
         <span className={value === 10 ? 'text-ink font-bold' : ''}>10</span>
         <span className={value === 15 ? 'text-ink font-bold' : ''}>15</span>
-        <span className={value === 20 ? 'text-ink font-bold' : ''}>20 Maks</span>
+        <span className={value === 20 ? 'text-ink font-bold' : ''}>20 maks</span>
       </div>
     </div>
   );
@@ -161,15 +161,12 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
     startPassPlayGame,
   } = usePassPlay();
 
-  // Step Wizard state: 1 = Roles & Count, 2 = Category & Rules, 3 = Player Names & Avatars
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [totalPlayerCount, setTotalPlayerCount] = useState<number>(players.length || 4);
   const [customPacks, setCustomPacks] = useState<CustomWordPack[]>([]);
 
-  // Avatar picker popup for specific player index
   const [avatarPickerPlayerIndex, setAvatarPickerPlayerIndex] = useState<number | null>(null);
 
-  // Load custom packs from localStorage
   useEffect(() => {
     try {
       const packs = getLocalCustomPacks();
@@ -179,7 +176,6 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
     }
   }, []);
 
-  // Sync player count with players array
   const adjustPlayerCount = (newCount: number) => {
     const clamped = Math.max(3, Math.min(20, newCount));
     setTotalPlayerCount(clamped);
@@ -205,7 +201,6 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
       }
     });
 
-    // Auto-balance roles when total changes
     const mrWhite = settings.enableMrWhite && clamped >= 3 ? 1 : 0;
     const maxUndercover = clamped === 2 ? 1 : Math.max(1, Math.floor((clamped - mrWhite - 1) / 2));
     const nextUndercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
@@ -219,7 +214,6 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
     });
   };
 
-  // Role constraints
   const mrWhiteCount = settings.enableMrWhite && totalPlayerCount >= 3 ? 1 : 0;
   const maxUndercover = totalPlayerCount === 2 ? 1 : Math.max(1, Math.floor((totalPlayerCount - mrWhiteCount - 1) / 2));
   const currentUndercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
@@ -234,7 +228,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
   };
 
   const handleToggleMrWhite = () => {
-    if (totalPlayerCount < 3) return; // Mr White requires at least 3 players
+    if (totalPlayerCount < 3) return;
     const nextEnable = !settings.enableMrWhite;
     const nextMrWhite = nextEnable ? 1 : 0;
     const nextMaxUndercover = Math.max(1, Math.floor((totalPlayerCount - nextMrWhite - 1) / 2));
@@ -296,7 +290,6 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
   };
 
   const handleStartGame = () => {
-    // Fill empty names if any
     setPlayers((prev) =>
       prev.map((p, idx) => ({
         ...p,
@@ -324,17 +317,16 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
       <Header
         onBack={currentStep === 1 ? onBack : () => setCurrentStep((prev) => (prev - 1) as any)}
         backLabel={currentStep === 1 ? 'Menu Utama' : 'Langkah ' + (currentStep - 1)}
-        className="border-b border-ink"
       />
 
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 sm:py-8 space-y-6">
         {/* Step Progress Header */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-wider text-ink-muted font-semibold">
-              Pass &amp; Play · Mode 1 HP
+            <span className="text-xs font-semibold text-ink-muted">
+              Pass &amp; Play (Mode Satu HP)
             </span>
-            <span className="text-xs font-mono px-2 py-0.5 rounded-xl bg-cardstock-warm border border-rule text-ink">
+            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-cardstock border border-rule text-ink shadow-print-sm">
               Langkah {currentStep} dari 3
             </span>
           </div>
@@ -344,18 +336,31 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             {[
               { step: 1, label: '1. Peran & Jumlah' },
               { step: 2, label: '2. Kategori & Ronde' },
-              { step: 3, label: '3. Roster Pemain' },
+              { step: 3, label: '3. Daftar Pemain' },
             ].map((st) => (
-              <div
+              <button
                 key={st.step}
+                type="button"
                 onClick={() => {
                   if (st.step < currentStep) setCurrentStep(st.step as any);
                 }}
-                className={cn(
-                  'h-1 rounded-full transition-all duration-300 cursor-pointer',
-                  currentStep >= st.step ? 'bg-ink' : 'bg-paper-dark'
-                )}
-              />
+                className="text-left space-y-1.5 group focus:outline-none"
+              >
+                <div
+                  className={cn(
+                    'h-1.5 rounded-full transition-colors duration-200',
+                    currentStep >= st.step ? 'bg-teal-dark' : 'bg-paper-dark'
+                  )}
+                />
+                <span
+                  className={cn(
+                    'block text-xs font-medium truncate',
+                    currentStep === st.step ? 'text-ink font-bold' : 'text-ink-muted'
+                  )}
+                >
+                  {st.label}
+                </span>
+              </button>
             ))}
           </div>
         </div>
@@ -370,23 +375,21 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             className="space-y-5"
           >
             {/* Total Players Card */}
-            <Card padding="md" className="space-y-4 border-ink bg-cardstock">
-              <div className="flex items-center justify-between border-b border-ink pb-3">
+            <Card padding="md" className="space-y-4">
+              <div className="flex items-center justify-between border-b border-rule pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-2xl bg-teal-light text-teal-dark flex items-center justify-center shadow-print-sm">
+                  <div className="w-9 h-9 rounded-2xl bg-teal-light border border-teal/40 text-teal-dark flex items-center justify-center shadow-print-sm">
                     <Users className="w-5 h-5" weight="bold" />
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-ink">Jumlah Pemain (3 - 20 Orang)</h3>
-                    <p className="text-xs text-ink-muted">Geser bar di kiri atau gunakan tombol +/- di kanan</p>
+                    <h3 className="text-sm sm:text-base font-bold text-ink">Jumlah Pemain (3 sampai 20 Orang)</h3>
+                    <p className="text-xs text-ink-muted">Geser bar di kiri atau gunakan tombol di kanan</p>
                   </div>
                 </div>
               </div>
 
-              {/* Side-by-Side: Left Scroll Bar & Right Stepper */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
-                {/* Left Side: Scroll Bar Track */}
-                <div className="flex-1 bg-paper p-3.5 rounded-xl border border-rule">
+                <div className="flex-1 bg-paper p-3.5 rounded-2xl border border-rule">
                   <SmoothPlayerSlider
                     value={totalPlayerCount}
                     min={3}
@@ -395,29 +398,28 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                   />
                 </div>
 
-                {/* Right Side: Stepper [-] [N] [+] */}
-                <div className="flex items-center justify-center gap-2 shrink-0 bg-paper p-3.5 rounded-xl border border-rule">
+                <div className="flex items-center justify-center gap-2 shrink-0 bg-paper p-3.5 rounded-2xl border border-rule">
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount - 1)}
                     disabled={totalPlayerCount <= 3}
-                    className="w-10 h-10 rounded-2xl bg-cardstock-warm border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all"
+                    className="w-10 h-10 rounded-2xl bg-cardstock border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:translate-y-[1px] transition-colors shadow-print-sm"
                   >
                     -
                   </button>
 
-                  <div className="px-3.5 py-1 rounded-2xl bg-cardstock-warm border border-rule text-center min-w-[64px]">
+                  <div className="px-3.5 py-1 rounded-2xl bg-cardstock border border-rule text-center min-w-[68px]">
                     <span className="text-2xl font-mono font-bold text-ink">
                       {totalPlayerCount}
                     </span>
-                    <span className="text-[11px] font-mono text-ink-muted block -mt-1 font-semibold uppercase">Pemain</span>
+                    <span className="text-xs text-ink-muted block -mt-1 font-medium">pemain</span>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount + 1)}
                     disabled={totalPlayerCount >= 20}
-                    className="w-10 h-10 rounded-2xl bg-cardstock-warm border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all"
+                    className="w-10 h-10 rounded-2xl bg-cardstock border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:translate-y-[1px] transition-colors shadow-print-sm"
                   >
                     +
                   </button>
@@ -426,44 +428,44 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             </Card>
 
             {/* Role Breakdown Card */}
-            <Card padding="md" className="space-y-3.5 border-ink bg-cardstock">
-              <div className="flex items-center justify-between border-b border-ink pb-3">
-                <span className="text-xs font-bold text-ink uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-teal-light text-teal-dark flex items-center justify-center">
+            <Card padding="md" className="space-y-3.5">
+              <div className="flex items-center justify-between border-b border-rule pb-3">
+                <span className="text-sm font-bold text-ink flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal/40 text-teal-dark flex items-center justify-center">
                     <ShieldCheck className="w-4 h-4" weight="bold" />
                   </span>
                   Komposisi Peran
                 </span>
-                <span className="text-xs font-mono font-medium text-ink-muted">
-                  {currentCivilian} Warga vs {currentUndercover} Impostor {mrWhiteCount > 0 ? '+ 1 Mr. White' : ''}
+                <span className="text-xs font-medium text-ink-muted">
+                  {currentCivilian} Warga, {currentUndercover} Impostor{mrWhiteCount > 0 ? ', 1 Mr. White' : ''}
                 </span>
               </div>
 
               {/* Civilian Row */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-paper border border-rule">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-2xl bg-cardstock-warm text-ink flex items-center justify-center">
-                    <ShieldCheck className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-teal-light text-teal-dark flex items-center justify-center">
+                    <ShieldCheck className="w-4 h-4" weight="bold" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-ink">Warga (Civilian)</p>
-                    <p className="text-[11px] text-ink-muted">Mendapatkan kata rahasia mayoritas</p>
+                    <p className="text-xs text-ink-muted">Mendapatkan kata rahasia yang sama</p>
                   </div>
                 </div>
-                <span className="text-base font-mono font-bold text-ink px-3 py-0.5 rounded-xl bg-cardstock-warm border border-rule">
+                <span className="text-base font-mono font-bold text-ink px-3 py-0.5 rounded-xl bg-cardstock border border-rule">
                   {currentCivilian}
                 </span>
               </div>
 
               {/* Undercover Stepper */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-paper border border-rule">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-2xl bg-stamp-light text-stamp-dark flex items-center justify-center">
-                    <EyeSlash className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-stamp-light text-stamp-dark flex items-center justify-center">
+                    <EyeSlash className="w-4 h-4" weight="bold" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-stamp-dark">Impostor (Undercover)</p>
-                    <p className="text-[11px] text-ink-muted">Kata mirip, tidak tahu dirinya impostor</p>
+                    <p className="text-xs text-ink-muted">Menerima kata mirip, menyamar di antara warga</p>
                   </div>
                 </div>
 
@@ -472,7 +474,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     type="button"
                     onClick={() => handleUndercoverChange(-1)}
                     disabled={currentUndercover <= 1}
-                    className="w-8 h-8 rounded-2xl bg-cardstock-warm border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:scale-95"
+                    className="w-8 h-8 rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:translate-y-[1px] transition-colors"
                   >
                     -
                   </button>
@@ -483,7 +485,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     type="button"
                     onClick={() => handleUndercoverChange(1)}
                     disabled={currentUndercover >= maxUndercover}
-                    className="w-8 h-8 rounded-2xl bg-cardstock-warm border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:scale-95"
+                    className="w-8 h-8 rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:translate-y-[1px] transition-colors"
                   >
                     +
                   </button>
@@ -491,14 +493,14 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
 
               {/* Mr. White Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-paper border border-rule">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-2xl bg-paper-muted border-dashed text-ink-muted flex items-center justify-center">
-                    <Question className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-sun-light text-sun-dark flex items-center justify-center">
+                    <Question className="w-4 h-4" weight="bold" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-ink-muted">Mr. White (Buta Kata)</p>
-                    <p className="text-[11px] text-ink-muted">Tanpa kata sama sekali (muncul ???)</p>
+                    <p className="text-sm font-semibold text-ink">Mr. White (Tanpa Kata)</p>
+                    <p className="text-xs text-ink-muted">Tidak mendapat kata, menebak kata warga</p>
                   </div>
                 </div>
 
@@ -506,18 +508,17 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                   type="button"
                   onClick={handleToggleMrWhite}
                   className={cn(
-                    'px-3 py-1 rounded-2xl text-xs font-mono font-semibold transition-all border',
+                    'px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors border',
                     settings.enableMrWhite
-                      ? 'bg-stamp-light border-stamp text-ink-muted'
-                      : 'bg-cardstock-warm border-ink text-ink-muted hover:text-ink'
+                      ? 'bg-teal-light border-teal text-teal-dark shadow-print-sm'
+                      : 'bg-cardstock border-rule text-ink-muted hover:text-ink'
                   )}
                 >
-                  {settings.enableMrWhite ? 'AKTIF (1)' : 'NONAKTIF'}
+                  {settings.enableMrWhite ? 'Aktif (1)' : 'Nonaktif'}
                 </button>
               </div>
             </Card>
 
-            {/* Next Button */}
             <Button
               variant="primary"
               size="lg"
@@ -525,7 +526,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               onClick={() => setCurrentStep(2)}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Lanjut
+              Lanjut ke Kategori &amp; Aturan
             </Button>
           </motion.div>
         )}
@@ -540,15 +541,15 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             className="space-y-5"
           >
             {/* Category Grid Selection */}
-            <Card padding="md" className="space-y-4 border-2 border-rule bg-cardstock shadow-print">
+            <Card padding="md" className="space-y-4">
               <div className="flex items-center justify-between border-b border-rule pb-3">
-                <span className="text-xs font-bold text-ink uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-teal-light text-teal-dark flex items-center justify-center">
+                <span className="text-sm font-bold text-ink flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal/40 text-teal-dark flex items-center justify-center">
                     <BookOpen className="w-4 h-4" weight="bold" />
                   </span>
                   Pilih Kategori Kata
                 </span>
-                <span className="text-xs font-mono text-ink-muted bg-cardstock-warm px-2 py-0.5 rounded border border-rule">
+                <span className="text-xs font-semibold text-teal-dark bg-teal-light px-2.5 py-0.5 rounded-full border border-teal/40">
                   {settings.category || 'Acak / Misteri'}
                 </span>
               </div>
@@ -562,24 +563,23 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                       key={cat.id}
                       onClick={() => updateSettings({ category: cat.id })}
                       className={cn(
-                        'p-3.5 rounded-xl border cursor-pointer transition-all',
+                        'p-3.5 rounded-2xl border cursor-pointer transition-colors',
                         isSelected
-                          ? 'bg-teal-light border-teal text-ink'
-                          : 'bg-white border-rule text-ink hover:border-teal hover:bg-teal-light/40'
+                          ? 'bg-teal-light border-teal-dark text-ink shadow-print-sm'
+                          : 'bg-paper border-rule text-ink hover:border-teal/60 hover:bg-paper-muted/60'
                       )}
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className={cn('w-5 h-5 shrink-0 border border-rule', cat.icon === 'random' ? 'halftone-dots' : 'bg-cardstock')} />
+                        <span className={cn('w-4 h-4 rounded-full shrink-0 border border-rule', isSelected ? 'bg-teal-dark border-teal-dark' : 'bg-cardstock')} />
                         <div>
                           <p className="text-sm font-semibold">{cat.title}</p>
-                          <p className="text-[11px] text-ink-muted leading-tight mt-0.5">{cat.desc}</p>
+                          <p className="text-xs text-ink-muted leading-tight mt-0.5">{cat.desc}</p>
                         </div>
                       </div>
                     </div>
                   );
                 })}
 
-                {/* Custom Packs */}
                 {customPacks.map((cp) => {
                   const isSelected = settings.category === cp.title || settings.category === cp.id;
 
@@ -588,17 +588,17 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                       key={cp.id}
                       onClick={() => updateSettings({ category: cp.title })}
                       className={cn(
-                        'p-3.5 rounded-xl border cursor-pointer transition-all',
+                        'p-3.5 rounded-2xl border cursor-pointer transition-colors',
                         isSelected
-                          ? 'bg-teal-light border-teal text-ink'
-                          : 'bg-white border-rule text-ink hover:border-teal hover:bg-teal-light/40'
+                          ? 'bg-teal-light border-teal-dark text-ink shadow-print-sm'
+                          : 'bg-paper border-rule text-ink hover:border-teal/60 hover:bg-paper-muted/60'
                       )}
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="w-5 h-5 shrink-0 border border-dashed border-rule bg-paper-muted" />
+                        <span className={cn('w-4 h-4 rounded-full shrink-0 border border-rule', isSelected ? 'bg-teal-dark border-teal-dark' : 'bg-cardstock')} />
                         <div>
                           <p className="text-sm font-semibold">{cp.title}</p>
-                          <p className="text-[11px] text-ink-muted mt-0.5">{cp.wordPairs.length} pasang kata kustom</p>
+                          <p className="text-xs text-ink-muted mt-0.5">{cp.wordPairs.length} pasang kata kustom</p>
                         </div>
                       </div>
                     </div>
@@ -608,24 +608,23 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             </Card>
 
             {/* Voting & Duration Settings */}
-            <Card padding="md" className="space-y-4 border-ink bg-cardstock">
-              {/* Voting Start Round Setting */}
+            <Card padding="md" className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-ink uppercase tracking-wider flex items-center gap-2">
-                    <ListChecks className="w-4 h-4 text-ink-muted" />
-                    Voting Eliminasi Dimulai Pada
+                  <label className="text-sm font-bold text-ink flex items-center gap-2">
+                    <ListChecks className="w-4 h-4 text-teal-dark" weight="bold" />
+                    Mulai Voting Eliminasi Pada
                   </label>
-                  <span className="text-[11px] font-mono text-ink-muted bg-cardstock-warm px-2 py-0.5 rounded-md border border-rule whitespace-nowrap">
+                  <span className="text-xs font-semibold text-ink-muted bg-paper-muted px-2.5 py-0.5 rounded-full border border-rule whitespace-nowrap">
                     Ronde {settings.votingStartRound || 2}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 pt-2">
                   {[
-                    { round: 1, label: 'Ronde 1', desc: 'Langsung Voting' },
-                    { round: 2, label: 'Ronde 2', desc: 'Pemanasan 1 Ronde', recommended: true },
-                    { round: 3, label: 'Ronde 3', desc: 'Pemanasan 2 Ronde' },
+                    { round: 1, label: 'Ronde 1', desc: 'Langsung voting' },
+                    { round: 2, label: 'Ronde 2', desc: 'Pemanasan 1 ronde', recommended: true },
+                    { round: 3, label: 'Ronde 3', desc: 'Pemanasan 2 ronde' },
                   ].map((opt) => {
                     const isSelected = (settings.votingStartRound || 2) === opt.round;
                     return (
@@ -634,19 +633,19 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                         type="button"
                         onClick={() => updateSettings({ votingStartRound: opt.round })}
                         className={cn(
-                          'p-2 sm:p-2.5 pt-3.5 rounded-xl text-center border transition-all relative',
+                          'p-2.5 sm:p-3 pt-4 rounded-2xl text-center border transition-colors relative',
                           isSelected
-                            ? 'bg-teal-light border-teal text-ink font-bold shadow-print-sm ring-1 ring-teal'
-                            : 'bg-white border-rule text-ink-muted hover:text-ink hover:border-teal'
+                            ? 'bg-teal-light border-teal-dark text-ink font-bold shadow-print-sm'
+                            : 'bg-paper border-rule text-ink-muted hover:text-ink hover:border-teal/50'
                         )}
                       >
                         {opt.recommended && (
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-teal text-ink text-[9px] sm:text-[10px] font-mono font-extrabold uppercase leading-none shadow-print-sm whitespace-nowrap">
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-sun text-ink text-xs font-bold leading-none shadow-print-sm whitespace-nowrap">
                             Disarankan
                           </span>
                         )}
                         <span className="text-xs sm:text-sm font-bold block">{opt.label}</span>
-                        <span className="text-[11px] text-ink-muted block mt-0.5 leading-snug">{opt.desc}</span>
+                        <span className="text-xs text-ink-muted block mt-0.5 leading-snug">{opt.desc}</span>
                       </button>
                     );
                   })}
@@ -654,9 +653,9 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
 
               {/* Turn Duration Settings */}
-              <div className="space-y-2 pt-3 border-t border-ink">
-                <label className="text-xs font-semibold text-ink uppercase tracking-wider flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-ink-muted" />
+              <div className="space-y-2 pt-3 border-t border-rule">
+                <label className="text-sm font-bold text-ink flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-teal-dark" weight="bold" />
                   Durasi Diskusi Putaran
                 </label>
 
@@ -669,14 +668,14 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                         type="button"
                         onClick={() => updateSettings({ turnDurationSeconds: opt.value })}
                         className={cn(
-                          'p-2 rounded-xl text-center border transition-all',
+                          'p-2.5 rounded-2xl text-center border transition-colors',
                           isSelected
-                            ? 'bg-teal-light border-teal text-ink font-bold shadow-print-sm'
-                            : 'bg-white border-rule text-ink-muted hover:text-ink'
+                            ? 'bg-teal-light border-teal-dark text-ink font-bold shadow-print-sm'
+                            : 'bg-paper border-rule text-ink-muted hover:text-ink'
                         )}
                         title={opt.desc}
                       >
-                        <span className="text-xs sm:text-sm font-mono block">{opt.label}</span>
+                        <span className="text-xs sm:text-sm font-semibold block">{opt.label}</span>
                       </button>
                     );
                   })}
@@ -684,7 +683,6 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
             </Card>
 
-            {/* Navigation Buttons */}
             <div className="flex items-center gap-3">
               <Button
                 variant="secondary"
@@ -704,7 +702,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 rightIcon={<ArrowRight className="w-4 h-4" />}
                 className="w-2/3"
               >
-                Lanjut
+                Lanjut ke Daftar Pemain
               </Button>
             </div>
           </motion.div>
@@ -719,12 +717,11 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             exit={{ opacity: 0, y: -10 }}
             className="space-y-5"
           >
-            {/* Header with Quick Randomize */}
-            <Card padding="md" className="space-y-4 border-ink bg-cardstock">
-              <div className="flex items-center justify-between border-b border-ink pb-3">
+            <Card padding="md" className="space-y-4">
+              <div className="flex items-center justify-between border-b border-rule pb-3">
                 <div>
                   <h3 className="text-sm sm:text-base font-bold text-ink">Daftar {totalPlayerCount} Pemain</h3>
-                  <p className="text-xs text-ink-muted">Ketik nama pemain atau pilih avatar favorit</p>
+                  <p className="text-xs text-ink-muted">Ketik nama pemain atau ketuk pion untuk mengganti simbol</p>
                 </div>
 
                 <Button
@@ -737,44 +734,39 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 </Button>
               </div>
 
-              {/* Player Inputs List */}
               <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
                 {players.map((player, idx) => (
                   <div
                     key={player.id}
-                    className="flex items-center gap-2.5 p-2 rounded-xl bg-paper border border-rule focus-within:border-ink transition-all"
+                    className="flex items-center gap-2.5 p-2 rounded-2xl bg-paper border border-rule focus-within:border-teal-dark transition-colors"
                   >
-                    {/* Index Badge */}
-                    <span className="w-6 h-6 rounded-xl bg-cardstock-warm text-ink-muted font-mono font-semibold text-[11px] flex items-center justify-center shrink-0 border border-rule">
+                    <span className="w-6 h-6 rounded-xl bg-paper-muted text-ink-muted font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-rule">
                       {idx + 1}
                     </span>
 
-                    {/* Avatar Button */}
                     <button
                       type="button"
                       onClick={() => setAvatarPickerPlayerIndex(idx)}
-                      title="Klik untuk ganti avatar"
+                      title="Ketuk untuk ganti pion"
                       className="shrink-0 transition-transform active:scale-95"
                     >
                       <PlayerToken avatar={player.avatar} name={player.name} size="sm" showCode={false} />
                     </button>
 
-                    {/* Name Input */}
                     <input
                       type="text"
                       value={player.name}
                       onChange={(e) => handlePlayerNameChange(idx, e.target.value)}
                       placeholder={'Pemain ' + (idx + 1)}
                       maxLength={20}
-                      className="flex-1 bg-transparent px-2.5 py-1 text-sm font-medium text-ink placeholder-ink-faint focus:outline-none"
+                      className="flex-1 bg-transparent px-2.5 py-1 text-sm font-semibold text-ink placeholder-ink-faint focus:outline-none"
                     />
 
-                    {/* Randomize Single Player */}
                     <button
                       type="button"
                       onClick={() => handleRandomizeSingleName(idx)}
-                      title="Acak nama & avatar"
-                      className="p-1.5 rounded-2xl text-ink-muted hover:text-ink hover:bg-cardstock-warm transition-colors"
+                      title="Acak nama & pion"
+                      className="p-2 rounded-full text-ink-muted hover:text-ink hover:bg-paper-muted transition-colors"
                     >
                       <Shuffle className="w-4 h-4" />
                     </button>
@@ -783,7 +775,6 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
             </Card>
 
-            {/* Action Buttons */}
             <div className="flex items-center gap-3">
               <Button
                 variant="secondary"
@@ -814,15 +805,15 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
       <Modal
         isOpen={avatarPickerPlayerIndex !== null}
         onClose={() => setAvatarPickerPlayerIndex(null)}
-        title="Pilih Avatar Pemain"
+        title="Pilih Pion Pemain"
         size="sm"
       >
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 p-2 max-h-[60vh] overflow-y-auto">
+        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 p-2 max-h-[60vh] overflow-y-auto">
           {PRESET_AVATARS.map((av) => (
             <button
               key={av.id}
               onClick={() => avatarPickerPlayerIndex !== null && handleSelectAvatar(avatarPickerPlayerIndex, av.emoji)}
-              className="p-2 rounded-xl border border-rule bg-cardstock hover:bg-paper-muted shadow-print-sm transition-all flex items-center justify-center active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+              className="p-2.5 rounded-2xl border border-rule bg-cardstock hover:bg-paper-muted shadow-print-sm transition-colors flex items-center justify-center active:translate-y-[1px]"
               title={av.name}
             >
               <PlayerToken avatar={av.emoji} name={av.name} size="sm" showCode={false} />

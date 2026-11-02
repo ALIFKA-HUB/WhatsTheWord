@@ -31,7 +31,6 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
   const isLastPlayer = safeRevealIndex >= players.length - 1;
   const totalPlayers = players.length;
 
-  // Reset sub-screen and peek status when reveal index changes
   useEffect(() => {
     setSubScreen('PASS_PROMPT');
     setHasPeeked(false);
@@ -61,7 +60,6 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
       nextRevealPlayer();
     }
 
-    // Release lock after brief transition
     setTimeout(() => {
       setIsTransitioning(false);
     }, 250);
@@ -72,20 +70,20 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
       {/* Top progress stepper */}
       <div className="w-full flex items-center justify-between mb-5 px-1">
         <div className="flex items-center gap-2">
-          <span className="rubber-stamp text-[11px]">Intip Kata</span>
-          <span className="text-xs font-mono font-bold text-ink-muted">
+          <span className="rubber-stamp">Bagikan Kata</span>
+          <span className="text-xs font-semibold text-ink-muted">
             Pemain {safeRevealIndex + 1} dari {totalPlayers}
           </span>
         </div>
         {/* seat dots */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {players.map((p, idx) => (
             <span
               key={p.id}
               className={cn(
-                'w-2.5 h-2.5 border border-rule',
-                idx === safeRevealIndex && 'bg-stamp',
-                idx < safeRevealIndex && 'bg-ink',
+                'w-2.5 h-2.5 rounded-full border border-rule transition-colors',
+                idx === safeRevealIndex && 'bg-teal-dark border-teal-dark',
+                idx < safeRevealIndex && 'bg-ink/40',
                 idx > safeRevealIndex && 'bg-cardstock'
               )}
             />
@@ -103,18 +101,15 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
             exit={{ opacity: 0, y: -10 }}
             className="w-full paper-stack"
           >
-            <div className="bg-cardstock border border-rule shadow-print rounded-2xl p-6 sm:p-8 text-center space-y-4">
+            <div className="bg-cardstock border border-rule shadow-print rounded-3xl p-6 sm:p-8 text-center space-y-5">
               <PlayerToken avatar={currentPlayer?.avatar} name={currentPlayer?.name} size="xl" className="mx-auto" />
 
-              <div className="space-y-1">
-                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink-muted">
-                  Giliran Pemain #{safeRevealIndex + 1}
-                </p>
-                <h2 className="font-condensed text-3xl text-ink leading-tight">
+              <div className="space-y-1.5">
+                <h2 className="font-condensed text-2xl sm:text-3xl text-ink leading-tight">
                   Oper HP ke {currentPlayer?.name}
                 </h2>
-                <p className="text-xs text-ink-muted leading-relaxed max-w-[280px] mx-auto">
-                  Pemain lain dilarang mengintip! Tekan tombol saat HP sudah di tangan{' '}
+                <p className="text-xs sm:text-sm text-ink-muted leading-relaxed max-w-[280px] mx-auto">
+                  Giliran pemain ke-{safeRevealIndex + 1}. Tekan tombol di bawah setelah HP berada di tangan{' '}
                   <span className="font-bold text-ink">{currentPlayer?.name}</span>.
                 </p>
               </div>
@@ -142,8 +137,8 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
             className="w-full"
           >
             <div className="text-center mb-3">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink-muted">
-                Pemain: <span className="text-ink">{currentPlayer?.name}</span>
+              <p className="text-xs font-semibold text-ink-muted">
+                Giliran: <span className="text-ink font-bold">{currentPlayer?.name}</span>
               </p>
             </div>
             <SecretCard
@@ -164,8 +159,8 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
               >
                 {hasPeeked
                   ? isLastPlayer
-                    ? 'Sudah Hafal · Selesai Mengintip'
-                    : 'Sudah Hafal · Oper ke Pemain Selanjutnya'
+                    ? 'Sudah Hafal, Selesai Mengintip'
+                    : 'Sudah Hafal, Oper Berikutnya'
                   : 'Tahan Kartu untuk Mengintip'}
               </Button>
             </div>
@@ -181,17 +176,16 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
             exit={{ opacity: 0, y: -10 }}
             className="w-full paper-stack"
           >
-            <div className="bg-cardstock border border-rule shadow-print rounded-2xl p-6 sm:p-8 text-center space-y-4">
-              <div className="w-14 h-14 rounded-xl bg-cardstock border border-rule shadow-print-sm flex items-center justify-center text-stamp-dark mx-auto">
+            <div className="bg-cardstock border border-rule shadow-print rounded-3xl p-6 sm:p-8 text-center space-y-5">
+              <div className="w-14 h-14 rounded-2xl bg-teal-light border border-teal/40 shadow-print-sm flex items-center justify-center text-teal-dark mx-auto">
                 <SealCheck className="w-7 h-7" weight="bold" />
               </div>
 
-              <div className="space-y-1">
-                <span className="rubber-stamp-red -rotate-2 text-[11px] inline-flex">Kata Terkunci</span>
-                <h2 className="font-condensed text-2xl text-ink leading-tight pt-1">
+              <div className="space-y-1.5">
+                <h2 className="font-condensed text-2xl sm:text-3xl text-ink leading-tight">
                   {isLastPlayer ? 'Semua Pemain Telah Siap!' : 'Lanjut ke Pemain Berikutnya'}
                 </h2>
-                <p className="text-xs text-ink-muted leading-relaxed max-w-[280px] mx-auto">
+                <p className="text-xs sm:text-sm text-ink-muted leading-relaxed max-w-[280px] mx-auto">
                   {isLastPlayer
                     ? 'Seluruh pemain sudah melihat kata rahasia masing-masing. Saatnya memulai putaran diskusi!'
                     : 'Oper HP ke pemain berikutnya tanpa membocorkan kata rahasiamu.'}

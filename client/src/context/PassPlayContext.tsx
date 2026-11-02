@@ -94,7 +94,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
             return parsed.map((p: Partial<Player>, idx: number) => ({
               id: p.id || `p_${Date.now()}_${idx}`,
               name: p.name || `Pemain ${idx + 1}`,
-              avatar: p.avatar || '🕵️',
+              avatar: p.avatar || 'token-eye',
               isHost: idx === 0,
               isAlive: true,
               hasVoted: false,
@@ -199,7 +199,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       const newPlayer: Player = {
         id: `p_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         name: trimmed,
-        avatar: avatar || '🕵️',
+        avatar: avatar || 'token-eye',
         isHost: prev.length === 0,
         isAlive: true,
         hasVoted: false,

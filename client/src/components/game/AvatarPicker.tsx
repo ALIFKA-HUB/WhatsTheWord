@@ -85,9 +85,9 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
       {/* Nickname Input Section */}
       {showNicknameInput && onNicknameChange && (
         <div className="space-y-2">
-          <label className="flex items-center justify-between text-xs font-bold text-ink uppercase tracking-wider font-mono">
-            <span>Nama Agen</span>
-            <span className="text-[11px] text-ink-muted font-normal">
+          <label className="flex items-center justify-between text-xs font-semibold text-ink">
+            <span>Nama Pemain</span>
+            <span className="text-xs text-ink-muted font-normal">
               {nickname.length}/15
             </span>
           </label>
@@ -97,18 +97,18 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
               type="text"
               value={nickname}
               onChange={(e) => onNicknameChange(e.target.value.slice(0, 15))}
-              placeholder="Tulis codename..."
+              placeholder="Tulis nama panggilan…"
               disabled={disabled}
               maxLength={15}
-              className="w-full pl-4 pr-12 py-2.5 bg-cardstock border border-rule rounded-xl text-ink placeholder:text-ink-faint focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/30 text-sm font-semibold transition-all"
+              className="w-full pl-4 pr-12 py-2.5 bg-cardstock border border-rule rounded-xl text-ink placeholder:text-ink-faint focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal/30 text-sm font-semibold transition-colors"
             />
             <button
               type="button"
               onClick={handleRandomizeNickname}
               disabled={disabled}
-              className="absolute right-2 p-1.5 rounded-lg border border-rule bg-cardstock text-ink hover:bg-paper-muted active:translate-x-[1px] active:translate-y-[1px] transition-all"
-              title="Acak Codename"
-              aria-label="Acak Codename"
+              className="absolute right-2 p-1.5 rounded-lg border border-rule bg-paper-muted/60 text-ink hover:bg-paper-muted active:translate-y-[1px] transition-colors"
+              title="Acak Nama"
+              aria-label="Acak Nama"
             >
               <Shuffle className="w-4 h-4" weight="bold" />
             </button>
@@ -118,8 +118,8 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
 
       {/* Token Grid Selection */}
       <div className="space-y-2">
-        <span className="block text-xs font-bold text-ink uppercase tracking-wider font-mono">
-          Pilih Token ({PRESET_AVATARS.length})
+        <span className="block text-xs font-semibold text-ink">
+          Pilih Pion ({PRESET_AVATARS.length})
         </span>
 
         <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5">
@@ -130,21 +130,21 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
               <motion.button
                 key={item.id}
                 type="button"
-                whileTap={{ scale: disabled ? 1 : 0.94 }}
+                whileTap={{ scale: disabled ? 1 : 0.96 }}
                 onClick={() => handleAvatarClick(item.emoji)}
                 disabled={disabled}
                 className={cn(
-                  'relative group flex flex-col items-center justify-center gap-1 px-1 py-2.5 rounded-xl border-2 transition-all select-none text-center',
+                  'relative group flex flex-col items-center justify-center gap-1.5 px-1.5 py-2.5 rounded-2xl border transition-colors select-none text-center',
                   isSelected
-                    ? 'border-teal bg-teal-light shadow-print-teal'
-                    : 'border-ink bg-cardstock hover:bg-paper-muted shadow-print-sm',
+                    ? 'border-teal-dark bg-teal-light shadow-print-sm'
+                    : 'border-rule bg-cardstock hover:bg-paper-muted/70 shadow-print-sm',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
                 title={`${item.name} - ${item.description}`}
                 aria-pressed={isSelected}
               >
                 {isSelected && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-stamp text-ink border border-rule flex items-center justify-center z-10">
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-teal-dark text-cardstock border border-cardstock flex items-center justify-center z-10">
                     <Check className="w-3 h-3" weight="bold" />
                   </span>
                 )}
@@ -159,7 +159,7 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
 
                 <span
                   className={cn(
-                    'text-[11px] font-bold truncate w-full tracking-tight uppercase',
+                    'text-xs font-semibold truncate w-full',
                     isSelected ? 'text-teal-dark' : 'text-ink-muted group-hover:text-ink'
                   )}
                 >

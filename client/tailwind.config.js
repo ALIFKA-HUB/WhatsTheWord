@@ -7,56 +7,56 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* Playful Pop palette */
+        /* Hallmark Hum comfortable paper & card-stock palette (wired to :root tokens) */
         paper: {
-          DEFAULT: '#FFF8EE',   /* warm cream page background */
-          muted: '#F3ECE0',
-          dark: '#EAE2D2',
+          DEFAULT: 'var(--color-paper)',
+          muted: 'var(--color-paper-2)',
+          dark: 'var(--color-paper-3)',
         },
         cardstock: {
-          DEFAULT: '#FFFFFF',   /* white card surfaces */
-          warm: '#FFF4E3',
+          DEFAULT: 'var(--color-card)',
+          warm: 'var(--color-paper-2)',
         },
         ink: {
-          DEFAULT: '#243348',   /* deep friendly navy (text) */
-          muted: '#55677E',
-          faint: '#8A97A8',
+          DEFAULT: 'var(--color-ink)',
+          muted: 'var(--color-muted)',
+          faint: 'var(--color-ink-faint)',
         },
-        rule: '#EAE4D8',        /* soft hairlines */
+        rule: 'var(--color-rule)',
         stamp: {
-          DEFAULT: '#FF6B6B',   /* coral - impostor / danger / accent */
-          dark: '#C03333',
-          light: '#FFE9E9',
+          DEFAULT: 'var(--color-accent-3)',
+          dark: 'var(--color-stamp-deep)',
+          light: 'var(--color-stamp-soft)',
         },
         teal: {
-          DEFAULT: '#4ECDC4',   /* primary action */
-          dark: '#237B74',
-          light: '#E0F7F5',
+          DEFAULT: 'var(--color-mint)',
+          dark: 'var(--color-mint-deep)',
+          light: 'var(--color-mint-soft)',
         },
         sun: {
-          DEFAULT: '#FFC94A',   /* yellow accent - host / mr. white */
-          dark: '#E8AE2E',
-          light: '#FFF3D6',
+          DEFAULT: 'var(--color-accent)',
+          dark: 'var(--color-accent-deep)',
+          light: 'var(--color-sun-soft)',
         },
       },
       fontFamily: {
-        sans: ['"Nunito Variable"', 'Nunito', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        display: ['"Nunito Variable"', 'Nunito', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        sans: ['var(--font-body)'],
+        display: ['var(--font-display)'],
+        mono: ['var(--font-outlier)'],
       },
       boxShadow: {
-        /* soft colored shadows - no hard offsets */
-        'print-sm': '0 2px 8px rgba(36, 51, 72, 0.08)',
-        'print': '0 6px 18px rgba(36, 51, 72, 0.10)',
-        'print-lg': '0 12px 30px rgba(36, 51, 72, 0.14)',
-        'print-red': '0 6px 18px rgba(255, 107, 107, 0.25)',
-        'print-teal': '0 6px 18px rgba(78, 205, 196, 0.30)',
-        'print-inset': 'inset 0 0 0 2px #4ECDC4',
-        /* tactile push bottoms for pill buttons */
-        'push-teal': '0 4px 0 0 #3AA9A2',
-        'push-coral': '0 4px 0 0 #E55555',
-        'push-navy': '0 4px 0 0 #16202F',
-        'push-sun': '0 4px 0 0 #E8AE2E',
+        'print-sm': 'var(--shadow-sm)',
+        'print': 'var(--shadow-card)',
+        'print-lg': 'var(--shadow-lg)',
+        'print-red': 'var(--shadow-coral)',
+        'print-teal': 'var(--shadow-teal)',
+        'print-inset': 'var(--shadow-inset-teal)',
+        'flap': 'var(--shadow-flap)',
+        'push-teal': 'var(--shadow-push-teal)',
+        'push-coral': 'var(--shadow-push-coral)',
+        'push-navy': 'var(--shadow-push-navy)',
+        'push-sun': 'var(--shadow-push-sun)',
+        'push-card': 'var(--shadow-push-card)',
       },
     },
   },

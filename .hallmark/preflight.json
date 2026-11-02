@@ -1,0 +1,21 @@
+{
+  "scanned": "2026-11-02",
+  "findings": {
+    "fonts": "Chillax + Nunito Variable + JetBrains Mono (@fontsource-variable/nunito, client/package.json)",
+    "palette": "OKLCH custom properties (client/src/tokens.css :root, extended in client/tailwind.config.js)",
+    "motion": "motion 12.4.10 + CSS --ease-spring / --ease-snap (client/package.json)",
+    "spacing": "Tailwind 4pt scale + Hallmark --space-* tokens (client/src/tokens.css)",
+    "framework": "Vite 6 + React 18 + TypeScript + Tailwind CSS 3.4"
+  },
+  "preserve": [
+    "framework",
+    "routes and game state wiring",
+    "test hooks and component APIs"
+  ],
+  "introduce": [
+    "Hallmark Hum theme (comfortable warm paper & tinted ivory card-stock palette)",
+    "sentence-case untracked typography across all labels and controls",
+    "restrained app-screen color hierarchy and uncluttered layout",
+    "Floor gates (0 FAIL, 0 REFLEX)"
+  ]
+}

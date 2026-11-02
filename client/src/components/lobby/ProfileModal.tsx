@@ -7,7 +7,6 @@ import { AvatarPicker } from '../game/AvatarPicker';
 import { PRESET_TOKEN_AVATARS } from '../../utils/avatarTokens';
 import { useGameSound } from '../../hooks/useGameSound';
 
-
 export interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -30,12 +29,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const { playButtonTap } = useGameSound();
 
-  // Re-sync local state each time the modal opens
   useEffect(() => {
     if (isOpen) {
       setNickname(initialName);
       setSelectedAvatar(initialAvatar);
-      // Focus after the modal spring settles enough to be focusable
       const t = setTimeout(() => inputRef.current?.focus(), 120);
       return () => clearTimeout(t);
     }
@@ -58,18 +55,18 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Profil Agen"
-      subtitle="Nama dan token ini yang tampil di meja online."
+      title="Profil Pemain"
+      subtitle="Nama dan pion ini yang tampil di meja online."
       size="sm"
     >
       <div className="space-y-5">
         {/* Token preview */}
-        <div className="flex items-center gap-4 p-3 rounded-xl border border-rule bg-paper">
+        <div className="flex items-center gap-4 p-3.5 rounded-2xl border border-rule bg-paper">
           <PlayerToken avatar={selectedAvatar} name={nickname} size="lg" showCode={false} />
           <div className="min-w-0">
-            <p className="font-condensed text-xl text-ink truncate">{nickname || 'Agen'}</p>
-            <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-ink-muted">
-              Token:{' '}
+            <p className="font-condensed text-xl text-ink truncate">{nickname || 'Pemain'}</p>
+            <p className="text-xs font-medium text-ink-muted">
+              Pion:{' '}
               {PRESET_TOKEN_AVATARS.find((t) => t.id === selectedAvatar)?.name || 'Mata Elang'}
             </p>
           </div>
@@ -78,10 +75,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         {/* Nickname */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label htmlFor="profile-nickname" className="text-xs font-bold text-ink uppercase tracking-wider font-mono">
-              Nama Agen
+            <label htmlFor="profile-nickname" className="text-xs font-semibold text-ink">
+              Nama Panggilan
             </label>
-            <span className="text-[11px] font-mono text-ink-muted">
+            <span className="text-xs text-ink-muted">
               {nickname.length}/{NAME_MAX_LENGTH}
             </span>
           </div>
@@ -97,18 +94,17 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 handleSave();
               }
             }}
-            placeholder="Tulis codename..."
+            placeholder="Tulis nama panggilan…"
             maxLength={NAME_MAX_LENGTH}
-            className="w-full px-4 py-2.5 bg-cardstock border border-rule rounded-xl text-ink placeholder:text-ink-faint focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/30 text-sm font-semibold transition-all"
+            className="w-full px-4 py-2.5 bg-cardstock border border-rule rounded-xl text-ink placeholder:text-ink-faint focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal/30 text-sm font-semibold transition-colors"
           />
           {!canSave && (
-            <p className="text-[11px] font-mono font-bold uppercase tracking-wide text-stamp-dark">
+            <p className="text-xs font-semibold text-stamp-dark">
               Nama tidak boleh kosong
             </p>
           )}
         </div>
 
-        {/* Token grid via AvatarPicker (nickname input hidden, token grid only) */}
         <AvatarPicker
           selectedAvatar={selectedAvatar}
           onSelectAvatar={setSelectedAvatar}
@@ -116,7 +112,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         />
       </div>
 
-      {/* Save button */}
       <div className="pt-5">
         <Button
           variant="primary"

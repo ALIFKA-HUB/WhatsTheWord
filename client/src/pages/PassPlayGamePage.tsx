@@ -29,7 +29,6 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
 
   const { playVictory } = useGameSound();
 
-  // Play fanfare sound upon entering GAME_OVER
   useEffect(() => {
     if (phase === 'GAME_OVER') {
       try {
@@ -48,17 +47,16 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
   };
 
   return (
-    <div className="min-h-[100dvh] text-ink flex flex-col font-sans selection:bg-stamp selection:text-ink">
-      {/* Header */}
+    <div className="min-h-[100dvh] text-ink flex flex-col font-sans">
       <Header
-        title="PASS & PLAY"
-        subtitle={`KATEGORI: ${settings.category}`}
+        title="Pass & Play"
+        subtitle={`Kategori: ${settings.category}`}
         onBack={handleBack}
         showBack
         backLabel="Keluar"
         rightElement={
           phase !== 'SETUP' && (
-            <Badge variant="slate" size="sm" className="hidden sm:inline-flex font-mono">
+            <Badge variant="slate" size="sm" className="hidden sm:inline-flex">
               Ronde {round}
             </Badge>
           )
@@ -106,22 +104,22 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
               className="w-full space-y-6 py-4"
             >
               {/* Victory Celebration Banner */}
-              <div className="text-center space-y-4 p-6 sm:p-8 rounded-2xl bg-paper-muted border border-rule shadow-sm relative overflow-hidden">
+              <div className="text-center space-y-4 p-6 sm:p-8 rounded-3xl bg-cardstock border border-rule shadow-print relative overflow-hidden">
                 <div className="flex flex-col items-center space-y-3">
-                  <div className="w-14 h-14 rounded-2xl bg-cardstock-warm border border-rule flex items-center justify-center text-stamp-dark">
-                    <Trophy className="w-7 h-7" />
+                  <div className="w-14 h-14 rounded-2xl bg-sun-light border border-sun/50 flex items-center justify-center text-sun-dark">
+                    <Trophy className="w-7 h-7" weight="bold" />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <span className="text-[11px] font-mono tracking-wider uppercase font-semibold text-ink-muted">
-                      PERMAINAN SELESAI
+                  <div className="space-y-2">
+                    <span className="rubber-stamp">
+                      Permainan Selesai
                     </span>
                     <img
                       src="/assets/gameover-art.svg"
-                      alt="Ilustrasi dossier terbuka dengan kartu terungkap"
-                      className="w-full max-w-md mx-auto border border-rule shadow-print rounded-2xl"
+                      alt="Ilustrasi akhir permainan dengan kartu kata terbuka"
+                      className="w-full max-w-md mx-auto border border-rule shadow-print-sm rounded-2xl"
                     />
-                    <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight uppercase text-ink font-sans">
+                    <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-ink font-condensed pt-1">
                       {winningRole === 'CIVILIAN'
                         ? 'Kemenangan Warga!'
                         : winningRole === 'UNDERCOVER'
@@ -130,10 +128,10 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
                     </h1>
                     <p className="text-xs sm:text-sm text-ink-muted max-w-md mx-auto leading-relaxed">
                       {winningRole === 'CIVILIAN'
-                        ? 'Warga berhasil mengeliminasi seluruh Impostor dan Buta Kata!'
+                        ? 'Warga berhasil mengeliminasi seluruh Impostor dan Mr. White!'
                         : winningRole === 'UNDERCOVER'
                         ? 'Impostor berhasil menyamarkan diri dan menguasai permainan!'
-                        : 'Mr. White (Buta Kata) berhasil bertahan atau menebak kata rahasia Warga!'}
+                        : 'Mr. White berhasil bertahan atau menebak kata rahasia Warga!'}
                     </p>
                   </div>
                 </div>
@@ -141,29 +139,29 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
 
               {/* Secret Words Summary Card */}
               {wordPair && (
-                <Card padding="md" className="border-ink bg-cardstock space-y-3">
-                  <div className="flex items-center gap-2 border-b border-ink pb-3">
-                    <Key className="w-4 h-4 text-ink-muted" />
-                    <h3 className="text-sm font-semibold text-ink">
+                <Card padding="md" className="space-y-3">
+                  <div className="flex items-center gap-2 border-b border-rule pb-3">
+                    <Key className="w-4 h-4 text-teal-dark" weight="bold" />
+                    <h3 className="text-sm font-bold text-ink">
                       Pengungkapan Kata Rahasia
                     </h3>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <div className="p-4 rounded-xl bg-paper border border-rule text-center space-y-1">
-                      <span className="text-[11px] font-mono text-ink-muted font-semibold uppercase tracking-wider">
-                        KATA WARGA (CIVILIAN)
+                    <div className="p-4 rounded-2xl bg-paper border border-rule text-center space-y-1">
+                      <span className="text-xs text-ink-muted font-semibold">
+                        Kata Warga (Civilian)
                       </span>
-                      <p className="text-xl sm:text-2xl font-bold text-ink tracking-wide">
+                      <p className="text-xl sm:text-2xl font-bold text-ink">
                         {wordPair.civilianWord}
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-paper border border-rule text-center space-y-1">
-                      <span className="text-[11px] font-mono text-stamp-dark font-semibold uppercase tracking-wider">
-                        KATA IMPOSTOR (UNDERCOVER)
+                    <div className="p-4 rounded-2xl bg-stamp-light/50 border border-stamp/40 text-center space-y-1">
+                      <span className="text-xs text-stamp-dark font-semibold">
+                        Kata Impostor (Undercover)
                       </span>
-                      <p className="text-xl sm:text-2xl font-bold text-stamp-dark tracking-wide">
+                      <p className="text-xl sm:text-2xl font-bold text-stamp-dark">
                         {wordPair.undercoverWord}
                       </p>
                     </div>
@@ -172,34 +170,30 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
               )}
 
               {/* All Players Role Reveal List */}
-              <Card padding="md" className="border-ink bg-cardstock space-y-3.5">
-                <div className="flex items-center justify-between border-b border-ink pb-3">
+              <Card padding="md" className="space-y-3.5">
+                <div className="flex items-center justify-between border-b border-rule pb-3">
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-ink-muted" />
-                    <h3 className="text-sm font-semibold text-ink">
+                    <Users className="w-4 h-4 text-teal-dark" weight="bold" />
+                    <h3 className="text-sm font-bold text-ink">
                       Daftar Lengkap Peran Pemain
                     </h3>
                   </div>
-                  <span className="text-xs font-mono text-ink-muted">
-                    {players.length} Pemain Total
+                  <span className="text-xs text-ink-muted font-medium">
+                    {players.length} pemain
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {players.map((p) => {
-                    const isWinner =
-                      p.role === winningRole ||
-                      (winningRole === 'CIVILIAN' && p.role === 'CIVILIAN') ||
-                      (winningRole === 'UNDERCOVER' && p.role === 'UNDERCOVER') ||
-                      (winningRole === 'MR_WHITE' && p.role === 'MR_WHITE');
+                    const isWinner = p.role === winningRole;
 
                     return (
                       <div
                         key={p.id}
-                        className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                        className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
                           isWinner
-                            ? 'bg-paper/90 border-rule'
-                            : 'bg-paper border-ink/60 opacity-70'
+                            ? 'bg-teal-light/40 border-teal/50'
+                            : 'bg-paper border-rule opacity-80'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -210,7 +204,7 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
                                 {p.name}
                               </span>
                               {isWinner && (
-                                <Crown className="w-3.5 h-3.5 text-stamp-dark shrink-0" />
+                                <Crown className="w-3.5 h-3.5 text-sun-dark shrink-0" weight="bold" />
                               )}
                             </div>
                             <span className="text-xs text-ink-muted">
@@ -222,11 +216,11 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
                         <div className="flex flex-col items-end gap-1">
                           {p.role && <RoleBadge role={p.role} size="sm" />}
                           <span
-                            className={`text-[11px] font-mono font-medium ${
-                              p.isAlive ? 'text-ink' : 'text-ink-muted line-through'
+                            className={`text-xs font-medium ${
+                              p.isAlive ? 'text-teal-dark' : 'text-ink-muted line-through'
                             }`}
                           >
-                            {p.isAlive ? 'Selamat (Alive)' : 'Tereliminasi'}
+                            {p.isAlive ? 'Bertahan' : 'Tereliminasi'}
                           </span>
                         </div>
                       </div>

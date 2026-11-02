@@ -11,18 +11,17 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   interactive?: boolean;
 }
 
-/* Legacy glow props mapped to the print system: crimson = red-stamped card, others = ink card */
 const glowStyles: Record<CardGlow, string> = {
-  none: 'border-ink',
-  cyan: 'border-ink',
-  violet: 'border-ink',
-  amber: 'border-ink',
-  crimson: 'border-stamp shadow-print-red',
+  none: 'border-rule',
+  cyan: 'border-teal/50',
+  violet: 'border-rule',
+  amber: 'border-sun/60',
+  crimson: 'border-stamp/60 shadow-print-red',
 };
 
 const paddingStyles: Record<CardPadding, string> = {
   none: 'p-0',
-  sm: 'p-3.5 sm:p-4',
+  sm: 'p-4 sm:p-5',
   md: 'p-5 sm:p-6',
   lg: 'p-6 sm:p-8',
 };
@@ -44,12 +43,12 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'relative rounded-2xl bg-cardstock border-2 text-ink overflow-hidden',
+          'relative rounded-3xl bg-cardstock border text-ink overflow-hidden',
           glowStyles[glow],
-          glow === 'none' && 'shadow-print',
+          glow !== 'crimson' && 'shadow-print',
           paddingStyles[padding],
           hoverable && 'hover:shadow-print-lg transition-shadow',
-          interactive && 'cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-print-sm transition-all',
+          interactive && 'cursor-pointer active:translate-y-[1px] active:shadow-print-sm transition-transform',
           className
         )}
         {...props}
@@ -96,7 +95,7 @@ CardContent.displayName = 'CardContent';
 
 export const CardFooter = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex items-center pt-4 border-t-2 border-rule', className)} {...props} />
+    <div ref={ref} className={cn('flex items-center pt-4 border-t border-rule', className)} {...props} />
   )
 );
 CardFooter.displayName = 'CardFooter';

@@ -19,24 +19,24 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-teal text-ink shadow-push-teal hover:brightness-105 active:translate-y-[3px] active:shadow-none font-extrabold',
+    'bg-teal text-ink border border-teal-dark/20 shadow-push-teal hover:brightness-105 active:translate-y-[2px] active:shadow-none font-bold',
   secondary:
-    'bg-cardstock text-ink shadow-print-sm hover:bg-paper-muted active:translate-y-[2px] active:shadow-none font-extrabold',
+    'bg-cardstock text-ink border border-rule shadow-push-card hover:bg-paper-muted active:translate-y-[2px] active:shadow-none font-bold',
   danger:
-    'bg-stamp text-ink shadow-push-coral hover:brightness-105 active:translate-y-[3px] active:shadow-none font-extrabold',
+    'bg-stamp text-cardstock border border-stamp-dark/20 shadow-push-coral hover:brightness-105 active:translate-y-[2px] active:shadow-none font-bold',
   accent:
-    'bg-ink text-white shadow-push-navy hover:brightness-125 active:translate-y-[3px] active:shadow-none font-extrabold',
+    'bg-ink text-cardstock shadow-push-navy hover:brightness-110 active:translate-y-[2px] active:shadow-none font-bold',
   outline:
-    'bg-transparent text-ink border border-rule hover:bg-paper-muted font-bold active:translate-y-[2px]',
+    'bg-transparent text-ink border border-rule hover:bg-paper-muted font-semibold active:translate-y-[1px]',
   ghost:
-    'bg-transparent text-ink-muted hover:text-ink hover:bg-paper-muted border border-transparent font-bold',
+    'bg-transparent text-ink-muted hover:text-ink hover:bg-paper-muted border border-transparent font-semibold',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  xs: 'px-3 py-1 text-xs rounded-full gap-1.5',
-  sm: 'px-4 py-1.5 text-xs sm:text-sm rounded-full gap-2',
-  md: 'px-5 py-2 text-sm sm:text-base rounded-full gap-2',
-  lg: 'px-6 py-2.5 text-base rounded-full gap-2.5',
+  xs: 'px-3 py-1.5 text-xs rounded-full gap-1.5',
+  sm: 'px-4 py-2 text-xs sm:text-sm rounded-full gap-2',
+  md: 'px-5 py-2.5 text-sm sm:text-base rounded-full gap-2',
+  lg: 'px-6 py-3 text-base rounded-full gap-2.5',
   xl: 'px-7 py-3.5 text-base sm:text-lg rounded-full gap-3',
   icon: 'p-2.5 rounded-full aspect-square flex items-center justify-center',
 };
@@ -84,7 +84,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={isDisabled}
         onClick={handleClick}
         className={cn(
-          'relative inline-flex items-center justify-center select-none font-sans transition-all duration-100 ease-out outline-none focus-visible:ring-2 focus-visible:ring-stamp focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
+          'relative inline-flex items-center justify-center select-none font-sans transition-transform duration-100 ease-out outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
           'disabled:opacity-40 disabled:pointer-events-none',
           variantStyles[variant],
           sizeStyles[size],

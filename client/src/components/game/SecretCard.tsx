@@ -82,10 +82,10 @@ export const SecretCard: React.FC<SecretCardProps> = ({
         }}
         onKeyUp={endHold}
         aria-label="Tahan untuk mengintip kata rahasia"
-        className="relative overflow-hidden rounded-2xl border-2 border-rule bg-paper-muted shadow-print-lg cursor-pointer h-[340px]"
+        className="relative overflow-hidden rounded-3xl border border-rule bg-paper-muted shadow-print-lg cursor-pointer h-[340px]"
       >
         {/* thumb notch cut-out */}
-        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 rounded-b-full bg-paper border-x-2 border-b-2 border-rule z-20 flex items-center justify-center" aria-hidden="true">
+        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 rounded-b-full bg-paper border-x border-b border-rule z-20 flex items-center justify-center" aria-hidden="true">
           <span className="w-6 h-1 rounded-full bg-rule" />
         </span>
 
@@ -94,15 +94,15 @@ export const SecretCard: React.FC<SecretCardProps> = ({
           initial={false}
           animate={{ y: isHolding ? -6 : 148 }}
           transition={{ type: 'spring', stiffness: 340, damping: 28 }}
-          className="absolute inset-x-3 top-3 z-0 bg-cardstock border-2 border-rule rounded-xl p-4 min-h-[320px] flex flex-col"
+          className="absolute inset-x-3 top-3 z-0 bg-cardstock border border-rule rounded-2xl p-4 min-h-[320px] flex flex-col shadow-print-sm"
         >
           {/* inner card header tab */}
           <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-rule">
-            <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-ink-muted">
-              Dokumen Agen
+            <span className="text-xs font-semibold text-ink-muted">
+              Kartu Kata Rahasia
             </span>
             {category && (
-              <span className="px-2 py-0.5 rounded-lg bg-paper border border-rule font-mono text-[11px] font-bold uppercase tracking-wider text-ink">
+              <span className="px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule text-xs font-semibold text-ink">
                 {category}
               </span>
             )}
@@ -111,39 +111,39 @@ export const SecretCard: React.FC<SecretCardProps> = ({
           {/* Secret content with opacity transition so zero leak when closed */}
           <div className={cn("transition-opacity duration-200 my-auto", isHolding ? "opacity-100" : "opacity-0")}>
             {isMrWhite ? (
-              <div className="rounded-xl border border-dashed border-rule bg-paper p-4 text-center space-y-2 min-h-[140px] flex flex-col items-center justify-center">
-                <span className="rubber-stamp text-xs -rotate-2">Mr. White · Tanpa Kata</span>
+              <div className="rounded-2xl border border-dashed border-rule bg-paper p-4 text-center space-y-2 min-h-[140px] flex flex-col items-center justify-center">
+                <span className="rubber-stamp text-xs">Mr. White (Tanpa Kata)</span>
                 <p className="text-xs text-ink-muted max-w-[240px] leading-relaxed">
                   Kamu tidak mendapat kata. Dengarkan petunjuk pemain lain dan menebaklah saat terdesak!
                 </p>
               </div>
             ) : (
               <div className="text-center py-2">
-                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-ink-muted mb-1.5">
-                  Kata Rahasia Kamu
+                <p className="text-xs font-semibold text-ink-muted mb-1.5">
+                  Kata rahasia kamu
                 </p>
-                <p className="font-condensed text-4xl sm:text-5xl text-ink tracking-tight py-2 border-y-2 border-rule">
+                <p className="font-condensed text-4xl sm:text-5xl text-ink tracking-tight py-2.5 border-y border-rule">
                   {word || 'Kata Rahasia'}
                 </p>
-                <p className="text-[11px] text-ink-muted max-w-[250px] leading-relaxed mx-auto mt-2">
-                  Rahasiakan kata ini. Jangan sampai terlihat pemain lain.
+                <p className="text-xs text-ink-muted max-w-[250px] leading-relaxed mx-auto mt-2">
+                  Ingat kata ini baik-baik dan jangan sampai terlihat pemain lain.
                 </p>
               </div>
             )}
           </div>
 
           {/* Decorative bottom lines */}
-          <div className="mt-auto space-y-1.5 opacity-30 pt-2" aria-hidden="true">
+          <div className="mt-auto space-y-1.5 opacity-25 pt-2" aria-hidden="true">
             <div className="h-1.5 w-3/4 mx-auto bg-ink/20 rounded-full" />
             <div className="h-1.5 w-1/2 mx-auto bg-ink/20 rounded-full" />
           </div>
         </motion.div>
 
         {/* Pocket flap (front of the envelope) - covers bottom 210px */}
-        <div className="absolute inset-x-0 bottom-0 h-[210px] z-10 card-back-hatch border-t-2 border-rule flex flex-col items-center justify-center gap-2 px-4 shadow-[0_-4px_12px_rgba(36,51,72,0.06)]">
-          <span className="rubber-stamp-red -rotate-2 text-xs">Dokumen Rahasia</span>
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-ink-muted text-center max-w-[200px]">
-            Tahan kartu untuk geser &amp; intip
+        <div className="absolute inset-x-0 bottom-0 h-[210px] z-10 card-back-hatch border-t border-rule flex flex-col items-center justify-center gap-2 px-4 shadow-flap">
+          <span className="rubber-stamp text-xs">Amplop Tertutup</span>
+          <p className="text-xs font-semibold text-ink-muted text-center max-w-[210px]">
+            Sentuh dan tahan kartu untuk mengintip kata rahasiamu
           </p>
         </div>
       </div>
@@ -151,24 +151,23 @@ export const SecretCard: React.FC<SecretCardProps> = ({
       {/* Hold feedback */}
       <div className="w-full flex items-center justify-center gap-2 mt-4">
         {isHolding ? (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-stamp-dark font-mono uppercase tracking-wide">
-            <Eye className="w-3.5 h-3.5" weight="bold" />
-            Melepas menutup kata
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-dark">
+            <Eye className="w-4 h-4" weight="bold" />
+            Lepaskan sentuhan untuk menutup kembali
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-xs text-ink-muted font-mono uppercase tracking-wide">
-            <EyeClosed className="w-3.5 h-3.5" weight="bold" />
-            Kata tersembunyi dengan aman
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted">
+            <EyeClosed className="w-4 h-4" weight="bold" />
+            Kata tertutup dengan aman
           </span>
         )}
       </div>
 
       {/* Privacy notice */}
-      <div className="w-full mt-2 pt-3 border-t-2 border-rule flex items-center justify-center gap-1.5 text-[11px] text-ink-muted">
+      <div className="w-full mt-2 pt-3 border-t border-rule flex items-center justify-center gap-1.5 text-xs text-ink-muted">
         <Warning className="w-3.5 h-3.5 shrink-0" weight="bold" />
-        <span>Pastikan layar tidak diintip pemain di sebelahmu</span>
+        <span>Pastikan layar tidak terlihat oleh pemain di sebelahmu</span>
       </div>
-
     </div>
   );
 };

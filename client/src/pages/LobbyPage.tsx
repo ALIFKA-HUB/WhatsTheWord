@@ -31,7 +31,6 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
   } = useSocket();
   const { playButtonTap } = useGameSound();
 
-
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
@@ -51,14 +50,12 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
     enableMrWhite: true,
   };
 
-  // If room transitions out of LOBBY, trigger game start callback
   useEffect(() => {
     if (room && room.phase !== 'LOBBY') {
       onGameStarted();
     }
   }, [room, onGameStarted]);
 
-  // Handle Copy Room Code
   const handleCopyCode = async () => {
     if (!room?.roomId) return;
     try {
@@ -68,7 +65,6 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
     } catch {}
   };
 
-  // Handle Copy Share URL
   const handleCopyShareLink = async () => {
     if (!room?.roomId || typeof window === 'undefined') return;
     const url = `${window.location.origin}?room=${room.roomId}`;
@@ -79,7 +75,6 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
     } catch {}
   };
 
-  // Host Role Adjustments
   const handleUpdateRoles = (undercover: number, enableMrWhite: boolean) => {
     if (!isHost) return;
     const mrWhite = enableMrWhite ? 1 : 0;
@@ -95,7 +90,6 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
     });
   };
 
-  // Host Category Change
   const handleCategoryChange = (category: string) => {
     if (!isHost) return;
     setSelectedCustomPack(null);
@@ -103,7 +97,6 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
     updateSettings({ category });
   };
 
-  // Host Custom Pack Selection
   const handleSelectCustomPack = (pack: CustomWordPack) => {
     if (!isHost) return;
     setSelectedCustomPack(pack);
@@ -114,7 +107,6 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
     updateSettings({ category: `Kustom: ${pack.title}` });
   };
 
-  // Host Start Game
   const handleStartGame = async () => {
     if (!isHost || totalPlayers < 3) return;
     setIsStarting(true);
@@ -130,7 +122,6 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
     }
   };
 
-  // Handle Leave
   const handleLeave = async () => {
     try {
       playButtonTap();
@@ -150,35 +141,35 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
         {/* Room Header & Share Bar */}
-        <div className="p-4 sm:p-6 rounded-2xl bg-cardstock border-2 border-rule shadow-print flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-center sm:text-left space-y-1">
+        <div className="p-5 sm:p-6 rounded-3xl bg-cardstock border border-rule shadow-print flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-center sm:text-left space-y-1.5">
             <div className="flex items-center justify-center sm:justify-start gap-2">
-              <span className="text-xs font-mono uppercase tracking-widest text-stamp-dark font-semibold">
-                Lobby Permainan Online
+              <span className="text-xs font-semibold text-ink-muted">
+                Ruang Tunggu Online
               </span>
               <Badge variant="amber" size="sm" pulse>
                 Menunggu Pemain
               </Badge>
             </div>
-            <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">
-                KODE MEJA:
+            <div className="flex items-center justify-center sm:justify-start gap-2.5 pt-1">
+              <span className="text-xs font-semibold text-ink-muted">
+                Kode meja:
               </span>
-              <span className="px-3 py-1 rounded-xl bg-cardstock-warm border-2 border-rule text-ink tracking-[0.2em] font-mono text-2xl sm:text-3xl font-extrabold shadow-print-sm">
+              <span className="px-3.5 py-1 rounded-2xl bg-paper border border-rule text-ink font-mono text-2xl sm:text-3xl font-extrabold shadow-print-sm">
                 {room?.roomId || '----'}
               </span>
             </div>
             <p className="text-xs text-ink-muted pt-0.5">
-              Bagikan kode atau link untuk mengundang teman ke meja ini.
+              Bagikan kode atau tautan untuk mengundang teman ke meja ini.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleCopyCode}
-              leftIcon={copiedCode ? <Check className="w-4 h-4 text-ink" /> : <Copy className="w-4 h-4" />}
+              leftIcon={copiedCode ? <Check className="w-4 h-4 text-teal-dark" /> : <Copy className="w-4 h-4" />}
             >
               {copiedCode ? 'Kode Tersalin!' : 'Salin Kode'}
             </Button>
@@ -189,7 +180,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
               onClick={handleCopyShareLink}
               leftIcon={copiedLink ? <Check className="w-4 h-4 text-ink" /> : <ShareNetwork className="w-4 h-4" />}
             >
-              {copiedLink ? 'Link Tersalin!' : 'Bagikan Link'}
+              {copiedLink ? 'Tautan Tersalin!' : 'Bagikan Tautan'}
             </Button>
           </div>
         </div>
@@ -200,15 +191,15 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
           <div className="lg:col-span-7 space-y-4">
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2.5">
-                <span className="w-7 h-7 rounded-lg bg-stamp-light text-stamp-dark flex items-center justify-center">
+                <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal/40 text-teal-dark flex items-center justify-center">
                   <Users className="w-4 h-4" weight="bold" />
                 </span>
                 <h3 className="text-base font-bold text-ink font-display">
                   Pemain Terhubung ({totalPlayers}/20)
                 </h3>
               </div>
-              <span className="text-xs font-mono text-ink-muted">
-                Min. 3 Pemain
+              <span className="text-xs text-ink-muted font-medium">
+                Minimal 3 pemain
               </span>
             </div>
 
@@ -219,13 +210,13 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                 return (
                   <motion.div
                     key={player.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className={cn(
-                      'p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3',
+                      'p-3.5 rounded-2xl border transition-colors flex items-center justify-between gap-3',
                       isMe
-                        ? 'bg-cardstock-warm border-stamp shadow-print-sm ring-1 ring-stamp'
-                        : 'bg-cardstock border-rule'
+                        ? 'bg-teal-light/40 border-teal/50 shadow-print-sm'
+                        : 'bg-cardstock border-rule shadow-print-sm'
                     )}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -239,7 +230,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                             {player.name}
                           </span>
                           {isMe && (
-                            <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-cardstock border border-rule text-stamp-dark font-bold">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-cardstock border border-rule text-teal-dark font-semibold">
                               Kamu
                             </span>
                           )}
@@ -247,12 +238,12 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
 
                         <div className="flex items-center gap-1.5 mt-0.5">
                           {player.isHost ? (
-                            <span className="text-[11px] text-stamp-dark font-bold flex items-center gap-1">
-                              <Crown className="w-3.5 h-3.5 text-stamp-dark" weight="bold" /> Room Host
+                            <span className="text-xs text-sun-dark font-semibold flex items-center gap-1">
+                              <Crown className="w-3.5 h-3.5 text-sun-dark" weight="bold" /> Pemilik Meja
                             </span>
                           ) : (
-                            <span className="text-[11px] text-ink-muted flex items-center gap-1">
-                              <WifiHigh className="w-3.5 h-3.5 text-teal" weight="bold" /> Siap
+                            <span className="text-xs text-ink-muted flex items-center gap-1">
+                              <WifiHigh className="w-3.5 h-3.5 text-teal-dark" weight="bold" /> Siap bermain
                             </span>
                           )}
                         </div>
@@ -270,29 +261,26 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
             </div>
 
             {totalPlayers < 3 && (
-              <div className="p-3.5 rounded-xl bg-cardstock-warm border border-rule text-ink-muted text-xs flex items-center gap-2">
-                <WarningCircle className="w-4 h-4 shrink-0 text-stamp-dark" weight="bold" />
-                <span>Membutuhkan minimal 3 pemain untuk memulai game.</span>
+              <div className="p-3.5 rounded-2xl bg-paper-muted border border-rule text-ink-muted text-xs flex items-center gap-2">
+                <WarningCircle className="w-4 h-4 shrink-0 text-sun-dark" weight="bold" />
+                <span>Membutuhkan minimal 3 pemain untuk memulai permainan.</span>
               </div>
             )}
           </div>
 
           {/* Right: Room Settings (5 cols) */}
           <div className="lg:col-span-5 space-y-4">
-            <Card
-              padding="md"
-              className="space-y-4 bg-cardstock border-2 border-rule shadow-print"
-            >
+            <Card padding="md" className="space-y-4">
               <div className="flex items-center justify-between border-b border-rule pb-3">
                 <div className="flex items-center gap-2">
                   <GearSix className="w-4 h-4 text-ink-muted" weight="bold" />
                   <h3 className="text-sm sm:text-base font-bold text-ink font-display">
-                    {isHost ? 'Pengaturan Game (Host)' : 'Pengaturan Game'}
+                    {isHost ? 'Pengaturan Permainan (Host)' : 'Pengaturan Permainan'}
                   </h3>
                 </div>
                 {!isHost && (
                   <Badge variant="slate" size="sm">
-                    Read-Only
+                    Hanya Lihat
                   </Badge>
                 )}
               </div>
@@ -305,7 +293,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                     <select
                       value={selectedCustomPack ? `Kustom: ${selectedCustomPack.title}` : settings.category}
                       onChange={(e) => handleCategoryChange(e.target.value)}
-                      className="w-full px-3.5 py-2 rounded-xl bg-paper border border-rule text-ink text-xs sm:text-sm font-medium focus:outline-none focus:border-ink cursor-pointer"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-paper border border-rule text-ink text-xs sm:text-sm font-medium focus:outline-none focus:border-teal-dark cursor-pointer"
                     >
                       {CATEGORIES.map((cat) => (
                         <option key={cat} value={cat} className="bg-cardstock text-ink">
@@ -315,7 +303,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                       {selectedCustomPack && (
                         <option
                           value={`Kustom: ${selectedCustomPack.title}`}
-                          className="bg-cardstock text-stamp-dark font-bold"
+                          className="bg-cardstock text-teal-dark font-bold"
                         >
                           Kustom: {selectedCustomPack.title}
                         </option>
@@ -327,14 +315,14 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                       variant="secondary"
                       size="sm"
                       onClick={() => setIsPackModalOpen(true)}
-                      leftIcon={<BookOpen className="w-3.5 h-3.5 text-stamp-dark" />}
+                      leftIcon={<BookOpen className="w-3.5 h-3.5 text-teal-dark" />}
                       className="w-full text-xs"
                     >
                       {selectedCustomPack ? `Ganti Paket Kustom (${selectedCustomPack.title})` : 'Pilih / Buat Paket Kustom'}
                     </Button>
                   </div>
                 ) : (
-                  <div className="p-2.5 rounded-xl bg-paper border border-rule text-xs font-bold text-stamp-dark font-mono">
+                  <div className="p-2.5 rounded-xl bg-paper border border-rule text-xs font-semibold text-ink">
                     {settings.category}
                   </div>
                 )}
@@ -343,9 +331,9 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
               {/* Role Distribution */}
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-ink">Distribusi Peran</label>
-                  <span className="text-[11px] font-mono text-ink-muted">
-                    Total: {totalPlayers} Pemain
+                  <label className="text-xs font-semibold text-ink">Komposisi Peran</label>
+                  <span className="text-xs text-ink-muted">
+                    Total: {totalPlayers} pemain
                   </span>
                 </div>
 
@@ -353,14 +341,14 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                   {/* Civilian info */}
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-paper border border-rule text-xs">
                     <span className="flex items-center gap-1.5 font-semibold text-ink">
-                      <ShieldCheck className="w-3.5 h-3.5 text-ink-muted" weight="bold" /> Warga (Civilian)
+                      <ShieldCheck className="w-3.5 h-3.5 text-teal-dark" weight="bold" /> Warga (Civilian)
                     </span>
-                    <span className="font-mono font-bold text-ink px-2 py-0.5 rounded bg-cardstock-warm border border-rule">
-                      {Math.max(1, totalPlayers - settings.undercoverCount - (settings.enableMrWhite ? 1 : 0))} Orang
+                    <span className="font-semibold text-ink px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule">
+                      {Math.max(1, totalPlayers - settings.undercoverCount - (settings.enableMrWhite ? 1 : 0))} orang
                     </span>
                   </div>
 
-                  {/* Undercover slider/controls */}
+                  {/* Undercover controls */}
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-paper border border-rule text-xs">
                     <span className="flex items-center gap-1.5 font-semibold text-stamp-dark">
                       <EyeSlash className="w-3.5 h-3.5" weight="bold" /> Impostor (Undercover)
@@ -371,7 +359,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                           type="button"
                           onClick={() => handleUpdateRoles(settings.undercoverCount - 1, settings.enableMrWhite)}
                           disabled={settings.undercoverCount <= 1}
-                          className="w-6 h-6 rounded bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40"
+                          className="w-6 h-6 rounded-lg bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40"
                         >
                           -
                         </button>
@@ -385,14 +373,14 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                             settings.undercoverCount >=
                             Math.max(1, Math.floor((totalPlayers - (settings.enableMrWhite ? 1 : 0)) / 2))
                           }
-                          className="w-6 h-6 rounded bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40"
+                          className="w-6 h-6 rounded-lg bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40"
                         >
                           +
                         </button>
                       </div>
                     ) : (
-                      <span className="font-mono font-bold text-stamp-dark px-2 py-0.5 rounded bg-cardstock-warm border border-rule">
-                        {settings.undercoverCount} Orang
+                      <span className="font-semibold text-stamp-dark px-2.5 py-0.5 rounded-full bg-stamp-light border border-stamp/40">
+                        {settings.undercoverCount} orang
                       </span>
                     )}
                   </div>
@@ -400,7 +388,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                   {/* Mr White toggle */}
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-paper border border-rule text-xs">
                     <span className="flex items-center gap-1.5 font-semibold text-ink-muted">
-                      <Question className="w-3.5 h-3.5" weight="bold" /> Mr. White (Buta Kata)
+                      <Question className="w-3.5 h-3.5" weight="bold" /> Mr. White (Tanpa Kata)
                     </span>
                     {isHost ? (
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -408,15 +396,15 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                           type="checkbox"
                           checked={settings.enableMrWhite}
                           onChange={(e) => handleUpdateRoles(settings.undercoverCount, e.target.checked)}
-                          className="rounded border-rule text-stamp focus:ring-stamp"
+                          className="rounded border-rule text-teal-dark focus:ring-teal"
                         />
-                        <span className={cn("font-mono text-xs font-bold px-2 py-0.5 rounded border", settings.enableMrWhite ? "bg-stamp-light border-stamp text-stamp-dark" : "bg-cardstock-warm border-rule text-ink-muted")}>
-                          {settings.enableMrWhite ? 'Aktif (1)' : 'Nonaktif (0)'}
+                        <span className={cn("text-xs font-semibold px-2.5 py-0.5 rounded-full border", settings.enableMrWhite ? "bg-sun-light border-sun/50 text-sun-dark" : "bg-paper-muted border-rule text-ink-muted")}>
+                          {settings.enableMrWhite ? 'Aktif (1)' : 'Nonaktif'}
                         </span>
                       </label>
                     ) : (
-                      <span className="font-mono font-bold text-ink-muted px-2 py-0.5 rounded bg-cardstock-warm border border-rule">
-                        {settings.enableMrWhite ? '1 Orang' : 'Tidak Ada'}
+                      <span className="font-semibold text-ink-muted px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule">
+                        {settings.enableMrWhite ? '1 orang' : 'Tidak ada'}
                       </span>
                     )}
                   </div>
@@ -430,8 +418,8 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                     <Timer className="w-3.5 h-3.5 text-ink-muted" weight="bold" />
                     Durasi Bicara
                   </span>
-                  <span className="font-mono font-bold text-ink">
-                    {settings.turnDurationSeconds} Detik
+                  <span className="font-semibold text-ink">
+                    {settings.turnDurationSeconds} detik
                   </span>
                 </div>
                 {isHost && (
@@ -466,10 +454,10 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                 ) : (
                   <div className="p-3.5 rounded-2xl bg-paper border border-rule text-center space-y-1">
                     <div className="flex items-center justify-center gap-2 text-xs font-bold text-ink">
-                      <span className="w-2 h-2 rounded-full bg-stamp animate-ping" />
-                      <span>Menunggu Host Memulai Permainan...</span>
+                      <span className="w-2 h-2 rounded-full bg-teal-dark" />
+                      <span>Menunggu Host memulai permainan…</span>
                     </div>
-                    <p className="text-[11px] text-ink-muted">
+                    <p className="text-xs text-ink-muted">
                       Permainan akan otomatis dimulai di layarmu begitu Host menekan tombol mulai.
                     </p>
                   </div>
@@ -480,7 +468,6 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
         </div>
       </main>
 
-      {/* Custom Word Pack Selector Modal */}
       <CustomWordPackModal
         isOpen={isPackModalOpen}
         onClose={() => setIsPackModalOpen(false)}

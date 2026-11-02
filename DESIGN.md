@@ -1,36 +1,27 @@
 # What's The Word - Master DESIGN.md
 
-> **Design direction chosen by user (2026-11-01): "B - Playful Pop".** Neo-brutalism and dark-SaaS aesthetics are both explicitly rejected. See `docs/superpowers/plans/2026-10-30-tactile-boardgame-ui-redesign.md` for history.
+> **Hallmark Redesign (2026-11-02): Theme "Hum" (`playful` / `light/rounded-sans/chromatic-yellow`).**
+> Built for visual comfort, low eye strain, and calm tabletop readability.
 
-## Design Language: Playful Pop
+## Design Language: Hallmark Hum (Warm Paper & Card Stock)
 
-Mobile-first party deduction game with a friendly, energetic candy palette (Headspace / Jackbox / Duolingo family). Dials: `DESIGN_VARIANCE: 6`, `MOTION_INTENSITY: 6` (spring physics), `VISUAL_DENSITY: 4`.
+Mobile-first social deduction party game set on warm cream paper and tinted ivory card stock, with soft blue-black ink, calm sage-teal primary controls, warm pear-ochre highlights, and terracotta accents reserved strictly for Impostor/elimination states.
 
-## Core Visual Tokens (`client/tailwind.config.js`)
+## Core Visual Tokens (`client/src/tokens.css` & `client/tailwind.config.js`)
 
-- **Palette (strict)**:
-  - Page background: `#FFF8EE` warm cream (`paper`), muted `#F3ECE0`
-  - Card surfaces: `#FFFFFF` (`cardstock`), warm `#FFF4E3`
-  - Text: `#243348` deep friendly navy (`ink`), muted `#7C8AA0`, faint `#A8B2C1`
-  - Hairlines: `#EAE4D8` (`rule`) - cards are defined by soft shadows, NOT heavy borders
-  - Coral `#FF6B6B` (`stamp`) - impostor / danger / attention
-  - Teal `#4ECDC4` (`teal`) - primary actions, selection
-  - Yellow `#FFC94A` (`sun`) - host / mr. white accents
-- **Typography**: `Nunito Variable` (self-hosted, 400-900) everywhere; headings use `.font-condensed` (900 weight, tight, NOT uppercase-condensed); `JetBrains Mono` only for codes/labels.
-- **Shadows**: soft spread (`0 6px 18px rgba(36,51,72,.10)`) for cards; pill buttons use playful push-bottom (`shadow-push-teal/coral/navy`, `active:translate-y-[3px] active:shadow-none`).
-- **Shape**: generous radii (`rounded-2xl`/`rounded-3xl` cards, `rounded-full` pills).
-
-## Identity
-
-- **Logo "Kartu Bicara"** (`client/public/logo.svg` = favicon): white card + coral speech bubble, navy ink, teal halftone dots. Appears ONLY in Header + favicon; the HomePage masthead is typographic.
-
-## Component Rules
-
-- Cards: `bg-cardstock border border-rule shadow-print` (no glassmorphism, no hard offsets, no thick borders).
-- Buttons: pill, extrabold, colored push-bottom; selection state = teal.
-- Avatars: `PlayerToken` (12 geometric shapes, codes 01-12, initials, soft dots); legacy emoji maps via `resolveTokenAvatar`.
-- Icons: `@phosphor-icons/react` (weight `bold`), zero `lucide-react`.
-- Illustrations: 2-color flat SVGs in navy + coral/teal (`client/public/assets/*.svg`).
-- Viewport: `min-h-[100dvh]`, mobile-first; honor `prefers-reduced-motion`.
-- Zero em-dashes in visible strings. Eyebrow restraint: max 1 mono uppercase label per 3 sections.
-- Regression guard: `client/src/tests/AntiSlopPreFlight.test.ts` fails on lucide imports, em-dashes, dark neon classes, `backdrop-blur-md`.
+- **Palette (OKLCH custom properties at `:root`)**:
+  - Page background: `--color-paper: oklch(96.8% 0.011 95)` (`paper`), `--color-paper-2: oklch(94.2% 0.016 95)` (`paper-muted`), `--color-paper-3: oklch(90.8% 0.02 95)` (`paper-dark`)
+  - Card surfaces: `--color-card: oklch(98.6% 0.006 95)` (`cardstock`, warm ivory with zero `#FFFFFF` glare)
+  - Text: `--color-ink: oklch(21% 0.016 255)` (`ink`), `--color-muted: oklch(46% 0.015 255)` (`ink-muted`), `--color-ink-faint: oklch(58% 0.014 255)` (`ink-faint`)
+  - Hairlines: `--color-rule: oklch(87.5% 0.015 95)` (`rule`, 1px warm border)
+  - Primary / Civilian / Selection (`teal`): `--color-mint: oklch(76% 0.115 166)`, deep `oklch(41% 0.095 166)`, soft `oklch(94.2% 0.026 166)`
+  - Impostor / Danger (`stamp`): `--color-accent-3: oklch(64% 0.165 25)`, deep `oklch(43% 0.145 25)`, soft `oklch(94.5% 0.025 25)`
+  - Host / Highlight / Mr. White (`sun`): `--color-accent: oklch(85% 0.145 92)`, deep `oklch(52% 0.12 85)`, soft `oklch(95% 0.035 95)`
+- **Typography**:
+  - Display & Body (`--font-display` / `--font-body`): `Chillax`, `Nunito Variable`, rounded sans-serif.
+  - Labels, badges, and buttons: sentence case in the body face, untracked (never tracked uppercase `font-mono` eyebrows).
+  - Monospace (`--font-outlier`): `JetBrains Mono` reserved strictly for 4-letter room codes and tabular timers/counts.
+- **Surfaces & Controls**:
+  - Cards: `rounded-3xl bg-cardstock border border-rule shadow-print` (straight alignment, no tilted cards, no heavy 2px dark borders).
+  - Buttons: pill (`rounded-full`), tactile card-stock push edges (`shadow-push-teal`, `shadow-push-card`, `shadow-push-coral`).
+  - Motion: explicit property transitions (`transition-colors`, `transition-transform`, `transition-opacity`), never `transition-all` or layout-thrashing width animations.

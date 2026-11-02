@@ -17,8 +17,8 @@ export interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  title = "WHAT'S THE WORD",
-  subtitle = 'DEDUKSI KATA',
+  title = "What’s The Word",
+  subtitle = 'Permainan deduksi kata',
   roomCode,
   onBack,
   backLabel = 'Kembali',
@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       className={cn(
-        'w-full z-40 px-4 py-3 bg-cardstock border-b border-rule transition-all duration-200',
+        'w-full z-40 px-4 py-3 bg-cardstock/95 border-b border-rule transition-colors duration-200',
         sticky && 'sticky top-0',
         className
       )}
@@ -65,13 +65,13 @@ export const Header: React.FC<HeaderProps> = ({
             </Button>
           )}
 
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <img src="/logo.svg" alt="What's The Word" className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
+          <div className="flex items-center gap-2.5 min-w-0">
+            <img src="/logo.svg" alt="What’s The Word" className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
             <div className="flex flex-col min-w-0">
-              <span className="font-condensed text-sm sm:text-lg text-ink leading-none truncate">
+              <span className="font-condensed text-base sm:text-lg text-ink leading-tight truncate">
                 {title}
               </span>
-              <span className="hidden sm:inline text-[11px] font-mono tracking-[0.2em] text-ink-muted uppercase font-medium mt-0.5">
+              <span className="hidden sm:inline text-xs text-ink-muted font-medium">
                 {subtitle}
               </span>
             </div>
@@ -82,17 +82,17 @@ export const Header: React.FC<HeaderProps> = ({
         {roomCode && (
           <button
             onClick={handleCopyRoomCode}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-teal text-ink shadow-print-sm hover:brightness-105 transition-all cursor-pointer text-left active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-light text-teal-dark border border-teal/40 shadow-print-sm hover:bg-teal/20 transition-colors cursor-pointer text-left active:translate-y-[1px] shrink-0"
             title="Klik untuk salin kode meja"
           >
-            <span className="text-[10px] sm:text-[11px] font-mono uppercase font-bold opacity-80">MEJA</span>
-            <span className="font-mono font-bold text-xs sm:text-sm tracking-[0.2em]">
+            <span className="text-xs font-semibold text-ink-muted">Meja</span>
+            <span className="font-mono font-bold text-xs sm:text-sm text-ink">
               {roomCode}
             </span>
             {copied ? (
-              <Check className="w-3.5 h-3.5 text-ink ml-0.5" weight="bold" />
+              <Check className="w-3.5 h-3.5 text-teal-dark ml-0.5" weight="bold" />
             ) : (
-              <Copy className="w-3.5 h-3.5 opacity-80 ml-0.5" weight="bold" />
+              <Copy className="w-3.5 h-3.5 text-ink-muted ml-0.5" weight="bold" />
             )}
           </button>
         )}
@@ -104,10 +104,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={toggleMute}
             className={cn(
-              'p-2 rounded-lg border-2 transition-all active:translate-x-[1px] active:translate-y-[1px]',
+              'p-2.5 rounded-full border transition-colors active:translate-y-[1px]',
               isMuted
                 ? 'bg-paper-muted border-rule text-ink-faint'
-                : 'bg-cardstock border-ink text-ink shadow-print-sm active:shadow-none'
+                : 'bg-cardstock border-rule text-ink shadow-print-sm hover:bg-paper-muted'
             )}
             title={isMuted ? 'Aktifkan Suara' : 'Bisukan Suara'}
             aria-label={isMuted ? 'Aktifkan Suara' : 'Bisukan Suara'}

@@ -47,13 +47,11 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
   const [isRematching, setIsRematching] = useState(false);
   const soundPlayedForGameOverRef = useRef(false);
 
-
   const phase = room?.phase || 'LOBBY';
   const players = room?.players || [];
   const isHost = currentPlayer?.isHost ?? false;
   const isAlive = currentPlayer?.isAlive ?? true;
 
-  // Speaker tracking
   const livingSpeakers = (room?.speakingOrder || []).filter((id) =>
     players.find((p) => p.id === id)?.isAlive
   );
@@ -61,7 +59,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
   const currentSpeaker = players.find((p) => p.id === currentSpeakerId);
   const isCurrentSpeakerMe = currentSpeaker?.id === currentPlayer?.id;
 
-  // Turn timer countdown effect
   useEffect(() => {
     if (phase !== 'TURN_PHASE') return;
 
@@ -71,7 +68,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
       setLocalSecondsRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          // If speaker or host, advance turn automatically when timer runs out
           if (isCurrentSpeakerMe || isHost) {
             advanceTurn();
           }
@@ -88,21 +84,18 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
     return () => clearInterval(timer);
   }, [phase, room?.currentSpeakerIndex, isCurrentSpeakerMe, isHost, advanceTurn, syncTimerTick, room?.activeTurnRemainingSeconds]);
 
-  // Sync turn remaining seconds from socket state if changed externally
   useEffect(() => {
     if (room?.activeTurnRemainingSeconds !== undefined) {
       setLocalSecondsRemaining(room.activeTurnRemainingSeconds);
     }
   }, [room?.activeTurnRemainingSeconds]);
 
-  // Phase transition handlers
   useEffect(() => {
     if (phase === 'LOBBY') {
       onReturnToLobby();
     }
   }, [phase, onReturnToLobby]);
 
-  // Sound effects on Game Over
   useEffect(() => {
     if (phase === 'GAME_OVER' && !soundPlayedForGameOverRef.current) {
       soundPlayedForGameOverRef.current = true;
@@ -126,7 +119,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
     }
   }, [phase, room?.winningRole, currentPlayer?.role, playVictory, playDefeat]);
 
-  // Sound effects on Elimination
   useEffect(() => {
     if (room?.eliminatedPlayer) {
       try {
@@ -135,7 +127,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
     }
   }, [room?.eliminatedPlayer, playElimination]);
 
-  // Handle Advance Turn Action
   const handleAdvanceTurn = async () => {
     if (isAdvancing) return;
     setIsAdvancing(true);
@@ -151,7 +142,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
     }
   };
 
-  // Handle Rematch
   const handleRematch = async () => {
     if (!isHost || isRematching) return;
     setIsRematching(true);
@@ -167,7 +157,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
     }
   };
 
-  // Handle Exit
   const handleExit = async () => {
     try {
       playButtonTap();
@@ -188,20 +177,19 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 sm:py-8 flex flex-col justify-center space-y-6">
         {/* Top Game Stage Header */}
         <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-stamp-dark font-bold">
+          <div className="flex items-center gap-2.5">
+            <span className="rubber-stamp">
               Ronde {room?.round || 1}
             </span>
-            <span className="text-ink-faint">&bull;</span>
             <span className="text-xs font-semibold text-ink">
               {phase === 'ROLE_REVEAL'
-                ? 'Pembagian Peran Rahasia'
+                ? 'Pembagian Kata Rahasia'
                 : phase === 'TURN_PHASE'
-                ? 'Putaran Diskusi & Penjelasan'
+                ? 'Putaran Diskusi & Petunjuk'
                 : phase === 'VOTING'
                 ? 'Pemungutan Suara (Voting)'
                 : phase === 'MR_WHITE_GUESS'
-                ? 'Tebakan Darurat Mr. White'
+                ? 'Tebakan Kata Mr. White'
                 : 'Permainan Selesai'}
             </span>
           </div>
@@ -212,7 +200,7 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
             )}
             {!isAlive && (
               <Badge variant="slate" size="sm" icon={<Skull className="w-3 h-3 text-stamp-dark" />}>
-                Eliminasi
+                Gugur
               </Badge>
             )}
           </div>
@@ -221,16 +209,16 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
         {/* PHASE 1: ROLE_REVEAL */}
         {phase === 'ROLE_REVEAL' && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-6"
           >
             <div className="text-center space-y-2">
-              <h2 className="text-xl sm:text-2xl font-black font-display text-ink">
-                Kartu Identitas Rahasiamu
+              <h2 className="text-xl sm:text-2xl font-bold font-display text-ink">
+                Kartu Kata Rahasiamu
               </h2>
               <p className="text-xs sm:text-sm text-ink-muted max-w-md mx-auto">
-                Tahan tombol kartu di bawah untuk melihat peran dan kata rahasiamu. Jangan biarkan pemain lain melihat!
+                Sentuh dan tahan kartu di bawah untuk melihat kata rahasiamu. Jangan biarkan pemain lain melihat!
               </p>
             </div>
 
@@ -240,13 +228,12 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
               category={room?.settings.category}
             />
 
-
             <div className="flex flex-col items-center justify-center space-y-3 pt-2">
               {isHost ? (
                 <Button
                   variant="primary"
                   size="lg"
-                  className="max-w-xs w-full shadow-push-teal"
+                  className="max-w-xs w-full"
                   isLoading={isAdvancing}
                   onClick={handleAdvanceTurn}
                   rightIcon={<ArrowRight className="w-5 h-5" />}
@@ -254,9 +241,9 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                   Mulai Putaran Bicara (Host)
                 </Button>
               ) : (
-                <div className="p-3 rounded-xl bg-cardstock border border-rule text-center text-xs text-ink flex items-center gap-2 shadow-print-sm">
-                  <span className="w-2 h-2 rounded-full bg-stamp animate-ping" />
-                  <span>Menunggu Host memulai putaran diskusi...</span>
+                <div className="p-3 rounded-2xl bg-cardstock border border-rule text-center text-xs text-ink flex items-center gap-2 shadow-print-sm">
+                  <span className="w-2 h-2 rounded-full bg-teal-dark" />
+                  <span>Menunggu Host memulai putaran diskusi…</span>
                 </div>
               )}
             </div>
@@ -266,7 +253,7 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
         {/* PHASE 2: TURN_PHASE (Speaking Round) */}
         {phase === 'TURN_PHASE' && (
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
@@ -274,15 +261,14 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
             <Card
               padding="lg"
               className={cn(
-                'text-center space-y-5 bg-cardstock border-2 transition-all duration-300',
+                'text-center space-y-5 bg-cardstock border transition-colors duration-200',
                 isCurrentSpeakerMe
-                  ? 'border-teal shadow-print-teal ring-2 ring-teal'
+                  ? 'border-teal-dark shadow-print-teal ring-1 ring-teal'
                   : 'border-rule shadow-print'
               )}
             >
-              {/* Turn indicator count */}
               <div className="flex items-center justify-between border-b border-rule pb-3">
-                <span className="text-xs font-mono text-ink-muted">
+                <span className="text-xs font-medium text-ink-muted">
                   Pembicara {(room?.currentSpeakerIndex ?? 0) + 1} dari {livingSpeakers.length}
                 </span>
                 {isCurrentSpeakerMe ? (
@@ -296,7 +282,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                 )}
               </div>
 
-              {/* Speaker Avatar & Name */}
               <div className="flex flex-col items-center space-y-2">
                 <div className="relative">
                   <PlayerToken
@@ -306,14 +291,14 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                     className="mx-auto"
                   />
                   {isCurrentSpeakerMe && (
-                    <span className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-teal text-ink shadow-print-sm border-2 border-cardstock">
-                      <Microphone className="w-4 h-4 animate-pulse" weight="bold" />
+                    <span className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-teal-dark text-cardstock shadow-print-sm border-2 border-cardstock">
+                      <Microphone className="w-4 h-4" weight="bold" />
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <h3 className="text-xl sm:text-2xl font-black font-display text-ink">
+                  <h3 className="text-xl sm:text-2xl font-bold font-display text-ink">
                     {currentSpeaker?.name || 'Pemain'}
                   </h3>
                   <p className="text-xs text-ink-muted">
@@ -324,7 +309,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                 </div>
               </div>
 
-              {/* Countdown Timer */}
               <div className="py-2 flex justify-center">
                 <CountdownTimer
                   totalSeconds={room?.settings.turnDurationSeconds || 45}
@@ -334,7 +318,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                 />
               </div>
 
-              {/* Speaker / Host Action Buttons */}
               <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                 {isCurrentSpeakerMe ? (
                   <Button
@@ -343,7 +326,7 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                     isLoading={isAdvancing}
                     onClick={handleAdvanceTurn}
                     rightIcon={<ArrowRight className="w-5 h-5" />}
-                    className="w-full sm:w-auto shadow-lg shadow-print font-bold"
+                    className="w-full sm:w-auto"
                   >
                     Selesai Bicara (Serahkan Giliran)
                   </Button>
@@ -356,16 +339,16 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                     leftIcon={<Clock className="w-4 h-4" />}
                     className="text-xs text-ink-muted hover:text-ink"
                   >
-                    Lewati / Lanjut Giliran (Host Control)
+                    Lewati / Lanjut Giliran (Host)
                   </Button>
                 ) : null}
               </div>
             </Card>
 
             {/* Speaking Queue Horizontal List */}
-            <div className="p-3.5 rounded-2xl bg-paper border border-rule space-y-2">
-              <span className="text-[11px] font-mono uppercase text-ink-muted block">
-                Urutan Berbicara Ronde Ini:
+            <div className="p-3.5 rounded-2xl bg-cardstock border border-rule space-y-2 shadow-print-sm">
+              <span className="text-xs font-semibold text-ink-muted block">
+                Urutan berbicara putaran ini:
               </span>
               <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 {livingSpeakers.map((id, index) => {
@@ -377,12 +360,12 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                     <div
                       key={id}
                       className={cn(
-                        'flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap shrink-0 transition-all',
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold whitespace-nowrap shrink-0 transition-colors',
                         isCur
-                          ? 'bg-stamp-light border-stamp text-stamp-dark shadow-print-sm ring-2 ring-stamp'
+                          ? 'bg-teal-light border-teal-dark text-teal-dark shadow-print-sm'
                           : isDone
                           ? 'bg-paper-muted border-rule text-ink-faint line-through'
-                          : 'bg-cardstock border-rule text-ink'
+                          : 'bg-paper border-rule text-ink'
                       )}
                     >
                       <PlayerToken avatar={spk?.avatar} name={spk?.name} size="xs" showCode={false} />
@@ -418,55 +401,51 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
         {/* PHASE 5: GAME_OVER */}
         {phase === 'GAME_OVER' && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-6"
           >
-            {/* Victory / Defeat Big Banner */}
-            <div
-              className="p-6 sm:p-8 rounded-2xl border-2 border-rule bg-cardstock text-center space-y-4 shadow-print relative overflow-hidden"
-            >
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-cardstock-warm border border-rule flex items-center justify-center text-stamp-dark shadow-print-sm">
-                <Trophy className="w-7 h-7 text-stamp-dark" weight="bold" />
+            <div className="p-6 sm:p-8 rounded-3xl border border-rule bg-cardstock text-center space-y-4 shadow-print relative overflow-hidden">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-sun-light border border-sun/50 flex items-center justify-center text-sun-dark shadow-print-sm">
+                <Trophy className="w-7 h-7" weight="bold" />
               </div>
 
-              <div className="space-y-1">
-                <span className="text-xs font-mono uppercase tracking-widest text-ink-muted font-bold">
-                  HASIL PERTANDINGAN
+              <div className="space-y-2">
+                <span className="rubber-stamp">
+                  Hasil Pertandingan
                 </span>
-                <h2 className="text-2xl sm:text-4xl font-black font-display tracking-tight text-ink">
+                <h2 className="text-2xl sm:text-4xl font-bold font-condensed tracking-tight text-ink pt-1">
                   {room?.winningRole === 'CIVILIAN'
-                    ? 'WARGA SIPIL MENANG!'
+                    ? 'Warga Sipil Menang!'
                     : room?.winningRole === 'UNDERCOVER'
-                    ? 'IMPOSTOR (UNDERCOVER) MENANG!'
-                    : 'MR. WHITE BERHASIL MENEBAK & MENANG!'}
+                    ? 'Impostor (Undercover) Menang!'
+                    : 'Mr. White Berhasil Menebak & Menang!'}
                 </h2>
                 <p className="text-xs sm:text-sm text-ink-muted max-w-md mx-auto">
                   {room?.winningRole === 'CIVILIAN'
-                    ? 'Semua impostor & Mr. White telah berhasil dieliminasi dari kelompok!'
+                    ? 'Semua impostor dan Mr. White telah berhasil dieliminasi dari kelompok!'
                     : room?.winningRole === 'UNDERCOVER'
                     ? 'Impostor berhasil menyamarkan diri dan mengelabui warga sipil!'
                     : 'Mr. White berhasil menebak kata rahasia warga dengan tepat!'}
                 </p>
               </div>
 
-              {/* Word Pair Summary Reveal */}
               {room?.wordPair && (
-                <div className="flex flex-wrap items-center justify-center gap-4 p-4 rounded-xl bg-paper border border-rule max-w-lg mx-auto shadow-print-sm">
+                <div className="flex flex-wrap items-center justify-center gap-6 p-4 rounded-2xl bg-paper border border-rule max-w-lg mx-auto shadow-print-sm">
                   <div className="text-center">
-                    <span className="text-[11px] uppercase font-mono text-ink-muted block font-bold">
+                    <span className="text-xs font-semibold text-ink-muted block">
                       Kata Warga
                     </span>
-                    <span className="text-base sm:text-lg font-black text-ink font-mono uppercase">
+                    <span className="text-lg sm:text-xl font-bold text-ink font-condensed">
                       {room.wordPair.civilianWord}
                     </span>
                   </div>
-                  <span className="text-ink-muted font-bold text-lg">vs</span>
+                  <span className="text-ink-muted font-bold text-sm">vs</span>
                   <div className="text-center">
-                    <span className="text-[11px] uppercase font-mono text-stamp-dark block font-bold">
-                      Kata Undercover
+                    <span className="text-xs font-semibold text-stamp-dark block">
+                      Kata Impostor
                     </span>
-                    <span className="text-base sm:text-lg font-black text-stamp-dark font-mono uppercase">
+                    <span className="text-lg sm:text-xl font-bold text-stamp-dark font-condensed">
                       {room.wordPair.undercoverWord}
                     </span>
                   </div>
@@ -474,10 +453,9 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
               )}
             </div>
 
-            {/* All Players Identity Reveal Table */}
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-ink font-display px-1">
-                Bongkar Identitas Semua Agen
+                Daftar Peran Semua Pemain
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -494,11 +472,11 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm font-bold text-ink">{player.name}</span>
                           {player.id === currentPlayer?.id && (
-                            <span className="text-[11px] font-mono text-stamp-dark font-bold">(Kamu)</span>
+                            <span className="text-xs text-teal-dark font-semibold">(Kamu)</span>
                           )}
                         </div>
-                        <span className="text-xs font-mono text-ink-muted">
-                          Kata: {player.word || 'Tidak Ada'}
+                        <span className="text-xs text-ink-muted">
+                          Kata: <strong className="text-ink">{player.word || 'Tidak ada'}</strong>
                         </span>
                       </div>
                     </div>
@@ -511,7 +489,6 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
               </div>
             </div>
 
-            {/* Rematch & Home Navigation Actions */}
             <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
               {isHost ? (
                 <Button
@@ -520,14 +497,14 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                   isLoading={isRematching}
                   onClick={handleRematch}
                   leftIcon={<ArrowCounterClockwise className="w-5 h-5" />}
-                  className="w-full sm:w-auto shadow-push-teal"
+                  className="w-full sm:w-auto"
                 >
                   Main Lagi (Rematch Lobby)
                 </Button>
               ) : (
-                <div className="p-3 rounded-xl bg-cardstock border border-rule text-xs text-ink flex items-center gap-2 shadow-print-sm">
-                  <span className="w-2 h-2 rounded-full bg-stamp animate-ping" />
-                  <span>Menunggu Host memulai rematch...</span>
+                <div className="p-3 rounded-2xl bg-cardstock border border-rule text-xs text-ink flex items-center gap-2 shadow-print-sm">
+                  <span className="w-2 h-2 rounded-full bg-teal-dark" />
+                  <span>Menunggu Host memulai rematch…</span>
                 </div>
               )}
 
