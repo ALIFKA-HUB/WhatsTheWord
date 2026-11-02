@@ -26,6 +26,12 @@ const AppRouter: React.FC = () => {
   };
 
   useEffect(() => {
+    if (currentView !== 'LANDING' && window.location.pathname !== PLAY_PATH) {
+      window.history.pushState({}, '', PLAY_PATH + window.location.search);
+    }
+  }, [currentView]);
+
+  useEffect(() => {
     const onPop = () => setCurrentView(resolveInitialView(window.location.pathname, window.location.search));
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -40,7 +46,7 @@ const AppRouter: React.FC = () => {
 
   useEffect(() => {
     if (!room && currentView === 'ONLINE') {
-      goToApp('HOME');
+      setCurrentView('HOME');
     }
   }, [room, currentView]);
 
@@ -55,13 +61,13 @@ const AppRouter: React.FC = () => {
 
   if (currentView === 'PASS_PLAY') {
     if (passPlayPhase === 'SETUP') {
-      return <PassPlaySetupPage onBack={() => goToApp('HOME')} />;
+      return <PassPlaySetupPage onBack={() => setCurrentView('HOME')} />;
     }
     return (
       <PassPlayGamePage
         onBackToHome={() => {
           resetToSetup();
-          goToApp('HOME');
+          setCurrentView('HOME');
         }}
       />
     );
@@ -71,7 +77,7 @@ const AppRouter: React.FC = () => {
     if (!room || room.phase === 'LOBBY') {
       return (
         <LobbyPage
-          onLeaveRoom={() => goToApp('HOME')}
+          onLeaveRoom={() => setCurrentView('HOME')}
           onGameStarted={() => {}}
         />
       );
@@ -79,15 +85,15 @@ const AppRouter: React.FC = () => {
     return (
       <RoomGamePage
         onReturnToLobby={() => {}}
-        onExitRoom={() => goToApp('HOME')}
+        onExitRoom={() => setCurrentView('HOME')}
       />
     );
   }
 
   return (
     <HomePage
-      onStartPassPlay={() => goToApp('PASS_PLAY')}
-      onEnterOnlineLobby={() => goToApp('ONLINE')}
+      onStartPassPlay={() => setCurrentView('PASS_PLAY')}
+      onEnterOnlineLobby={() => setCurrentView('ONLINE')}
     />
   );
 };

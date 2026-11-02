@@ -1,5 +1,26 @@
 [
  {
+  "shape": "split-studio",
+  "theme": "terrazzo",
+  "axes": "light/geometric-sans/warm",
+  "hero": "settled",
+  "nav": "slab",
+  "footer": "letter close",
+  "imagery": "product captures",
+  "signature": "the deal",
+  "sections": [
+   "hero",
+   "before-after",
+   "pinned",
+   "switcher",
+   "spec-table",
+   "close"
+  ],
+  "prompt": "landing page What's The Word",
+  "date": "2026-11-02",
+  "mode": "build"
+ },
+ {
   "date": "2026-11-02",
   "mode": "redesign",
   "depth": "restyle",
