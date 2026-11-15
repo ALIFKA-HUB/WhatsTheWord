@@ -15,6 +15,7 @@ import { LandingFooter } from './LandingFooter';
 export interface LandingPageProps {
   onPlayLocal: () => void;
   onPlayOnline: () => void;
+  onOpenCustomPacks?: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onPlayLocal, onPlayOnline }) => {

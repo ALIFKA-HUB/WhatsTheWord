@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { ArrowCounterClockwise, ArrowRight, CheckCircle, Clock, Microphone, SignOut, Skull, Trophy } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, ArrowRight, CheckCircle, Clock, Crown, Eye, Microphone, SignOut, Skull, Trophy } from '@phosphor-icons/react';
 import { PlayerToken } from '../components/game/PlayerToken';
 import { Header } from '../components/common/Header';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
+import { Modal } from '../components/common/Modal';
 import { Badge, RoleBadge } from '../components/common/Badge';
 import { SecretCard } from '../components/game/SecretCard';
 import { CountdownTimer } from '../components/game/CountdownTimer';
@@ -45,6 +46,8 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
   const [localSecondsRemaining, setLocalSecondsRemaining] = useState<number>(45);
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [isRematching, setIsRematching] = useState(false);
+  const [isRePeekOpen, setIsRePeekOpen] = useState(false);
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   const soundPlayedForGameOverRef = useRef(false);
 
   const phase = room?.phase || 'LOBBY';
@@ -161,6 +164,16 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
     try {
       playButtonTap();
     } catch {}
+    if (phase === 'GAME_OVER') {
+      await leaveRoom();
+      onExitRoom();
+      return;
+    }
+    setIsExitConfirmOpen(true);
+  };
+
+  const confirmExit = async () => {
+    setIsExitConfirmOpen(false);
     await leaveRoom();
     onExitRoom();
   };
@@ -195,6 +208,17 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {(phase === 'TURN_PHASE' || phase === 'VOTING') && currentPlayer?.role && (
+              <button
+                type="button"
+                onClick={() => setIsRePeekOpen(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-rule bg-cardstock hover:bg-paper-muted text-xs font-semibold text-ink shadow-print-sm active:translate-y-[1px] transition-colors"
+                title="Intip kembali kata rahasiamu"
+              >
+                <Eye className="w-3.5 h-3.5 text-teal-dark" weight="bold" />
+                <span>Kata</span>
+              </button>
+            )}
             {currentPlayer?.role && (
               <RoleBadge role={currentPlayer.role} size="sm" />
             )}
@@ -414,6 +438,11 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                 <span className="rubber-stamp">
                   Hasil Pertandingan
                 </span>
+                <img
+                  src="/assets/gameover-art.svg"
+                  alt="Ilustrasi akhir permainan dengan kartu kata terbuka"
+                  className="w-full max-w-md mx-auto border border-rule shadow-print-sm rounded-2xl"
+                />
                 <h2 className="text-2xl sm:text-4xl font-bold font-condensed tracking-tight text-ink pt-1">
                   {room?.winningRole === 'CIVILIAN'
                     ? 'Warga Sipil Menang!'
@@ -459,33 +488,53 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {players.map((player) => (
-                  <div
-                    key={player.id}
-                    className="p-3.5 rounded-2xl bg-cardstock border border-rule flex items-center justify-between gap-3 shadow-print-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="shrink-0">
-                        <PlayerToken avatar={player.avatar} name={player.name} size="sm" showCode={false} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-bold text-ink">{player.name}</span>
-                          {player.id === currentPlayer?.id && (
-                            <span className="text-xs text-teal-dark font-semibold">(Kamu)</span>
-                          )}
+                {players.map((player) => {
+                  const isWinner = player.role === room?.winningRole;
+
+                  return (
+                    <div
+                      key={player.id}
+                      className={cn(
+                        'p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-print-sm transition-colors',
+                        isWinner
+                          ? 'bg-teal-light border-teal'
+                          : 'bg-cardstock border-rule opacity-85'
+                      )}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="shrink-0">
+                          <PlayerToken avatar={player.avatar} name={player.name} size="sm" showCode={false} />
                         </div>
-                        <span className="text-xs text-ink-muted">
-                          Kata: <strong className="text-ink">{player.word || 'Tidak ada'}</strong>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-bold text-ink truncate">{player.name}</span>
+                            {isWinner && (
+                              <Crown className="w-3.5 h-3.5 text-sun-dark shrink-0" weight="bold" />
+                            )}
+                            {player.id === currentPlayer?.id && (
+                              <span className="text-xs text-teal-dark font-semibold shrink-0">(Kamu)</span>
+                            )}
+                          </div>
+                          <span className="text-xs text-ink-muted">
+                            Kata: <strong className="text-ink">{player.word || 'Tidak ada'}</strong>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 flex flex-col items-end gap-1">
+                        {player.role && <RoleBadge role={player.role} size="sm" />}
+                        <span
+                          className={cn(
+                            'text-xs font-medium',
+                            player.isAlive ? 'text-teal-dark' : 'text-ink-muted line-through'
+                          )}
+                        >
+                          {player.isAlive ? 'Bertahan' : 'Tereliminasi'}
                         </span>
                       </div>
                     </div>
-
-                    <div className="shrink-0">
-                      {player.role && <RoleBadge role={player.role} size="sm" />}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -521,6 +570,51 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
           </motion.div>
         )}
       </main>
+
+      <Modal
+        isOpen={isRePeekOpen}
+        onClose={() => setIsRePeekOpen(false)}
+        title="Intip Kata Rahasiamu"
+        subtitle={currentPlayer?.name ? `Pemain: ${currentPlayer.name}` : undefined}
+        size="md"
+      >
+        <SecretCard
+          role={currentPlayer?.role}
+          word={currentPlayer?.word}
+          category={room?.settings.category}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={isExitConfirmOpen}
+        onClose={() => setIsExitConfirmOpen(false)}
+        title="Keluar dari Meja Permainan?"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-xs sm:text-sm text-ink-muted leading-relaxed">
+            Kamu akan meninggalkan meja online yang sedang berlangsung.
+          </p>
+          <div className="flex items-center gap-2.5 pt-1">
+            <Button
+              variant="secondary"
+              size="md"
+              className="flex-1"
+              onClick={() => setIsExitConfirmOpen(false)}
+            >
+              Lanjut Main
+            </Button>
+            <Button
+              variant="danger"
+              size="md"
+              className="flex-1"
+              onClick={confirmExit}
+            >
+              Ya, Keluar
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

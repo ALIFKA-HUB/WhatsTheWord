@@ -49,9 +49,9 @@ export const Header: React.FC<HeaderProps> = ({
         className
       )}
     >
-      <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+      <div className="max-w-5xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
         {/* Left: back button or brand */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {(showBack || onBack) && (
             <Button
               variant="secondary"
@@ -68,7 +68,12 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2.5 min-w-0">
             <img src="/logo.svg" alt="What’s The Word" className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
             <div className="flex flex-col min-w-0">
-              <span className="font-condensed text-base sm:text-lg text-ink leading-tight truncate">
+              <span
+                className={cn(
+                  'font-condensed text-base sm:text-lg text-ink leading-tight truncate',
+                  roomCode && 'max-w-[105px] xs:max-w-[140px] sm:max-w-none'
+                )}
+              >
                 {title}
               </span>
               <span className="hidden sm:inline text-xs text-ink-muted font-medium">
@@ -82,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({
         {roomCode && (
           <button
             onClick={handleCopyRoomCode}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-light text-teal-dark border border-teal shadow-print-sm hover:bg-paper-muted transition-colors cursor-pointer text-left active:translate-y-[1px] shrink-0"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-teal-light text-teal-dark border border-teal shadow-print-sm hover:bg-paper-muted transition-colors cursor-pointer text-left active:translate-y-[1px] shrink-0"
             title="Klik untuk salin kode meja"
           >
             <span className="text-xs font-semibold text-ink-muted">Meja</span>

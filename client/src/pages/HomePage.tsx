@@ -15,6 +15,8 @@ import { cn } from '../utils/cn';
 export interface HomePageProps {
   onStartPassPlay: () => void;
   onEnterOnlineLobby: () => void;
+  initialFocus?: 'local' | 'online';
+  initialOpenPacks?: boolean;
 }
 
 type OnlineTab = 'HOST' | 'JOIN';
@@ -22,6 +24,8 @@ type OnlineTab = 'HOST' | 'JOIN';
 export const HomePage: React.FC<HomePageProps> = ({
   onStartPassPlay,
   onEnterOnlineLobby,
+  initialFocus,
+  initialOpenPacks,
 }) => {
   const { isConnected, isConnecting, createRoom, joinRoom, error, clearError } = useSocket();
 
@@ -42,8 +46,14 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [isPackModalOpen, setIsPackModalOpen] = useState(false);
+  const [isPackModalOpen, setIsPackModalOpen] = useState(Boolean(initialOpenPacks));
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (initialOpenPacks) {
+      setIsPackModalOpen(true);
+    }
+  }, [initialOpenPacks]);
 
   const handleSaveProfile = (name: string, avatar: string) => {
     const nextName = name.trim() ? name.trim() : playerName;
@@ -239,7 +249,12 @@ export const HomePage: React.FC<HomePageProps> = ({
           </section>
 
           {/* Card 2: Online Room */}
-          <section className="rounded-3xl border border-rule bg-cardstock shadow-print p-5 sm:p-6 flex flex-col justify-between">
+          <section
+            className={cn(
+              'rounded-3xl border border-rule bg-cardstock shadow-print p-5 sm:p-6 flex flex-col justify-between',
+              initialFocus === 'online' && 'order-first md:order-none ring-1 ring-teal'
+            )}
+          >
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3">
@@ -370,7 +385,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="pt-6 mt-6 border-t border-rule">
               {onlineTab === 'HOST' ? (
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   size="lg"
                   fullWidth
                   onClick={handleCreateRoom}

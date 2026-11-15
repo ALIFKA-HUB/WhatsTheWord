@@ -15,10 +15,12 @@ const AppRouter: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>(() =>
     resolveInitialView(window.location.pathname, window.location.search)
   );
+  const [homeIntent, setHomeIntent] = useState<{ focus?: 'local' | 'online'; openPacks?: boolean }>({});
   const { phase: passPlayPhase, resetToSetup } = usePassPlay();
   const { room } = useSocket();
 
-  const goToApp = (view: Exclude<AppView, 'LANDING'>) => {
+  const goToApp = (view: Exclude<AppView, 'LANDING'>, intent: { focus?: 'local' | 'online'; openPacks?: boolean } = {}) => {
+    setHomeIntent(intent);
     if (window.location.pathname !== PLAY_PATH) {
       window.history.pushState({}, '', PLAY_PATH + window.location.search);
     }
@@ -32,7 +34,10 @@ const AppRouter: React.FC = () => {
   }, [currentView]);
 
   useEffect(() => {
-    const onPop = () => setCurrentView(resolveInitialView(window.location.pathname, window.location.search));
+    const onPop = () => {
+      setHomeIntent({});
+      setCurrentView(resolveInitialView(window.location.pathname, window.location.search));
+    };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
@@ -54,7 +59,8 @@ const AppRouter: React.FC = () => {
     return (
       <LandingPage
         onPlayLocal={() => goToApp('PASS_PLAY')}
-        onPlayOnline={() => goToApp('HOME')}
+        onPlayOnline={() => goToApp('HOME', { focus: 'online' })}
+        onOpenCustomPacks={() => goToApp('HOME', { openPacks: true })}
       />
     );
   }
@@ -92,8 +98,16 @@ const AppRouter: React.FC = () => {
 
   return (
     <HomePage
-      onStartPassPlay={() => setCurrentView('PASS_PLAY')}
-      onEnterOnlineLobby={() => setCurrentView('ONLINE')}
+      onStartPassPlay={() => {
+        setHomeIntent({});
+        setCurrentView('PASS_PLAY');
+      }}
+      onEnterOnlineLobby={() => {
+        setHomeIntent({});
+        setCurrentView('ONLINE');
+      }}
+      initialFocus={homeIntent.focus}
+      initialOpenPacks={homeIntent.openPacks}
     />
   );
 };

@@ -43,3 +43,16 @@ describe('PassPlaySetupPage and PassPlayGamePage UI hygiene', () => {
     expect(gameSrc).toContain('<Modal');
   });
 });
+
+describe('RoomGamePage parity and HomePage focus contract', () => {
+  it('supports initialFocus and initialOpenPacks in HomePage and exit/re-peek/gameover parity in RoomGamePage', () => {
+    const homeSrc = fs.readFileSync(path.join(srcDir, 'pages/HomePage.tsx'), 'utf-8');
+    const roomSrc = fs.readFileSync(path.join(srcDir, 'pages/RoomGamePage.tsx'), 'utf-8');
+
+    expect(homeSrc).toContain('initialFocus');
+    expect(homeSrc).toContain('initialOpenPacks');
+    expect(roomSrc).toContain('gameover-art.svg');
+    expect(roomSrc).toContain('isRePeekOpen');
+    expect(roomSrc).toContain('isExitConfirmOpen');
+  });
+});
