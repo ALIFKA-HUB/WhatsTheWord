@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Eye, ListChecks, PaperPlaneRight, Users, Warning } from '@phosphor-icons/react';
+import { ArrowRight, Eye, ListChecks, Users, Warning } from '@phosphor-icons/react';
 import { PlayerToken } from './PlayerToken';
 import { SecretCard } from './SecretCard';
+import { MrWhiteModal } from './MrWhiteModal';
 import { usePassPlay } from '../../context/PassPlayContext';
 import { useGameSound } from '../../hooks/useGameSound';
 import { Button } from '../common/Button';
@@ -43,9 +44,6 @@ export const PassPlayVotingView: React.FC = () => {
 
   const [rePeekPlayer, setRePeekPlayer] = useState<Player | null>(null);
 
-  const [mrWhiteGuessInput, setMrWhiteGuessInput] = useState('');
-  const [mrWhiteTimerSeconds, setMrWhiteTimerSeconds] = useState(45);
-
   const alivePlayers = players.filter((p) => p.isAlive);
   const orderedAlivePlayers = speakingOrder
     .map((id) => players.find((p) => p.id === id))
@@ -54,31 +52,6 @@ export const PassPlayVotingView: React.FC = () => {
   const votingStartRound = settings.votingStartRound || 2;
   const isWarmingUpRound = round < votingStartRound;
   const maxTies = settings.maxConsecutiveTies || 3;
-
-  useEffect(() => {
-    if (phase !== 'MR_WHITE_GUESS') return;
-
-    setMrWhiteTimerSeconds(45);
-    setMrWhiteGuessInput('');
-
-    const interval = setInterval(() => {
-      setMrWhiteTimerSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase === 'MR_WHITE_GUESS' && mrWhiteTimerSeconds === 0) {
-      skipMrWhiteGuess();
-    }
-  }, [phase, mrWhiteTimerSeconds, skipMrWhiteGuess]);
 
   const handleOpenConfirmModal = (playerId: string) => {
     setSelectedSuspectId(playerId);
@@ -124,12 +97,6 @@ export const PassPlayVotingView: React.FC = () => {
 
   const allVoted = alivePlayers.every((p) => votes[p.id]);
 
-  const handleMrWhiteSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!mrWhiteGuessInput.trim()) return;
-    submitMrWhiteGuess(mrWhiteGuessInput.trim());
-  };
-
   const currentVoterPlayer = alivePlayers.find((p) => p.id === currentVoterId);
 
   return (
@@ -165,7 +132,7 @@ export const PassPlayVotingView: React.FC = () => {
         {consecutiveTies > 0 && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stamp-light border border-stamp text-stamp-dark text-xs font-semibold">
             <Warning className="w-3.5 h-3.5 text-stamp-dark" />
-            <span>Seri: {consecutiveTies}/{maxTies} (3x = Impostor menang)</span>
+            <span>{`Seri: ${consecutiveTies}/${maxTies} (${maxTies}x = Impostor menang)`}</span>
           </div>
         )}
       </div>
@@ -270,9 +237,11 @@ export const PassPlayVotingView: React.FC = () => {
                 setVotingMode('consensus');
                 clearVotes();
                 setCurrentVoterId(null);
+                setSelectedTargetForVoter(null);
+                setIsHandingOverSecretVote(false);
               }}
               className={cn(
-                'py-2 px-3 rounded-full transition-colors whitespace-nowrap',
+                'py-2 px-3 rounded-full transition-colors leading-tight text-center',
                 votingMode === 'consensus'
                   ? 'bg-cardstock text-ink font-bold shadow-print-sm'
                   : 'text-ink-muted hover:text-ink'
@@ -284,10 +253,13 @@ export const PassPlayVotingView: React.FC = () => {
               type="button"
               onClick={() => {
                 setVotingMode('individual');
+                clearVotes();
+                setSelectedTargetForVoter(null);
                 setCurrentVoterId(alivePlayers[0]?.id || null);
+                setIsHandingOverSecretVote(true);
               }}
               className={cn(
-                'py-2 px-3 rounded-full transition-colors whitespace-nowrap',
+                'py-2 px-3 rounded-full transition-colors leading-tight text-center',
                 votingMode === 'individual'
                   ? 'bg-cardstock text-ink font-bold shadow-print-sm'
                   : 'text-ink-muted hover:text-ink'
@@ -415,15 +387,26 @@ export const PassPlayVotingView: React.FC = () => {
 
           {/* All Votes In Summary Button */}
           {votingMode === 'individual' && allVoted && (
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              onClick={() => processElimination()}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
-            >
-              Semua Suara Masuk, Buka Hasil Voting
-            </Button>
+            <Card padding="md" className="text-center space-y-4">
+              <div className="space-y-1">
+                <span className="rubber-stamp text-xs">Rekapitulasi Siap</span>
+                <h3 className="text-lg font-bold text-ink font-display pt-1">
+                  Semua {alivePlayers.length} Suara Sudah Masuk
+                </h3>
+                <p className="text-xs text-ink-muted">
+                  Pastikan semua pemain memperhatikan meja sebelum membuka hasil eliminasi.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={() => processElimination()}
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+              >
+                Buka Hasil Voting
+              </Button>
+            </Card>
           )}
         </div>
       )}
@@ -476,60 +459,17 @@ export const PassPlayVotingView: React.FC = () => {
       </Modal>
 
       {/* 6. MR WHITE EMERGENCY GUESS MODAL */}
-      <Modal
+      <MrWhiteModal
         isOpen={phase === 'MR_WHITE_GUESS'}
-        onClose={() => {}}
-        title="Kesempatan Tebak Kata (Mr. White)"
-        size="md"
-      >
-        <div className="space-y-4 p-2 font-sans">
-          <div className="p-3.5 rounded-2xl bg-paper-muted border border-dashed border-rule text-ink-muted space-y-1">
-            <p className="font-semibold text-ink">
-              {pendingEliminatedPlayer?.name} adalah Mr. White!
-            </p>
-            <p className="text-xs text-ink-muted">
-              Tebak kata rahasia yang dimiliki Warga! Jika benar, kamu <strong>langsung menang seketika</strong>!
-            </p>
-          </div>
-
-          <form onSubmit={handleMrWhiteSubmit} className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-ink block">
-                Tebakan Kata Warga (sisa {mrWhiteTimerSeconds} detik):
-              </label>
-              <input
-                type="text"
-                autoFocus
-                value={mrWhiteGuessInput}
-                onChange={(e) => setMrWhiteGuessInput(e.target.value)}
-                placeholder="Ketik kata warga di sini…"
-                className="w-full px-4 py-2.5 rounded-xl bg-paper border border-rule focus:border-teal-dark focus:ring-2 focus:ring-teal text-ink text-sm outline-none placeholder:text-ink-faint"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <Button
-                type="button"
-                variant="secondary"
-                size="md"
-                onClick={skipMrWhiteGuess}
-                className="w-1/3 text-xs"
-              >
-                Menyerah
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                size="md"
-                className="w-2/3"
-                rightIcon={<PaperPlaneRight className="w-4 h-4" />}
-              >
-                Kirim Tebakan
-              </Button>
-            </div>
-          </form>
-        </div>
-      </Modal>
+        isMrWhite
+        requireHandoverShield
+        mrWhitePlayer={pendingEliminatedPlayer || undefined}
+        onSubmitGuess={async (guess) => {
+          submitMrWhiteGuess(guess);
+          return { success: true };
+        }}
+        onGiveUp={skipMrWhiteGuess}
+      />
 
       {/* 7. PARTY RE-PEEK WORD MODAL */}
       <Modal

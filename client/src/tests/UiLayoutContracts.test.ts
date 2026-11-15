@@ -14,3 +14,19 @@ describe('SecretCard layout and pointer contract', () => {
     expect(src).toContain('onPointerUp={endHold}');
   });
 });
+
+describe('PassPlayVotingView and MrWhiteModal contracts', () => {
+  it('activates handover privacy shield for the first voter in individual secret voting', () => {
+    const src = fs.readFileSync(path.join(srcDir, 'components/game/PassPlayVotingView.tsx'), 'utf-8');
+    expect(src).toContain('setIsHandingOverSecretVote(true)');
+    expect(src).not.toContain('(3x = Impostor menang)');
+    expect(src).toContain('${maxTies}x = Impostor menang');
+    expect(src).toContain('<MrWhiteModal');
+  });
+
+  it('supports optional handover privacy shield and give-up action in MrWhiteModal', () => {
+    const src = fs.readFileSync(path.join(srcDir, 'components/game/MrWhiteModal.tsx'), 'utf-8');
+    expect(src).toContain('requireHandoverShield');
+    expect(src).toContain('onGiveUp');
+  });
+});

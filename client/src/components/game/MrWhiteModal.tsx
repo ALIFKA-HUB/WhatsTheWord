@@ -12,6 +12,8 @@ export interface MrWhiteModalProps {
   mrWhitePlayer?: Player;
   onSubmitGuess: (guess: string) => Promise<{ success: boolean; isCorrect?: boolean; winner?: PlayerRole; error?: string }>;
   initialSeconds?: number;
+  onGiveUp?: () => void;
+  requireHandoverShield?: boolean;
 }
 
 export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
@@ -20,18 +22,25 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
   mrWhitePlayer,
   onSubmitGuess,
   initialSeconds = 45,
+  onGiveUp,
+  requireHandoverShield = false,
 }) => {
   const [guessInput, setGuessInput] = useState('');
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [hasConfirmedIdentity, setHasConfirmedIdentity] = useState(!requireHandoverShield);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setRemainingSeconds(initialSeconds);
+      return;
+    }
 
     setRemainingSeconds(initialSeconds);
     setGuessInput('');
     setErrorMsg(null);
+    setHasConfirmedIdentity(!requireHandoverShield);
 
     const timer = setInterval(() => {
       setRemainingSeconds((prev) => {
@@ -44,7 +53,13 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen, initialSeconds]);
+  }, [isOpen, initialSeconds, requireHandoverShield]);
+
+  useEffect(() => {
+    if (isOpen && remainingSeconds === 0 && onGiveUp) {
+      onGiveUp();
+    }
+  }, [isOpen, remainingSeconds, onGiveUp]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -99,7 +114,33 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
           />
         </div>
 
-        {isMrWhite ? (
+        {isMrWhite && !hasConfirmedIdentity ? (
+          <div className="text-center space-y-4 py-2">
+            <PlayerToken
+              avatar={mrWhitePlayer?.avatar}
+              name={mrWhitePlayer?.name}
+              size="lg"
+              className="mx-auto"
+            />
+            <div className="space-y-1.5">
+              <p className="text-base font-bold text-ink font-display">
+                {mrWhitePlayer?.name || 'Mr. White'} Tereliminasi!
+              </p>
+              <p className="text-xs text-ink-muted max-w-xs mx-auto leading-relaxed">
+                Oper HP ke <strong>{mrWhitePlayer?.name || 'Mr. White'}</strong> dan pastikan pemain lain tidak melihat layar sebelum menebak kata Warga.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={() => setHasConfirmedIdentity(true)}
+            >
+              Saya {mrWhitePlayer?.name || 'Mr. White'}, Siap Menebak
+            </Button>
+          </div>
+        ) : isMrWhite ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="p-4 rounded-2xl bg-stamp-light border border-stamp text-center space-y-1">
               <p className="text-sm font-bold text-stamp-dark font-display">
@@ -132,18 +173,31 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
               </div>
             )}
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              fullWidth
-              disabled={!guessInput.trim() || remainingSeconds === 0}
-              isLoading={isSubmitting}
-              leftIcon={<PaperPlaneRight className="w-4 h-4" weight="bold" />}
-              className="mt-2"
-            >
-              Kirim Tebakan Sekarang
-            </Button>
+            <div className="flex items-center gap-2 pt-2">
+              {onGiveUp && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="lg"
+                  onClick={onGiveUp}
+                  className="flex-1"
+                >
+                  Menyerah
+                </Button>
+              )}
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                fullWidth={!onGiveUp}
+                disabled={!guessInput.trim() || remainingSeconds === 0}
+                isLoading={isSubmitting}
+                leftIcon={<PaperPlaneRight className="w-4 h-4" weight="bold" />}
+                className={onGiveUp ? 'flex-[2]' : 'mt-2'}
+              >
+                Kirim Tebakan
+              </Button>
+            </div>
           </form>
         ) : (
           <div className="text-center space-y-4 py-2">
