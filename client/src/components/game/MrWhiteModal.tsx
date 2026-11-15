@@ -41,6 +41,10 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
     setGuessInput('');
     setErrorMsg(null);
     setHasConfirmedIdentity(!requireHandoverShield);
+  }, [isOpen, initialSeconds, requireHandoverShield]);
+
+  useEffect(() => {
+    if (!isOpen || !hasConfirmedIdentity) return;
 
     const timer = setInterval(() => {
       setRemainingSeconds((prev) => {
@@ -53,7 +57,7 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen, initialSeconds, requireHandoverShield]);
+  }, [isOpen, hasConfirmedIdentity]);
 
   useEffect(() => {
     if (isOpen && remainingSeconds === 0 && onGiveUp) {

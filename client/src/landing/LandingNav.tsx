@@ -5,6 +5,12 @@ export interface LandingNavProps {
   onPlayOnline?: () => void;
 }
 
+const NAV_LINKS = [
+  { id: 'ronde', href: '#ronde', label: 'Cara main' },
+  { id: 'mode', href: '#mode', label: 'Mode' },
+  { id: 'paket-kata', href: '#paket-kata', label: 'Paket kata' },
+] as const;
+
 export const LandingNav: React.FC<LandingNavProps> = ({ onPlayLocal }) => {
   const [activeSection, setActiveSection] = useState<string>('');
 
@@ -37,24 +43,15 @@ export const LandingNav: React.FC<LandingNavProps> = ({ onPlayLocal }) => {
           What’s The Word
         </a>
         <nav className="hidden sm:flex items-center gap-8" aria-label="Navigasi halaman">
-          <a
-            href="#ronde"
-            className={`lp-nav-link ${activeSection === 'ronde' ? 'is-active' : ''}`}
-          >
-            Cara main
-          </a>
-          <a
-            href="#mode"
-            className={`lp-nav-link ${activeSection === 'mode' ? 'is-active' : ''}`}
-          >
-            Mode
-          </a>
-          <a
-            href="#paket-kata"
-            className={`lp-nav-link ${activeSection === 'paket-kata' ? 'is-active' : ''}`}
-          >
-            Paket kata
-          </a>
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.id}
+              href={link.href}
+              className={`lp-nav-link ${activeSection === link.id ? 'is-active' : ''}`}
+            >
+              {link.label}
+            </a>
+          ))}
         </nav>
         <button
           type="button"
@@ -68,15 +65,15 @@ export const LandingNav: React.FC<LandingNavProps> = ({ onPlayLocal }) => {
         className="sm:hidden border-t border-rule bg-paper px-5 py-2 flex items-center gap-5 overflow-x-auto"
         aria-label="Navigasi cepat"
       >
-        <a href="#ronde" className={`lp-nav-link shrink-0 ${activeSection === 'ronde' ? 'is-active' : ''}`}>
-          Cara main
-        </a>
-        <a href="#mode" className={`lp-nav-link shrink-0 ${activeSection === 'mode' ? 'is-active' : ''}`}>
-          Mode
-        </a>
-        <a href="#paket-kata" className={`lp-nav-link shrink-0 ${activeSection === 'paket-kata' ? 'is-active' : ''}`}>
-          Paket kata
-        </a>
+        {NAV_LINKS.map((link) => (
+          <a
+            key={link.id}
+            href={link.href}
+            className={`lp-nav-link shrink-0 ${activeSection === link.id ? 'is-active' : ''}`}
+          >
+            {link.label}
+          </a>
+        ))}
       </nav>
     </header>
   );

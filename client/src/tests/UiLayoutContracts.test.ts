@@ -28,6 +28,7 @@ describe('PassPlayVotingView and MrWhiteModal contracts', () => {
     const src = fs.readFileSync(path.join(srcDir, 'components/game/MrWhiteModal.tsx'), 'utf-8');
     expect(src).toContain('requireHandoverShield');
     expect(src).toContain('onGiveUp');
+    expect(src).toContain('if (!isOpen || !hasConfirmedIdentity) return;');
   });
 });
 
@@ -73,6 +74,7 @@ describe('Landing CSS token resolution and copy accuracy', () => {
     expect(css).toContain('.lp-root .bg-paper-2');
     expect(css).toContain('.lp-root .text-ink-2');
     expect(css).toContain('.lp-root .shadow-card');
+    expect(css).toContain('scroll-margin-top: 104px');
   });
 
   it('states 4-character room code accurately in landing content', () => {
@@ -88,7 +90,8 @@ describe('Landing section navigation and visual polish', () => {
     const tableSrc = fs.readFileSync(path.join(srcDir, 'landing/WordPackTable.tsx'), 'utf-8');
     const beforeAfterSrc = fs.readFileSync(path.join(srcDir, 'landing/BeforeAfter.tsx'), 'utf-8');
 
-    expect(navSrc).toContain('href="#paket-kata"');
+    expect(navSrc).toContain('#paket-kata');
+    expect(navSrc).toContain('NAV_LINKS');
     expect(tableSrc).toContain('id="paket-kata"');
     expect(tableSrc).toContain('onOpenCustomPacks');
     expect(beforeAfterSrc).toContain('CheckCircle');

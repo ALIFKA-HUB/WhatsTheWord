@@ -294,6 +294,12 @@ a.lp-plate:hover, button.lp-plate:hover {
   box-shadow: var(--shadow-card);
 }
 
+@media (max-width: 639px) {
+  .lp-screen {
+    scroll-margin-top: 104px;
+  }
+}
+
 @media (max-width: 480px) {
   .lp-deal-fan {
     min-height: 250px;
