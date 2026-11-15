@@ -48,11 +48,21 @@ describe('RoomGamePage parity and HomePage focus contract', () => {
   it('supports initialFocus and initialOpenPacks in HomePage and exit/re-peek/gameover parity in RoomGamePage', () => {
     const homeSrc = fs.readFileSync(path.join(srcDir, 'pages/HomePage.tsx'), 'utf-8');
     const roomSrc = fs.readFileSync(path.join(srcDir, 'pages/RoomGamePage.tsx'), 'utf-8');
+    const appSrc = fs.readFileSync(path.join(srcDir, 'App.tsx'), 'utf-8');
+    const headerSrc = fs.readFileSync(path.join(srcDir, 'components/common/Header.tsx'), 'utf-8');
 
     expect(homeSrc).toContain('initialFocus');
     expect(homeSrc).toContain('initialOpenPacks');
     expect(roomSrc).toContain('gameover-art.svg');
     expect(roomSrc).toContain('isRePeekOpen');
     expect(roomSrc).toContain('isExitConfirmOpen');
+    expect(roomSrc).toContain("if (phase !== 'TURN_PHASE' && phase !== 'VOTING')");
+    expect(roomSrc).toContain('setIsRePeekOpen(false)');
+    expect(appSrc).toContain('goToHome');
+    expect(appSrc).toContain('setHomeIntent({})');
+    expect(appSrc).toContain("goToApp('PASS_PLAY')");
+    expect(appSrc).toContain("goToApp('ONLINE')");
+    expect(headerSrc).not.toContain('xs:');
+    expect(headerSrc).toContain('max-w-[130px] sm:max-w-none');
   });
 });

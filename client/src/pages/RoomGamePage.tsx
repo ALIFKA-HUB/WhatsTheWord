@@ -100,6 +100,12 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
   }, [phase, onReturnToLobby]);
 
   useEffect(() => {
+    if (phase !== 'TURN_PHASE' && phase !== 'VOTING') {
+      setIsRePeekOpen(false);
+    }
+  }, [phase]);
+
+  useEffect(() => {
     if (phase === 'GAME_OVER' && !soundPlayedForGameOverRef.current) {
       soundPlayedForGameOverRef.current = true;
       const winner = room?.winningRole;
@@ -165,6 +171,7 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
       playButtonTap();
     } catch {}
     if (phase === 'GAME_OVER') {
+      setIsExitConfirmOpen(false);
       await leaveRoom();
       onExitRoom();
       return;

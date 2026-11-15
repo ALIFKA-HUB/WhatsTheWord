@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span
                 className={cn(
                   'font-condensed text-base sm:text-lg text-ink leading-tight truncate',
-                  roomCode && 'max-w-[105px] xs:max-w-[140px] sm:max-w-none'
+                  roomCode && 'max-w-[130px] sm:max-w-none'
                 )}
               >
                 {title}

@@ -27,6 +27,11 @@ const AppRouter: React.FC = () => {
     setCurrentView(view);
   };
 
+  const goToHome = () => {
+    setHomeIntent({});
+    setCurrentView('HOME');
+  };
+
   useEffect(() => {
     if (currentView !== 'LANDING' && window.location.pathname !== PLAY_PATH) {
       window.history.pushState({}, '', PLAY_PATH + window.location.search);
@@ -51,7 +56,7 @@ const AppRouter: React.FC = () => {
 
   useEffect(() => {
     if (!room && currentView === 'ONLINE') {
-      setCurrentView('HOME');
+      goToHome();
     }
   }, [room, currentView]);
 
@@ -67,13 +72,13 @@ const AppRouter: React.FC = () => {
 
   if (currentView === 'PASS_PLAY') {
     if (passPlayPhase === 'SETUP') {
-      return <PassPlaySetupPage onBack={() => setCurrentView('HOME')} />;
+      return <PassPlaySetupPage onBack={goToHome} />;
     }
     return (
       <PassPlayGamePage
         onBackToHome={() => {
           resetToSetup();
-          setCurrentView('HOME');
+          goToHome();
         }}
       />
     );
@@ -83,7 +88,7 @@ const AppRouter: React.FC = () => {
     if (!room || room.phase === 'LOBBY') {
       return (
         <LobbyPage
-          onLeaveRoom={() => setCurrentView('HOME')}
+          onLeaveRoom={goToHome}
           onGameStarted={() => {}}
         />
       );
@@ -91,21 +96,15 @@ const AppRouter: React.FC = () => {
     return (
       <RoomGamePage
         onReturnToLobby={() => {}}
-        onExitRoom={() => setCurrentView('HOME')}
+        onExitRoom={goToHome}
       />
     );
   }
 
   return (
     <HomePage
-      onStartPassPlay={() => {
-        setHomeIntent({});
-        setCurrentView('PASS_PLAY');
-      }}
-      onEnterOnlineLobby={() => {
-        setHomeIntent({});
-        setCurrentView('ONLINE');
-      }}
+      onStartPassPlay={() => goToApp('PASS_PLAY')}
+      onEnterOnlineLobby={() => goToApp('ONLINE')}
       initialFocus={homeIntent.focus}
       initialOpenPacks={homeIntent.openPacks}
     />
