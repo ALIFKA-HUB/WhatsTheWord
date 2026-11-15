@@ -3,11 +3,20 @@ import { SAMPLE_PAIRS, PAIR_COUNT, CATEGORY_COUNT } from './content';
 
 export interface WordPackTableProps {
   onPlayOnline: () => void;
+  onOpenCustomPacks?: () => void;
 }
 
-export const WordPackTable: React.FC<WordPackTableProps> = ({ onPlayOnline }) => {
+export const WordPackTable: React.FC<WordPackTableProps> = ({
+  onPlayOnline,
+  onOpenCustomPacks,
+}) => {
   return (
-    <section className="lp-screen lp-word-pack" aria-label="Paket kata bawaan">
+    <section
+      id="paket-kata"
+      data-landing-section
+      className="lp-screen lp-word-pack"
+      aria-label="Paket kata bawaan"
+    >
       <div className="lp-container">
         {/* Ink band banner with big number */}
         <div className="lp-band--ink p-8 sm:p-12 mb-10 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
@@ -51,10 +60,10 @@ export const WordPackTable: React.FC<WordPackTableProps> = ({ onPlayOnline }) =>
         {/* Callout below table */}
         <div className="mt-8 text-left">
           <a
-            href="#mode"
+            href="/play"
             onClick={(e) => {
               e.preventDefault();
-              onPlayOnline();
+              (onOpenCustomPacks ?? onPlayOnline)();
             }}
             className="text-sm sm:text-base font-semibold text-ink underline underline-offset-4 hover:text-ink-2 transition-colors inline-block"
           >

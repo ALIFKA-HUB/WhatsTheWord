@@ -82,3 +82,17 @@ describe('Landing CSS token resolution and copy accuracy', () => {
   });
 });
 
+describe('Landing section navigation and visual polish', () => {
+  it('exposes paket-kata section anchor in LandingNav and WordPackTable', () => {
+    const navSrc = fs.readFileSync(path.join(srcDir, 'landing/LandingNav.tsx'), 'utf-8');
+    const tableSrc = fs.readFileSync(path.join(srcDir, 'landing/WordPackTable.tsx'), 'utf-8');
+    const beforeAfterSrc = fs.readFileSync(path.join(srcDir, 'landing/BeforeAfter.tsx'), 'utf-8');
+
+    expect(navSrc).toContain('href="#paket-kata"');
+    expect(tableSrc).toContain('id="paket-kata"');
+    expect(tableSrc).toContain('onOpenCustomPacks');
+    expect(beforeAfterSrc).toContain('CheckCircle');
+    expect(beforeAfterSrc).toContain('XCircle');
+  });
+});
+

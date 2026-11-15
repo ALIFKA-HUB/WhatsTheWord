@@ -18,7 +18,11 @@ export interface LandingPageProps {
   onOpenCustomPacks?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onPlayLocal, onPlayOnline }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({
+  onPlayLocal,
+  onPlayOnline,
+  onOpenCustomPacks,
+}) => {
   return (
     <div className="lp-root">
       <LandingNav onPlayLocal={onPlayLocal} onPlayOnline={onPlayOnline} />
@@ -27,7 +31,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onPlayLocal, onPlayOnl
         <BeforeAfter />
         <RoundPinned />
         <ModeSwitcher onPlayLocal={onPlayLocal} onPlayOnline={onPlayOnline} />
-        <WordPackTable onPlayOnline={onPlayOnline} />
+        <WordPackTable onPlayOnline={onPlayOnline} onOpenCustomPacks={onOpenCustomPacks} />
         <LandingClose onPlayLocal={onPlayLocal} onPlayOnline={onPlayOnline} />
       </main>
       <LandingFooter onPlayLocal={onPlayLocal} />

@@ -49,6 +49,12 @@ export const LandingNav: React.FC<LandingNavProps> = ({ onPlayLocal }) => {
           >
             Mode
           </a>
+          <a
+            href="#paket-kata"
+            className={`lp-nav-link ${activeSection === 'paket-kata' ? 'is-active' : ''}`}
+          >
+            Paket kata
+          </a>
         </nav>
         <button
           type="button"
@@ -58,6 +64,20 @@ export const LandingNav: React.FC<LandingNavProps> = ({ onPlayLocal }) => {
           Main sekarang
         </button>
       </div>
+      <nav
+        className="sm:hidden border-t border-rule bg-paper px-5 py-2 flex items-center gap-5 overflow-x-auto"
+        aria-label="Navigasi cepat"
+      >
+        <a href="#ronde" className={`lp-nav-link shrink-0 ${activeSection === 'ronde' ? 'is-active' : ''}`}>
+          Cara main
+        </a>
+        <a href="#mode" className={`lp-nav-link shrink-0 ${activeSection === 'mode' ? 'is-active' : ''}`}>
+          Mode
+        </a>
+        <a href="#paket-kata" className={`lp-nav-link shrink-0 ${activeSection === 'paket-kata' ? 'is-active' : ''}`}>
+          Paket kata
+        </a>
+      </nav>
     </header>
   );
 };
