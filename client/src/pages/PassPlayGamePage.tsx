@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowCounterClockwise, Crown, GearSix, Key, Trophy, Users } from '@phosphor-icons/react';
 import { PlayerToken } from '../components/game/PlayerToken';
@@ -7,6 +7,7 @@ import { useGameSound } from '../hooks/useGameSound';
 import { Header } from '../components/common/Header';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
+import { Modal } from '../components/common/Modal';
 import { Badge, RoleBadge } from '../components/common/Badge';
 import { PassPlaySecretView } from '../components/game/PassPlaySecretView';
 import { PassPlayVotingView } from '../components/game/PassPlayVotingView';
@@ -28,6 +29,7 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
   } = usePassPlay();
 
   const { playVictory } = useGameSound();
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (phase === 'GAME_OVER') {
@@ -40,10 +42,18 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
   }, [phase, playVictory]);
 
   const handleBack = () => {
-    if (confirm('Apakah kamu yakin ingin keluar? Progres permainan ini akan hilang.')) {
+    if (phase === 'GAME_OVER') {
       resetToSetup();
       onBackToHome?.();
+      return;
     }
+    setIsExitConfirmOpen(true);
+  };
+
+  const confirmExit = () => {
+    setIsExitConfirmOpen(false);
+    resetToSetup();
+    onBackToHome?.();
   };
 
   return (
@@ -253,6 +263,37 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
           )}
         </AnimatePresence>
       </main>
+
+      <Modal
+        isOpen={isExitConfirmOpen}
+        onClose={() => setIsExitConfirmOpen(false)}
+        title="Keluar dari Permainan?"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-xs sm:text-sm text-ink-muted leading-relaxed">
+            Progres putaran saat ini akan dihapus jika kamu kembali ke menu utama.
+          </p>
+          <div className="flex items-center gap-2.5 pt-1">
+            <Button
+              variant="secondary"
+              size="md"
+              className="flex-1"
+              onClick={() => setIsExitConfirmOpen(false)}
+            >
+              Lanjut Main
+            </Button>
+            <Button
+              variant="danger"
+              size="md"
+              className="flex-1"
+              onClick={confirmExit}
+            >
+              Ya, Keluar
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

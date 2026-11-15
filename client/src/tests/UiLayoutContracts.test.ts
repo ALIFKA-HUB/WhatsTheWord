@@ -30,3 +30,16 @@ describe('PassPlayVotingView and MrWhiteModal contracts', () => {
     expect(src).toContain('onGiveUp');
   });
 });
+
+describe('PassPlaySetupPage and PassPlayGamePage UI hygiene', () => {
+  it('uses zero native browser alert() or confirm() dialogs and includes min-w-0 on flex player input', () => {
+    const setupSrc = fs.readFileSync(path.join(srcDir, 'pages/PassPlaySetupPage.tsx'), 'utf-8');
+    const gameSrc = fs.readFileSync(path.join(srcDir, 'pages/PassPlayGamePage.tsx'), 'utf-8');
+
+    expect(setupSrc).not.toMatch(/\balert\(/);
+    expect(setupSrc).toContain('flex-1 min-w-0');
+    expect(setupSrc).toContain('<AvatarPicker');
+    expect(gameSrc).not.toMatch(/\bconfirm\(/);
+    expect(gameSrc).toContain('<Modal');
+  });
+});

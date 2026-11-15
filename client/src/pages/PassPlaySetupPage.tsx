@@ -16,7 +16,7 @@ import { usePassPlay } from '../context/PassPlayContext';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
 import { Modal } from '../components/common/Modal';
-import { PRESET_AVATARS } from '../components/game/AvatarPicker';
+import { AvatarPicker, PRESET_AVATARS } from '../components/game/AvatarPicker';
 import { PlayerToken } from '../components/game/PlayerToken';
 import { getLocalCustomPacks } from '../services/wordPackService';
 import { CustomWordPack } from '../types/game.types';
@@ -166,6 +166,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
   const [customPacks, setCustomPacks] = useState<CustomWordPack[]>([]);
 
   const [avatarPickerPlayerIndex, setAvatarPickerPlayerIndex] = useState<number | null>(null);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -177,6 +178,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
   }, []);
 
   const adjustPlayerCount = (newCount: number) => {
+    setSetupError(null);
     const clamped = Math.max(3, Math.min(20, newCount));
     setTotalPlayerCount(clamped);
 
@@ -290,6 +292,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
   };
 
   const handleStartGame = () => {
+    setSetupError(null);
     setPlayers((prev) =>
       prev.map((p, idx) => ({
         ...p,
@@ -299,7 +302,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
 
     const success = startPassPlayGame();
     if (!success) {
-      alert('Minimal 3 pemain untuk memulai permainan!');
+      setSetupError('Minimal 3 pemain untuk memulai permainan!');
     }
   };
 
@@ -689,7 +692,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 size="lg"
                 onClick={() => setCurrentStep(1)}
                 leftIcon={<ArrowLeft className="w-4 h-4" />}
-                className="w-1/3"
+                className="flex-1"
               >
                 Kembali
               </Button>
@@ -697,10 +700,9 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               <Button
                 variant="primary"
                 size="lg"
-                fullWidth
                 onClick={() => setCurrentStep(3)}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-                className="w-2/3"
+                className="flex-[2]"
               >
                 Lanjut ke Daftar Pemain
               </Button>
@@ -759,7 +761,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                       onChange={(e) => handlePlayerNameChange(idx, e.target.value)}
                       placeholder={'Pemain ' + (idx + 1)}
                       maxLength={20}
-                      className="flex-1 bg-transparent px-2.5 py-1 text-sm font-semibold text-ink placeholder-ink-faint focus:outline-none"
+                      className="flex-1 min-w-0 bg-transparent px-2.5 py-1 text-sm font-semibold text-ink placeholder-ink-faint focus:outline-none"
                     />
 
                     <button
@@ -775,13 +777,22 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
             </Card>
 
+            {setupError && (
+              <div
+                role="alert"
+                className="p-3 rounded-2xl bg-stamp-light border border-stamp text-stamp-dark text-xs font-semibold flex items-center gap-2"
+              >
+                {setupError}
+              </div>
+            )}
+
             <div className="flex items-center gap-3">
               <Button
                 variant="secondary"
                 size="lg"
                 onClick={() => setCurrentStep(2)}
                 leftIcon={<ArrowLeft className="w-4 h-4" />}
-                className="w-1/3"
+                className="flex-1"
               >
                 Kembali
               </Button>
@@ -789,10 +800,9 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               <Button
                 variant="primary"
                 size="lg"
-                fullWidth
                 onClick={handleStartGame}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-                className="w-2/3"
+                className="flex-[2]"
               >
                 Mulai Permainan
               </Button>
@@ -805,21 +815,20 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
       <Modal
         isOpen={avatarPickerPlayerIndex !== null}
         onClose={() => setAvatarPickerPlayerIndex(null)}
-        title="Pilih Pion Pemain"
-        size="sm"
+        title={`Pilih Pion: ${
+          avatarPickerPlayerIndex !== null
+            ? players[avatarPickerPlayerIndex]?.name || `Pemain ${avatarPickerPlayerIndex + 1}`
+            : ''
+        }`}
+        size="md"
       >
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 p-2 max-h-[60vh] overflow-y-auto">
-          {PRESET_AVATARS.map((av) => (
-            <button
-              key={av.id}
-              onClick={() => avatarPickerPlayerIndex !== null && handleSelectAvatar(avatarPickerPlayerIndex, av.emoji)}
-              className="p-2.5 rounded-2xl border border-rule bg-cardstock hover:bg-paper-muted shadow-print-sm transition-colors flex items-center justify-center active:translate-y-[1px]"
-              title={av.name}
-            >
-              <PlayerToken avatar={av.emoji} name={av.name} size="sm" showCode={false} />
-            </button>
-          ))}
-        </div>
+        {avatarPickerPlayerIndex !== null && (
+          <AvatarPicker
+            selectedAvatar={players[avatarPickerPlayerIndex]?.avatar || 'token-eye'}
+            onSelectAvatar={(avatar) => handleSelectAvatar(avatarPickerPlayerIndex, avatar)}
+            showNicknameInput={false}
+          />
+        )}
       </Modal>
     </div>
   );
