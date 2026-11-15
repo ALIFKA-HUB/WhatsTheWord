@@ -61,71 +61,78 @@ export const SecretCard: React.FC<SecretCardProps> = ({
 
   const isMrWhite = role === 'MR_WHITE';
 
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    startHold();
+  }, [startHold]);
+
   return (
     <div className={cn('w-full max-w-sm mx-auto select-none font-sans', className)}>
       {/* Kraft sleeve */}
       <div
-        onMouseDown={startHold}
-        onMouseUp={endHold}
-        onMouseLeave={endHold}
-        onTouchStart={startHold}
-        onTouchEnd={endHold}
-        onTouchCancel={endHold}
+        onPointerDown={handlePointerDown}
+        onPointerUp={endHold}
+        onPointerCancel={endHold}
+        onPointerLeave={endHold}
         onContextMenu={(e) => e.preventDefault()}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === ' ' || e.key === 'Enter') {
+          if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) {
             e.preventDefault();
-            if (e.type === 'keydown') startHold();
+            startHold();
           }
         }}
-        onKeyUp={endHold}
+        onKeyUp={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            endHold();
+          }
+        }}
         aria-label="Tahan untuk mengintip kata rahasia"
-        className="relative overflow-hidden rounded-3xl border border-rule bg-paper-muted shadow-print-lg cursor-pointer h-[340px]"
+        className="relative overflow-hidden rounded-3xl border border-rule bg-paper-muted shadow-print-lg cursor-pointer h-[400px] touch-none"
       >
         {/* thumb notch cut-out */}
         <span className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 rounded-b-full bg-paper border-x border-b border-rule z-20 flex items-center justify-center" aria-hidden="true">
           <span className="w-6 h-1 rounded-full bg-rule" />
         </span>
 
-        {/* Inner secret card: tucked inside the pocket, slides up when holding */}
+        {/* Inner secret card: tucked inside the pocket (y: 188), slides up into the 190px open window (y: -4) */}
         <motion.div
           initial={false}
-          animate={{ y: isHolding ? -6 : 148 }}
+          animate={{ y: isHolding ? -4 : 188 }}
           transition={{ type: 'spring', stiffness: 340, damping: 28 }}
-          className="absolute inset-x-3 top-3 z-0 bg-cardstock border border-rule rounded-2xl p-4 min-h-[320px] flex flex-col shadow-print-sm"
+          className="absolute inset-x-3 top-3 z-0 bg-cardstock border border-rule rounded-2xl p-4 min-h-[360px] flex flex-col justify-start shadow-print-sm"
         >
           {/* inner card header tab */}
-          <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-rule">
+          <div className="flex items-center justify-between gap-2 pb-2 border-b border-rule">
             <span className="text-xs font-semibold text-ink-muted">
               Kartu Kata Rahasia
             </span>
             {category && (
-              <span className="px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule text-xs font-semibold text-ink">
+              <span className="px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule text-xs font-semibold text-ink truncate max-w-[160px]">
                 {category}
               </span>
             )}
           </div>
 
-          {/* Secret content with opacity transition so zero leak when closed */}
-          <div className={cn("transition-opacity duration-200 my-auto", isHolding ? "opacity-100" : "opacity-0")}>
+          {/* Secret content placed in the upper 180px window so the 210px flap never overlaps it */}
+          <div className={cn('transition-opacity duration-200 pt-2', isHolding ? 'opacity-100' : 'opacity-0')}>
             {isMrWhite ? (
-              <div className="rounded-2xl border border-dashed border-rule bg-paper p-4 text-center space-y-2 min-h-[140px] flex flex-col items-center justify-center">
+              <div className="rounded-2xl border border-dashed border-rule bg-paper p-3 text-center space-y-1.5 flex flex-col items-center justify-center">
                 <span className="rubber-stamp text-xs">Mr. White (Tanpa Kata)</span>
-                <p className="text-xs text-ink-muted max-w-[240px] leading-relaxed">
+                <p className="text-xs text-ink-muted max-w-[240px] leading-snug">
                   Kamu tidak mendapat kata. Dengarkan petunjuk pemain lain dan menebaklah saat terdesak!
                 </p>
               </div>
             ) : (
-              <div className="text-center py-2">
-                <p className="text-xs font-semibold text-ink-muted mb-1.5">
+              <div className="text-center">
+                <p className="text-xs font-semibold text-ink-muted mb-1">
                   Kata rahasia kamu
                 </p>
-                <p className="font-condensed text-4xl sm:text-5xl text-ink tracking-tight py-2.5 border-y border-rule">
+                <p className="font-condensed text-3xl sm:text-4xl text-ink tracking-tight py-2 border-y border-rule break-words">
                   {isHolding ? (word || 'Kata Rahasia') : '••••••••'}
                 </p>
-                <p className="text-xs text-ink-muted max-w-[250px] leading-relaxed mx-auto mt-2">
+                <p className="text-xs text-ink-muted max-w-[250px] leading-snug mx-auto mt-1.5">
                   Ingat kata ini baik-baik dan jangan sampai terlihat pemain lain.
                 </p>
               </div>
