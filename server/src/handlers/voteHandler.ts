@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { RoomManager } from '../managers/RoomManager.js';
+import { broadcastRoomState, sanitizeRoomForPlayer } from '../utils/sanitize.js';
 
 export function registerVoteHandlers(
   io: Server,
@@ -19,21 +20,34 @@ export function registerVoteHandlers(
         }
 
         const result = roomManager.castVote(roomId, voterId, payload.targetId);
-        io.to(roomId).emit('room:updated', result.room);
+        broadcastRoomState(io, result.room, 'room:updated');
 
         if (result.isComplete) {
-          io.to(roomId).emit('vote:completed', {
-            room: result.room,
-            isTie: result.isTie,
-            eliminatedPlayer: result.eliminatedPlayer,
-            winner: result.winner,
-          });
+          const normalizedRoomId = result.room.roomId.trim().toUpperCase();
+          const socketIds = io.sockets.adapter.rooms.get(normalizedRoomId);
+          if (socketIds) {
+            for (const socketId of socketIds) {
+              const targetSocket = io.sockets.sockets.get(socketId);
+              if (!targetSocket) continue;
+              const pId = targetSocket.data?.playerId;
+              const sanitized = sanitizeRoomForPlayer(result.room, pId);
+              targetSocket.emit('vote:completed', {
+                room: sanitized,
+                isTie: result.isTie,
+                eliminatedPlayer: sanitized.eliminatedPlayer,
+                winner: result.winner,
+              });
+            }
+          }
         }
 
         if (callback) {
+          const sanitizedForVoter = sanitizeRoomForPlayer(result.room, voterId);
           callback({
             success: true,
             ...result,
+            room: sanitizedForVoter,
+            eliminatedPlayer: sanitizedForVoter.eliminatedPlayer,
           });
         }
       } catch (err: any) {
@@ -55,17 +69,29 @@ export function registerVoteHandlers(
         }
 
         const result = roomManager.handleMrWhiteGuess(roomId, payload.guess);
-        io.to(roomId).emit('room:updated', result.room);
-        io.to(roomId).emit('mrwhite:result', {
-          isCorrect: result.isCorrect,
-          winner: result.winner,
-          room: result.room,
-        });
+        broadcastRoomState(io, result.room, 'room:updated');
+
+        const normalizedRoomId = result.room.roomId.trim().toUpperCase();
+        const socketIds = io.sockets.adapter.rooms.get(normalizedRoomId);
+        if (socketIds) {
+          for (const socketId of socketIds) {
+            const targetSocket = io.sockets.sockets.get(socketId);
+            if (!targetSocket) continue;
+            const pId = targetSocket.data?.playerId;
+            const sanitized = sanitizeRoomForPlayer(result.room, pId);
+            targetSocket.emit('mrwhite:result', {
+              isCorrect: result.isCorrect,
+              winner: result.winner,
+              room: sanitized,
+            });
+          }
+        }
 
         if (callback) {
           callback({
             success: true,
             ...result,
+            room: sanitizeRoomForPlayer(result.room, socket.data.playerId),
           });
         }
       } catch (err: any) {

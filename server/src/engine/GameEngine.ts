@@ -34,11 +34,30 @@ export function assignRoles(
   const totalPlayers = players.length;
   const undercoverCount = settings.undercoverCount || 0;
   const mrWhiteCount = settings.enableMrWhite ? (settings.mrWhiteCount || 0) : 0;
-  const civilianCount = totalPlayers - undercoverCount - mrWhiteCount;
+  const totalImpostors = undercoverCount + mrWhiteCount;
+  const civilianCount = totalPlayers - totalImpostors;
 
-  if (civilianCount < 1 || undercoverCount < 1 || totalPlayers < (undercoverCount + mrWhiteCount + 1)) {
+  if (totalPlayers < 3) {
+    throw new Error('Minimal 3 pemain untuk memulai permainan.');
+  }
+
+  if (undercoverCount < 1) {
+    throw new Error('Minimal 1 Undercover diperlukan dalam permainan.');
+  }
+
+  if (civilianCount < 1) {
+    throw new Error('Minimal 1 Warga diperlukan dalam permainan.');
+  }
+
+  // Undercover team must not outnumber or equal civilians from the start
+  const maxUndercover =
+    totalPlayers === 3
+      ? 1
+      : Math.max(1, Math.floor((totalPlayers - mrWhiteCount - 1) / 2));
+
+  if (undercoverCount > maxUndercover) {
     throw new Error(
-      `Invalid role configuration: ${totalPlayers} players is insufficient for ${civilianCount} Civilians, ${undercoverCount} Undercovers, and ${mrWhiteCount} Mr. White.`
+      `Konfigurasi peran tidak valid: Maksimal ${maxUndercover} Undercover untuk ${totalPlayers} pemain.`
     );
   }
 

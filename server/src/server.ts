@@ -7,6 +7,7 @@ import { RoomManager } from './managers/RoomManager.js';
 import { registerRoomHandlers } from './handlers/roomHandler.js';
 import { registerGameHandlers } from './handlers/gameHandler.js';
 import { registerVoteHandlers } from './handlers/voteHandler.js';
+import { broadcastRoomState } from './utils/sanitize.js';
 
 dotenv.config({ path: '../.env' });
 dotenv.config();
@@ -14,7 +15,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 app.use(
   cors({
@@ -27,6 +28,7 @@ app.use(express.json());
 
 const roomManager = new RoomManager();
 const startTime = Date.now();
+const DISCONNECT_GRACE_MS = 60_000;
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
@@ -54,6 +56,21 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`[Socket.io] Client disconnected: ${socket.id}`);
+    const { roomId, playerId } = socket.data;
+    if (!roomId || !playerId) return;
+
+    // Beri grace period agar refresh/reconnect singkat tidak mengeluarkan pemain;
+    // ghost player (tab ditutup) dibersihkan setelah grace dan peserta lain diberi tahu.
+    roomManager.schedulePlayerCleanup(roomId, playerId, DISCONNECT_GRACE_MS, (expiredRoomId, _pid, remainingRoom) => {
+      if (remainingRoom) {
+        broadcastRoomState(io, remainingRoom, 'room:updated');
+      } else {
+        io.to(expiredRoomId).emit('room:deleted', {
+          roomId: expiredRoomId,
+          reason: 'Ruangan telah dibubarkan karena semua pemain telah keluar.',
+        });
+      }
+    });
   });
 });
 

@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { RoomManager } from '../managers/RoomManager.js';
 import { GameSettings, WordPair } from '../types/game.types.js';
+import { broadcastRoomState, sanitizeRoomForPlayer } from '../utils/sanitize.js';
 
 export function registerGameHandlers(
   io: Server,
@@ -16,8 +17,19 @@ export function registerGameHandlers(
     ) => {
       try {
         const roomId = socket.data.roomId;
+        const playerId = socket.data.playerId;
         if (!roomId) {
           throw new Error('Not connected to a room');
+        }
+
+        const roomToStart = roomManager.getRoom(roomId);
+        if (!roomToStart) {
+          throw new Error('Ruangan tidak ditemukan');
+        }
+
+        const caller = roomToStart.players.find((p) => p.id === playerId);
+        if (!caller || !caller.isHost) {
+          throw new Error('Hanya host yang dapat memulai permainan');
         }
 
         const room = roomManager.startGame(
@@ -26,11 +38,11 @@ export function registerGameHandlers(
           payload?.customWordPair
         );
 
-        io.to(roomId).emit('room:updated', room);
-        io.to(roomId).emit('game:started', room);
+        broadcastRoomState(io, room, 'room:updated');
+        broadcastRoomState(io, room, 'game:started');
 
         if (callback) {
-          callback({ success: true, room });
+          callback({ success: true, room: sanitizeRoomForPlayer(room, playerId) });
         }
       } catch (err: any) {
         if (callback) {
@@ -44,15 +56,16 @@ export function registerGameHandlers(
   socket.on('turn:end', (callback?: (res: any) => void) => {
     try {
       const roomId = socket.data.roomId;
+      const playerId = socket.data.playerId;
       if (!roomId) {
         throw new Error('Not connected to a room');
       }
 
       const room = roomManager.advanceTurn(roomId);
-      io.to(roomId).emit('room:updated', room);
+      broadcastRoomState(io, room, 'room:updated');
 
       if (callback) {
-        callback({ success: true, room });
+        callback({ success: true, room: sanitizeRoomForPlayer(room, playerId) });
       }
     } catch (err: any) {
       if (callback) {
@@ -79,16 +92,27 @@ export function registerGameHandlers(
   socket.on('game:rematch', (callback?: (res: any) => void) => {
     try {
       const roomId = socket.data.roomId;
+      const playerId = socket.data.playerId;
       if (!roomId) {
         throw new Error('Not connected to a room');
       }
 
+      const roomToRematch = roomManager.getRoom(roomId);
+      if (!roomToRematch) {
+        throw new Error('Ruangan tidak ditemukan');
+      }
+
+      const caller = roomToRematch.players.find((p) => p.id === playerId);
+      if (!caller || !caller.isHost) {
+        throw new Error('Hanya host yang dapat memulai pertandingan ulang');
+      }
+
       const room = roomManager.rematch(roomId);
-      io.to(roomId).emit('room:updated', room);
-      io.to(roomId).emit('game:rematch_started', room);
+      broadcastRoomState(io, room, 'room:updated');
+      broadcastRoomState(io, room, 'game:rematch_started');
 
       if (callback) {
-        callback({ success: true, room });
+        callback({ success: true, room: sanitizeRoomForPlayer(room, playerId) });
       }
     } catch (err: any) {
       if (callback) {

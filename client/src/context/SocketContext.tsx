@@ -9,6 +9,11 @@ export const STORAGE_KEYS = {
   SAVED_AVATAR: 'whatstheword_saved_avatar',
 };
 
+export const getStoredToken = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return sessionStorage.getItem(STORAGE_KEYS.PLAYER_TOKEN) || localStorage.getItem(STORAGE_KEYS.PLAYER_TOKEN);
+};
+
 export interface VoteResultPayload {
   room: RoomState;
   isTie?: boolean;
@@ -50,13 +55,13 @@ export interface SocketContextType {
 export const SocketContext = createContext<SocketContextType | null>(null);
 
 const getSocketUrl = (): string => {
-  if (typeof window === 'undefined') return 'http://localhost:3001';
+  if (typeof window === 'undefined') return 'http://localhost:3002';
   if (import.meta.env.VITE_SOCKET_URL) {
     return import.meta.env.VITE_SOCKET_URL;
   }
   // If running in development with Vite proxy or standard dev setup
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:3001';
+    return 'http://localhost:3002';
   }
   return window.location.origin;
 };
@@ -69,10 +74,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [room, setRoom] = useState<RoomState | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   const [playerToken, setPlayerToken] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(STORAGE_KEYS.PLAYER_TOKEN);
-    }
-    return null;
+    return getStoredToken();
   });
   const [lastVoteResult, setLastVoteResult] = useState<VoteResultPayload | null>(null);
   const [lastMrWhiteResult, setLastMrWhiteResult] = useState<MrWhiteResultPayload | null>(null);
@@ -80,10 +82,15 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const socketRef = useRef<Socket | null>(null);
   const currentPlayerIdRef = useRef<string | null>(null);
+  const roomRef = useRef<RoomState | null>(null);
 
   useEffect(() => {
     currentPlayerIdRef.current = currentPlayer?.id || null;
   }, [currentPlayer]);
+
+  useEffect(() => {
+    roomRef.current = room;
+  }, [room]);
 
   // Establish socket connection on mount
   useEffect(() => {
@@ -105,7 +112,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setError(null);
 
       // Attempt session restoration if token exists
-      const savedToken = localStorage.getItem(STORAGE_KEYS.PLAYER_TOKEN);
+      const savedToken = getStoredToken();
       if (savedToken) {
         newSocket.emit('player:reconnect', { playerToken: savedToken }, (res: any) => {
           if (res?.success && res?.room && res?.player) {
@@ -113,8 +120,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             setCurrentPlayer(res.player);
             setPlayerToken(savedToken);
             currentPlayerIdRef.current = res.player.id;
+            sessionStorage.setItem(STORAGE_KEYS.PLAYER_TOKEN, savedToken);
+            sessionStorage.setItem(STORAGE_KEYS.ROOM_ID, res.room.roomId);
+            localStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.ROOM_ID);
           } else {
             // Expired session
+            sessionStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
+            sessionStorage.removeItem(STORAGE_KEYS.ROOM_ID);
             localStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
             localStorage.removeItem(STORAGE_KEYS.ROOM_ID);
             setPlayerToken(null);
@@ -131,7 +144,11 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     newSocket.on('connect_error', (err) => {
       setIsConnecting(false);
-      setError(`Gagal terhubung ke server: ${err.message}`);
+      // Hanya tandai error jika user sedang berada di room (koneksi drop di tengah game).
+      // Kegagalan koneksi latar di home cukup ditunjukkan indikator status, bukan banner.
+      if (roomRef.current) {
+        setError(`Koneksi ke server terputus: ${err.message}`);
+      }
     });
 
     // Realtime Game Events
@@ -143,6 +160,20 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           setCurrentPlayer(me);
         }
       }
+    });
+
+    newSocket.on('room:deleted', (payload: { roomId: string; reason?: string }) => {
+      sessionStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
+      sessionStorage.removeItem(STORAGE_KEYS.ROOM_ID);
+      localStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.ROOM_ID);
+      setRoom(null);
+      setCurrentPlayer(null);
+      setPlayerToken(null);
+      setLastVoteResult(null);
+      setLastMrWhiteResult(null);
+      setTieNotification(false);
+      setError(payload?.reason || 'Ruangan telah dibubarkan.');
     });
 
     newSocket.on('game:started', (startedRoom: RoomState) => {
@@ -239,8 +270,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               setCurrentPlayer(res.player);
               setPlayerToken(res.playerToken);
               currentPlayerIdRef.current = res.player.id;
-              localStorage.setItem(STORAGE_KEYS.PLAYER_TOKEN, res.playerToken);
-              localStorage.setItem(STORAGE_KEYS.ROOM_ID, res.roomId);
+              sessionStorage.setItem(STORAGE_KEYS.PLAYER_TOKEN, res.playerToken);
+              sessionStorage.setItem(STORAGE_KEYS.ROOM_ID, res.roomId);
+              localStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
+              localStorage.removeItem(STORAGE_KEYS.ROOM_ID);
               localStorage.setItem(STORAGE_KEYS.SAVED_NAME, playerName);
               localStorage.setItem(STORAGE_KEYS.SAVED_AVATAR, avatar);
               resolve({ success: true, roomId: res.roomId });
@@ -267,7 +300,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return { success: false, error: 'Belum terhubung ke server game' };
       }
 
-      const existingToken = localStorage.getItem(STORAGE_KEYS.PLAYER_TOKEN) || undefined;
+      const existingToken = getStoredToken() || undefined;
 
       return new Promise((resolve) => {
         socketRef.current!.emit(
@@ -284,8 +317,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               setCurrentPlayer(res.player);
               setPlayerToken(res.playerToken);
               currentPlayerIdRef.current = res.player.id;
-              localStorage.setItem(STORAGE_KEYS.PLAYER_TOKEN, res.playerToken);
-              localStorage.setItem(STORAGE_KEYS.ROOM_ID, res.room.roomId);
+              sessionStorage.setItem(STORAGE_KEYS.PLAYER_TOKEN, res.playerToken);
+              sessionStorage.setItem(STORAGE_KEYS.ROOM_ID, res.room.roomId);
+              localStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
+              localStorage.removeItem(STORAGE_KEYS.ROOM_ID);
               localStorage.setItem(STORAGE_KEYS.SAVED_NAME, playerName);
               localStorage.setItem(STORAGE_KEYS.SAVED_AVATAR, avatar);
               resolve({ success: true });
@@ -306,6 +341,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (socketRef.current && socketRef.current.connected) {
       socketRef.current.emit('room:leave');
     }
+    sessionStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.ROOM_ID);
     localStorage.removeItem(STORAGE_KEYS.PLAYER_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.ROOM_ID);
     setRoom(null);

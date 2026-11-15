@@ -1,0 +1,34 @@
+[
+ {
+  "shape": "split-studio",
+  "theme": "terrazzo",
+  "axes": "light/geometric-sans/warm",
+  "hero": "settled",
+  "nav": "slab",
+  "footer": "letter close",
+  "imagery": "product captures",
+  "signature": "the deal",
+  "sections": [
+   "hero",
+   "before-after",
+   "pinned",
+   "switcher",
+   "spec-table",
+   "close"
+  ],
+  "prompt": "landing page What's The Word",
+  "date": "2026-11-02",
+  "mode": "build"
+ },
+ {
+  "date": "2026-11-02",
+  "mode": "redesign",
+  "depth": "restyle",
+  "scope": "app",
+  "genre": "playful",
+  "theme": "hum",
+  "axes": "light/rounded-sans/chromatic-yellow",
+  "signature": "secret-word peek card",
+  "prompt": "make it user friendly and make user comfortable with the color palette and layout"
+ }
+]

@@ -2,37 +2,38 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   Users,
-  Shield,
-  EyeOff,
-  HelpCircle,
+  ShieldCheck,
+  EyeSlash,
+  Question,
   ArrowRight,
   ArrowLeft,
-  Dices,
-  Vote,
-  Clock,
   Shuffle,
-} from 'lucide-react';
+  ListChecks,
+  Clock,
+  BookOpen,
+} from '@phosphor-icons/react';
 import { usePassPlay } from '../context/PassPlayContext';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
 import { Modal } from '../components/common/Modal';
-import { PRESET_AVATARS } from '../components/game/AvatarPicker';
+import { AvatarPicker, PRESET_AVATARS } from '../components/game/AvatarPicker';
+import { PlayerToken } from '../components/game/PlayerToken';
 import { getLocalCustomPacks } from '../services/wordPackService';
 import { CustomWordPack } from '../types/game.types';
 import { Header } from '../components/common/Header';
 import { cn } from '../utils/cn';
 
 const TURN_DURATION_OPTIONS = [
-  { label: '30s', value: 30, desc: 'Cepat & Intens' },
-  { label: '45s', value: 45, desc: 'Standar' },
-  { label: '60s', value: 60, desc: 'Santai' },
+  { label: '30 dtk', value: 30, desc: 'Cepat & Intens' },
+  { label: '45 dtk', value: 45, desc: 'Standar' },
+  { label: '60 dtk', value: 60, desc: 'Santai' },
   { label: 'Bebas', value: 0, desc: 'Tanpa Timer' },
 ];
 
 const RANDOM_NAMES = [
-  'Agent Cyber', 'Neon Fox', 'Shadow Byte', 'Phantom V', 'Holo Viper',
-  'Specter 7', 'Cyborg Zero', 'Matrix Ghost', 'Alpha Wolf', 'Quantum Cat',
-  'Vector Blade', 'Nova Spark', 'Echo Pulse', 'Stealth Hawk', 'Apex Sentinel'
+  'Penjaga Meja', 'Tuan Kertas', 'Nona Tinta', 'Saksi Kunci', 'Juru Tinta',
+  'Hakim Garis', 'Kurir Kartu', 'Agen Merah', 'Kapten Dadu', 'Juru Arsip',
+  'Penjaga Pos', 'Saudagar Kata', 'Tuan Dadu', 'Nona Skema', 'Saksi Senja'
 ];
 
 interface SmoothPlayerSliderProps {
@@ -93,12 +94,12 @@ const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
 
   return (
     <div className="space-y-3 select-none">
-      <div className="flex items-center justify-between text-xs font-mono">
-        <span className="text-zinc-400">
-          Geser Jumlah Pemain:
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-ink-muted font-medium">
+          Geser jumlah pemain:
         </span>
-        <span className="text-zinc-200 font-semibold px-2 py-0.5 rounded-md bg-zinc-800 border border-zinc-700">
-          {value} Pemain
+        <span className="text-ink font-semibold px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule">
+          {value} pemain
         </span>
       </div>
 
@@ -112,36 +113,36 @@ const SmoothPlayerSlider: React.FC<SmoothPlayerSliderProps> = ({
         className="relative h-9 flex items-center cursor-pointer touch-none group"
       >
         {/* Background Track */}
-        <div className="w-full h-2 rounded-full bg-zinc-800 border border-zinc-700/50 relative overflow-hidden">
-          {/* Active Fill */}
+        <div className="w-full h-2.5 rounded-full bg-paper-muted border border-rule relative overflow-hidden">
           <div
-            className="h-full bg-white transition-all duration-75"
-            style={{ width: `${percentage}%` }}
+            className="h-full w-full origin-left bg-teal-dark transition-transform duration-75"
+            style={{ transform: `scaleX(${percentage / 100})` }}
           />
         </div>
 
         {/* Draggable Thumb Knob */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none transition-transform duration-75"
-          style={{ left: `${percentage}%` }}
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none"
+          style={{ insetInlineStart: `${percentage}%` }}
         >
           <div
-            className={`w-6 h-6 rounded-full bg-white border-2 border-zinc-950 shadow-md flex items-center justify-center transition-all ${
+            className={cn(
+              'w-6 h-6 rounded-full bg-teal-dark border-2 border-cardstock shadow-print-sm flex items-center justify-center transition-transform',
               isDragging ? 'scale-125' : 'group-hover:scale-110'
-            }`}
+            )}
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-zinc-950" />
+            <div className="w-1.5 h-1.5 rounded-full bg-cardstock" />
           </div>
         </div>
       </div>
 
       {/* Discrete Scale Markers */}
-      <div className="flex justify-between text-[11px] font-mono text-zinc-500 px-0.5">
-        <span className={value === 3 ? 'text-zinc-100 font-bold' : ''}>3 Min</span>
-        <span className={value === 5 ? 'text-zinc-100 font-bold' : ''}>5</span>
-        <span className={value === 10 ? 'text-zinc-100 font-bold' : ''}>10</span>
-        <span className={value === 15 ? 'text-zinc-100 font-bold' : ''}>15</span>
-        <span className={value === 20 ? 'text-zinc-100 font-bold' : ''}>20 Maks</span>
+      <div className="flex justify-between text-xs text-ink-muted px-0.5">
+        <span className={value === 3 ? 'text-ink font-bold' : ''}>3 min</span>
+        <span className={value === 5 ? 'text-ink font-bold' : ''}>5</span>
+        <span className={value === 10 ? 'text-ink font-bold' : ''}>10</span>
+        <span className={value === 15 ? 'text-ink font-bold' : ''}>15</span>
+        <span className={value === 20 ? 'text-ink font-bold' : ''}>20 maks</span>
       </div>
     </div>
   );
@@ -160,15 +161,13 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
     startPassPlayGame,
   } = usePassPlay();
 
-  // Step Wizard state: 1 = Roles & Count, 2 = Category & Rules, 3 = Player Names & Avatars
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [totalPlayerCount, setTotalPlayerCount] = useState<number>(players.length || 4);
   const [customPacks, setCustomPacks] = useState<CustomWordPack[]>([]);
 
-  // Avatar picker popup for specific player index
   const [avatarPickerPlayerIndex, setAvatarPickerPlayerIndex] = useState<number | null>(null);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
-  // Load custom packs from localStorage
   useEffect(() => {
     try {
       const packs = getLocalCustomPacks();
@@ -178,8 +177,8 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
     }
   }, []);
 
-  // Sync player count with players array
   const adjustPlayerCount = (newCount: number) => {
+    setSetupError(null);
     const clamped = Math.max(3, Math.min(20, newCount));
     setTotalPlayerCount(clamped);
 
@@ -204,7 +203,6 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
       }
     });
 
-    // Auto-balance roles when total changes
     const mrWhite = settings.enableMrWhite && clamped >= 3 ? 1 : 0;
     const maxUndercover = clamped === 2 ? 1 : Math.max(1, Math.floor((clamped - mrWhite - 1) / 2));
     const nextUndercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
@@ -218,7 +216,6 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
     });
   };
 
-  // Role constraints
   const mrWhiteCount = settings.enableMrWhite && totalPlayerCount >= 3 ? 1 : 0;
   const maxUndercover = totalPlayerCount === 2 ? 1 : Math.max(1, Math.floor((totalPlayerCount - mrWhiteCount - 1) / 2));
   const currentUndercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
@@ -233,7 +230,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
   };
 
   const handleToggleMrWhite = () => {
-    if (totalPlayerCount < 3) return; // Mr White requires at least 3 players
+    if (totalPlayerCount < 3) return;
     const nextEnable = !settings.enableMrWhite;
     const nextMrWhite = nextEnable ? 1 : 0;
     const nextMaxUndercover = Math.max(1, Math.floor((totalPlayerCount - nextMrWhite - 1) / 2));
@@ -289,13 +286,13 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
       prev.map((p, idx) => ({
         ...p,
         name: shuffledNames[idx % shuffledNames.length] || 'Pemain ' + (idx + 1),
-        avatar: shuffledAvatars[idx % shuffledAvatars.length]?.emoji || '🕵️',
+        avatar: shuffledAvatars[idx % shuffledAvatars.length]?.emoji || 'token-eye',
       }))
     );
   };
 
   const handleStartGame = () => {
-    // Fill empty names if any
+    setSetupError(null);
     setPlayers((prev) =>
       prev.map((p, idx) => ({
         ...p,
@@ -305,35 +302,34 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
 
     const success = startPassPlayGame();
     if (!success) {
-      alert('Minimal 3 pemain untuk memulai permainan!');
+      setSetupError('Minimal 3 pemain untuk memulai permainan!');
     }
   };
 
   const ALL_CATEGORY_OPTIONS = [
-    { id: '🎲 Acak / Misteri', title: 'Acak / Misteri', icon: '🎲', desc: 'Paling seru! Kategori dirahasiakan & dipilih acak' },
-    { id: 'Makanan & Minuman', title: 'Makanan & Minuman', icon: '🍔', desc: 'Kuliner, jajanan, dan minuman populer' },
-    { id: 'Hewan', title: 'Hewan & Satwa', icon: '🐾', desc: 'Binatang darat, laut, dan udara' },
-    { id: 'Benda & Gadget', title: 'Benda & Gadget', icon: '📱', desc: 'Peralatan sehari-hari dan teknologi' },
-    { id: 'Tempat & Hiburan', title: 'Tempat & Hiburan', icon: '🏖️', desc: 'Destinasi wisata, kota, dan rekreasi' },
-    { id: 'Profesi', title: 'Profesi & Karier', icon: '💼', desc: 'Pekerjaan umum dan keahlian' },
+    { id: 'Acak / Misteri', title: 'Acak / Misteri', icon: 'random', desc: 'Paling seru! Kategori dirahasiakan & dipilih acak' },
+    { id: 'Makanan & Minuman', title: 'Makanan & Minuman', icon: 'ink', desc: 'Kuliner, jajanan, dan minuman populer' },
+    { id: 'Hewan', title: 'Hewan', icon: 'ink', desc: 'Binatang darat, laut, dan udara' },
+    { id: 'Benda & Gadget', title: 'Benda & Gadget', icon: 'ink', desc: 'Peralatan sehari-hari dan teknologi' },
+    { id: 'Tempat & Hiburan', title: 'Tempat & Hiburan', icon: 'ink', desc: 'Destinasi wisata, kota, dan rekreasi' },
+    { id: 'Profesi', title: 'Profesi', icon: 'ink', desc: 'Pekerjaan umum dan keahlian' },
   ];
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-[#09090b] text-zinc-100 font-sans">
+    <div className="min-h-[100dvh] flex flex-col bg-paper text-ink font-sans">
       <Header
         onBack={currentStep === 1 ? onBack : () => setCurrentStep((prev) => (prev - 1) as any)}
         backLabel={currentStep === 1 ? 'Menu Utama' : 'Langkah ' + (currentStep - 1)}
-        className="border-b border-zinc-800/80"
       />
 
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 sm:py-8 space-y-6">
         {/* Step Progress Header */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-semibold">
-              Pass &amp; Play · Mode 1 HP
+            <span className="text-xs font-semibold text-ink-muted">
+              Pass &amp; Play (Mode Satu HP)
             </span>
-            <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300">
+            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-cardstock border border-rule text-ink shadow-print-sm">
               Langkah {currentStep} dari 3
             </span>
           </div>
@@ -343,18 +339,31 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             {[
               { step: 1, label: '1. Peran & Jumlah' },
               { step: 2, label: '2. Kategori & Ronde' },
-              { step: 3, label: '3. Roster Pemain' },
+              { step: 3, label: '3. Daftar Pemain' },
             ].map((st) => (
-              <div
+              <button
                 key={st.step}
+                type="button"
                 onClick={() => {
                   if (st.step < currentStep) setCurrentStep(st.step as any);
                 }}
-                className={cn(
-                  'h-1 rounded-full transition-all duration-300 cursor-pointer',
-                  currentStep >= st.step ? 'bg-zinc-200' : 'bg-zinc-800'
-                )}
-              />
+                className="text-left space-y-1.5 group focus:outline-none"
+              >
+                <div
+                  className={cn(
+                    'h-1.5 rounded-full transition-colors duration-200',
+                    currentStep >= st.step ? 'bg-teal-dark' : 'bg-paper-dark'
+                  )}
+                />
+                <span
+                  className={cn(
+                    'block text-xs font-medium truncate',
+                    currentStep === st.step ? 'text-ink font-bold' : 'text-ink-muted'
+                  )}
+                >
+                  {st.label}
+                </span>
+              </button>
             ))}
           </div>
         </div>
@@ -369,23 +378,21 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             className="space-y-5"
           >
             {/* Total Players Card */}
-            <Card padding="md" className="space-y-4 border-zinc-800 bg-zinc-900/40">
-              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+            <Card padding="md" className="space-y-4">
+              <div className="flex items-center justify-between border-b border-rule pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 flex items-center justify-center">
-                    <Users className="w-4 h-4" />
+                  <div className="w-9 h-9 rounded-2xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center shadow-print-sm">
+                    <Users className="w-5 h-5" weight="bold" />
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-zinc-100">Jumlah Pemain (3 - 20 Orang)</h3>
-                    <p className="text-xs text-zinc-400">Geser bar di kiri atau gunakan tombol +/- di kanan</p>
+                    <h3 className="text-sm sm:text-base font-bold text-ink">Jumlah Pemain (3 sampai 20 Orang)</h3>
+                    <p className="text-xs text-ink-muted">Geser bar di kiri atau gunakan tombol di kanan</p>
                   </div>
                 </div>
               </div>
 
-              {/* Side-by-Side: Left Scroll Bar & Right Stepper */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
-                {/* Left Side: Scroll Bar Track */}
-                <div className="flex-1 bg-zinc-950/80 p-3.5 rounded-xl border border-zinc-800">
+                <div className="flex-1 bg-paper p-3.5 rounded-2xl border border-rule">
                   <SmoothPlayerSlider
                     value={totalPlayerCount}
                     min={3}
@@ -394,29 +401,28 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                   />
                 </div>
 
-                {/* Right Side: Stepper [-] [N] [+] */}
-                <div className="flex items-center justify-center gap-2 shrink-0 bg-zinc-950/80 p-3.5 rounded-xl border border-zinc-800">
+                <div className="flex items-center justify-center gap-2 shrink-0 bg-paper p-3.5 rounded-2xl border border-rule">
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount - 1)}
                     disabled={totalPlayerCount <= 3}
-                    className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 font-bold hover:bg-zinc-800 disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all"
+                    className="w-10 h-10 rounded-2xl bg-cardstock border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:translate-y-[1px] transition-colors shadow-print-sm"
                   >
                     -
                   </button>
 
-                  <div className="px-3.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-center min-w-[64px]">
-                    <span className="text-2xl font-mono font-bold text-zinc-100">
+                  <div className="px-3.5 py-1 rounded-2xl bg-cardstock border border-rule text-center min-w-[68px]">
+                    <span className="text-2xl font-mono font-bold text-ink">
                       {totalPlayerCount}
                     </span>
-                    <span className="text-[9px] font-mono text-zinc-400 block -mt-1 font-semibold uppercase">Pemain</span>
+                    <span className="text-xs text-ink-muted block -mt-1 font-medium">pemain</span>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount + 1)}
                     disabled={totalPlayerCount >= 20}
-                    className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 font-bold hover:bg-zinc-800 disabled:opacity-30 flex items-center justify-center text-xl active:scale-95 transition-all"
+                    className="w-10 h-10 rounded-2xl bg-cardstock border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:translate-y-[1px] transition-colors shadow-print-sm"
                   >
                     +
                   </button>
@@ -425,42 +431,44 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             </Card>
 
             {/* Role Breakdown Card */}
-            <Card padding="md" className="space-y-3.5 border-zinc-800 bg-zinc-900/40">
-              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-                <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-zinc-400" />
+            <Card padding="md" className="space-y-3.5">
+              <div className="flex items-center justify-between border-b border-rule pb-3">
+                <span className="text-sm font-bold text-ink flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center">
+                    <ShieldCheck className="w-4 h-4" weight="bold" />
+                  </span>
                   Komposisi Peran
                 </span>
-                <span className="text-xs font-mono font-medium text-zinc-400">
-                  {currentCivilian} Warga vs {currentUndercover} Impostor {mrWhiteCount > 0 ? '+ 1 Mr. White' : ''}
+                <span className="text-xs font-medium text-ink-muted">
+                  {currentCivilian} Warga, {currentUndercover} Impostor{mrWhiteCount > 0 ? ', 1 Mr. White' : ''}
                 </span>
               </div>
 
               {/* Civilian Row */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-zinc-900 text-zinc-300 flex items-center justify-center">
-                    <Shield className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-teal-light text-teal-dark flex items-center justify-center">
+                    <ShieldCheck className="w-4 h-4" weight="bold" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-zinc-200">Warga (Civilian)</p>
-                    <p className="text-[11px] text-zinc-500">Mendapatkan kata rahasia mayoritas</p>
+                    <p className="text-sm font-semibold text-ink">Warga (Civilian)</p>
+                    <p className="text-xs text-ink-muted">Mendapatkan kata rahasia yang sama</p>
                   </div>
                 </div>
-                <span className="text-base font-mono font-bold text-zinc-200 px-3 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">
+                <span className="text-base font-mono font-bold text-ink px-3 py-0.5 rounded-xl bg-cardstock border border-rule">
                   {currentCivilian}
                 </span>
               </div>
 
               {/* Undercover Stepper */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-rose-950/30 text-rose-400 flex items-center justify-center">
-                    <EyeOff className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-stamp-light text-stamp-dark flex items-center justify-center">
+                    <EyeSlash className="w-4 h-4" weight="bold" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-rose-300">Impostor (Undercover)</p>
-                    <p className="text-[11px] text-zinc-500">Kata mirip, tidak tahu dirinya impostor</p>
+                    <p className="text-sm font-semibold text-stamp-dark">Impostor (Undercover)</p>
+                    <p className="text-xs text-ink-muted">Menerima kata mirip, menyamar di antara warga</p>
                   </div>
                 </div>
 
@@ -469,18 +477,18 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     type="button"
                     onClick={() => handleUndercoverChange(-1)}
                     disabled={currentUndercover <= 1}
-                    className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 disabled:opacity-30 flex items-center justify-center font-bold active:scale-95"
+                    className="w-8 h-8 rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:translate-y-[1px] transition-colors"
                   >
                     -
                   </button>
-                  <span className="text-base font-mono font-bold text-rose-300 min-w-[26px] text-center">
+                  <span className="text-base font-mono font-bold text-stamp-dark min-w-[26px] text-center">
                     {currentUndercover}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleUndercoverChange(1)}
                     disabled={currentUndercover >= maxUndercover}
-                    className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 disabled:opacity-30 flex items-center justify-center font-bold active:scale-95"
+                    className="w-8 h-8 rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:translate-y-[1px] transition-colors"
                   >
                     +
                   </button>
@@ -488,14 +496,14 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
 
               {/* Mr. White Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-purple-950/30 text-purple-400 flex items-center justify-center">
-                    <HelpCircle className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-sun-light text-sun-dark flex items-center justify-center">
+                    <Question className="w-4 h-4" weight="bold" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-purple-300">Mr. White (Buta Kata)</p>
-                    <p className="text-[11px] text-zinc-500">Tanpa kata sama sekali (muncul ???)</p>
+                    <p className="text-sm font-semibold text-ink">Mr. White (Tanpa Kata)</p>
+                    <p className="text-xs text-ink-muted">Tidak mendapat kata, menebak kata warga</p>
                   </div>
                 </div>
 
@@ -503,18 +511,17 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                   type="button"
                   onClick={handleToggleMrWhite}
                   className={cn(
-                    'px-3 py-1 rounded-lg text-xs font-mono font-semibold transition-all border',
+                    'px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors border',
                     settings.enableMrWhite
-                      ? 'bg-purple-950/40 border-purple-800 text-purple-300'
-                      : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                      ? 'bg-teal-light border-teal text-teal-dark shadow-print-sm'
+                      : 'bg-cardstock border-rule text-ink-muted hover:text-ink'
                   )}
                 >
-                  {settings.enableMrWhite ? 'AKTIF (1)' : 'NONAKTIF'}
+                  {settings.enableMrWhite ? 'Aktif (1)' : 'Nonaktif'}
                 </button>
               </div>
             </Card>
 
-            {/* Next Button */}
             <Button
               variant="primary"
               size="lg"
@@ -522,7 +529,7 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               onClick={() => setCurrentStep(2)}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Lanjut: Pilih Kategori &amp; Aturan
+              Lanjut ke Kategori &amp; Aturan
             </Button>
           </motion.div>
         )}
@@ -537,44 +544,45 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             className="space-y-5"
           >
             {/* Category Grid Selection */}
-            <Card padding="md" className="space-y-4 border-zinc-800 bg-zinc-900/40">
-              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-                <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                  <Dices className="w-4 h-4 text-zinc-400" />
+            <Card padding="md" className="space-y-4">
+              <div className="flex items-center justify-between border-b border-rule pb-3">
+                <span className="text-sm font-bold text-ink flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center">
+                    <BookOpen className="w-4 h-4" weight="bold" />
+                  </span>
                   Pilih Kategori Kata
                 </span>
-                <span className="text-xs font-mono text-zinc-400">
-                  {settings.category || '🎲 Acak / Misteri'}
+                <span className="text-xs font-semibold text-teal-dark bg-teal-light px-2.5 py-0.5 rounded-full border border-teal">
+                  {settings.category || 'Acak / Misteri'}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {ALL_CATEGORY_OPTIONS.map((cat) => {
-                  const isSelected = (settings.category || '🎲 Acak / Misteri') === cat.id;
+                  const isSelected = (settings.category || 'Acak / Misteri') === cat.id;
 
                   return (
                     <div
                       key={cat.id}
                       onClick={() => updateSettings({ category: cat.id })}
                       className={cn(
-                        'p-3.5 rounded-xl border cursor-pointer transition-all',
+                        'p-3.5 rounded-2xl border cursor-pointer transition-colors',
                         isSelected
-                          ? 'bg-zinc-800 border-zinc-400 text-white'
-                          : 'bg-zinc-950/60 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/80'
+                          ? 'bg-teal-light border-teal-dark text-ink shadow-print-sm'
+                          : 'bg-paper border-rule text-ink hover:border-teal hover:bg-paper-muted'
                       )}
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="text-xl">{cat.icon}</span>
+                        <span className={cn('w-4 h-4 rounded-full shrink-0 border border-rule', isSelected ? 'bg-teal-dark border-teal-dark' : 'bg-cardstock')} />
                         <div>
                           <p className="text-sm font-semibold">{cat.title}</p>
-                          <p className="text-[11px] text-zinc-500 leading-tight mt-0.5">{cat.desc}</p>
+                          <p className="text-xs text-ink-muted leading-tight mt-0.5">{cat.desc}</p>
                         </div>
                       </div>
                     </div>
                   );
                 })}
 
-                {/* Custom Packs */}
                 {customPacks.map((cp) => {
                   const isSelected = settings.category === cp.title || settings.category === cp.id;
 
@@ -583,17 +591,17 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                       key={cp.id}
                       onClick={() => updateSettings({ category: cp.title })}
                       className={cn(
-                        'p-3.5 rounded-xl border cursor-pointer transition-all',
+                        'p-3.5 rounded-2xl border cursor-pointer transition-colors',
                         isSelected
-                          ? 'bg-zinc-800 border-zinc-400 text-white'
-                          : 'bg-zinc-950/60 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/80'
+                          ? 'bg-teal-light border-teal-dark text-ink shadow-print-sm'
+                          : 'bg-paper border-rule text-ink hover:border-teal hover:bg-paper-muted'
                       )}
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="text-xl">📦</span>
+                        <span className={cn('w-4 h-4 rounded-full shrink-0 border border-rule', isSelected ? 'bg-teal-dark border-teal-dark' : 'bg-cardstock')} />
                         <div>
                           <p className="text-sm font-semibold">{cp.title}</p>
-                          <p className="text-[11px] text-zinc-500 mt-0.5">{cp.wordPairs.length} pasang kata kustom</p>
+                          <p className="text-xs text-ink-muted mt-0.5">{cp.wordPairs.length} pasang kata kustom</p>
                         </div>
                       </div>
                     </div>
@@ -603,24 +611,23 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             </Card>
 
             {/* Voting & Duration Settings */}
-            <Card padding="md" className="space-y-4 border-zinc-800 bg-zinc-900/40">
-              {/* Voting Start Round Setting */}
+            <Card padding="md" className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                    <Vote className="w-4 h-4 text-zinc-400" />
-                    Voting Eliminasi Dimulai Pada
+                  <label className="text-sm font-bold text-ink flex items-center gap-2">
+                    <ListChecks className="w-4 h-4 text-teal-dark" weight="bold" />
+                    Mulai Voting Eliminasi Pada
                   </label>
-                  <span className="text-[11px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+                  <span className="text-xs font-semibold text-ink-muted bg-paper-muted px-2.5 py-0.5 rounded-full border border-rule whitespace-nowrap">
                     Ronde {settings.votingStartRound || 2}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 pt-1">
+                <div className="grid grid-cols-3 gap-2 pt-2">
                   {[
-                    { round: 1, label: 'Ronde 1', desc: 'Langsung Voting' },
-                    { round: 2, label: 'Ronde 2', desc: 'Pemanasan 1 Ronde (Disarankan)' },
-                    { round: 3, label: 'Ronde 3', desc: 'Pemanasan 2 Ronde' },
+                    { round: 1, label: 'Ronde 1', desc: 'Langsung voting' },
+                    { round: 2, label: 'Ronde 2', desc: 'Pemanasan 1 ronde', recommended: true },
+                    { round: 3, label: 'Ronde 3', desc: 'Pemanasan 2 ronde' },
                   ].map((opt) => {
                     const isSelected = (settings.votingStartRound || 2) === opt.round;
                     return (
@@ -629,14 +636,19 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                         type="button"
                         onClick={() => updateSettings({ votingStartRound: opt.round })}
                         className={cn(
-                          'p-2.5 rounded-xl text-center border transition-all',
+                          'p-2.5 sm:p-3 pt-4 rounded-2xl text-center border transition-colors relative',
                           isSelected
-                            ? 'bg-zinc-800 border-zinc-500 text-white font-semibold shadow-sm'
-                            : 'bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+                            ? 'bg-teal-light border-teal-dark text-ink font-bold shadow-print-sm'
+                            : 'bg-paper border-rule text-ink-muted hover:text-ink hover:border-teal'
                         )}
                       >
-                        <span className="text-xs sm:text-sm font-semibold block">{opt.label}</span>
-                        <span className="text-[10px] text-zinc-500 block mt-0.5">{opt.desc}</span>
+                        {opt.recommended && (
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-sun text-ink text-xs font-bold leading-none shadow-print-sm whitespace-nowrap">
+                            Disarankan
+                          </span>
+                        )}
+                        <span className="text-xs sm:text-sm font-bold block">{opt.label}</span>
+                        <span className="text-xs text-ink-muted block mt-0.5 leading-snug">{opt.desc}</span>
                       </button>
                     );
                   })}
@@ -644,9 +656,9 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
 
               {/* Turn Duration Settings */}
-              <div className="space-y-2 pt-3 border-t border-zinc-800/80">
-                <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-zinc-400" />
+              <div className="space-y-2 pt-3 border-t border-rule">
+                <label className="text-sm font-bold text-ink flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-teal-dark" weight="bold" />
                   Durasi Diskusi Putaran
                 </label>
 
@@ -659,14 +671,14 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                         type="button"
                         onClick={() => updateSettings({ turnDurationSeconds: opt.value })}
                         className={cn(
-                          'p-2 rounded-xl text-center border transition-all',
+                          'p-2.5 rounded-2xl text-center border transition-colors',
                           isSelected
-                            ? 'bg-zinc-800 border-zinc-500 text-white font-semibold shadow-sm'
-                            : 'bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+                            ? 'bg-teal-light border-teal-dark text-ink font-bold shadow-print-sm'
+                            : 'bg-paper border-rule text-ink-muted hover:text-ink'
                         )}
                         title={opt.desc}
                       >
-                        <span className="text-xs sm:text-sm font-mono block">{opt.label}</span>
+                        <span className="text-xs sm:text-sm font-semibold block">{opt.label}</span>
                       </button>
                     );
                   })}
@@ -674,14 +686,13 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
             </Card>
 
-            {/* Navigation Buttons */}
             <div className="flex items-center gap-3">
               <Button
                 variant="secondary"
                 size="lg"
                 onClick={() => setCurrentStep(1)}
                 leftIcon={<ArrowLeft className="w-4 h-4" />}
-                className="w-1/3"
+                className="flex-1"
               >
                 Kembali
               </Button>
@@ -689,12 +700,11 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               <Button
                 variant="primary"
                 size="lg"
-                fullWidth
                 onClick={() => setCurrentStep(3)}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-                className="w-2/3"
+                className="flex-[2]"
               >
-                Lanjut: Roster Pemain
+                Lanjut ke Daftar Pemain
               </Button>
             </div>
           </motion.div>
@@ -709,12 +719,11 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
             exit={{ opacity: 0, y: -10 }}
             className="space-y-5"
           >
-            {/* Header with Quick Randomize */}
-            <Card padding="md" className="space-y-4 border-zinc-800 bg-zinc-900/40">
-              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+            <Card padding="md" className="space-y-4">
+              <div className="flex items-center justify-between border-b border-rule pb-3">
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-zinc-100">Daftar {totalPlayerCount} Pemain</h3>
-                  <p className="text-xs text-zinc-400">Ketik nama pemain atau pilih avatar favorit</p>
+                  <h3 className="text-sm sm:text-base font-bold text-ink">Daftar {totalPlayerCount} Pemain</h3>
+                  <p className="text-xs text-ink-muted">Ketik nama pemain atau ketuk pion untuk mengganti simbol</p>
                 </div>
 
                 <Button
@@ -727,60 +736,63 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                 </Button>
               </div>
 
-              {/* Player Inputs List */}
               <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
                 {players.map((player, idx) => (
                   <div
                     key={player.id}
-                    className="flex items-center gap-2.5 p-2 rounded-xl bg-zinc-950/80 border border-zinc-800 focus-within:border-zinc-600 transition-all"
+                    className="flex items-center gap-2.5 p-2 rounded-2xl bg-paper border border-rule focus-within:border-teal-dark transition-colors"
                   >
-                    {/* Index Badge */}
-                    <span className="w-6 h-6 rounded-md bg-zinc-900 text-zinc-400 font-mono font-semibold text-[11px] flex items-center justify-center shrink-0 border border-zinc-800">
+                    <span className="w-6 h-6 rounded-xl bg-paper-muted text-ink-muted font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-rule">
                       {idx + 1}
                     </span>
 
-                    {/* Avatar Button */}
                     <button
                       type="button"
                       onClick={() => setAvatarPickerPlayerIndex(idx)}
-                      title="Klik untuk ganti avatar"
-                      className="w-9 h-9 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xl flex items-center justify-center shrink-0 transition-transform active:scale-95"
+                      title="Ketuk untuk ganti pion"
+                      className="shrink-0 transition-transform active:scale-95"
                     >
-                      {player.avatar}
+                      <PlayerToken avatar={player.avatar} name={player.name} size="sm" showCode={false} />
                     </button>
 
-                    {/* Name Input */}
                     <input
                       type="text"
                       value={player.name}
                       onChange={(e) => handlePlayerNameChange(idx, e.target.value)}
                       placeholder={'Pemain ' + (idx + 1)}
                       maxLength={20}
-                      className="flex-1 bg-transparent px-2.5 py-1 text-sm font-medium text-zinc-100 placeholder-zinc-600 focus:outline-none"
+                      className="flex-1 min-w-0 bg-transparent px-2.5 py-1 text-sm font-semibold text-ink placeholder-ink-faint focus:outline-none"
                     />
 
-                    {/* Randomize Single Player */}
                     <button
                       type="button"
                       onClick={() => handleRandomizeSingleName(idx)}
-                      title="Acak nama & avatar"
-                      className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
+                      title="Acak nama & pion"
+                      className="p-2 rounded-full text-ink-muted hover:text-ink hover:bg-paper-muted transition-colors"
                     >
-                      <Dices className="w-4 h-4" />
+                      <Shuffle className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
               </div>
             </Card>
 
-            {/* Action Buttons */}
+            {setupError && (
+              <div
+                role="alert"
+                className="p-3 rounded-2xl bg-stamp-light border border-stamp text-stamp-dark text-xs font-semibold flex items-center gap-2"
+              >
+                {setupError}
+              </div>
+            )}
+
             <div className="flex items-center gap-3">
               <Button
                 variant="secondary"
                 size="lg"
                 onClick={() => setCurrentStep(2)}
                 leftIcon={<ArrowLeft className="w-4 h-4" />}
-                className="w-1/3"
+                className="flex-1"
               >
                 Kembali
               </Button>
@@ -788,12 +800,11 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               <Button
                 variant="primary"
                 size="lg"
-                fullWidth
                 onClick={handleStartGame}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-                className="w-2/3"
+                className="flex-[2]"
               >
-                Mulai Permainan 🚀
+                Mulai Permainan
               </Button>
             </div>
           </motion.div>
@@ -804,21 +815,20 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
       <Modal
         isOpen={avatarPickerPlayerIndex !== null}
         onClose={() => setAvatarPickerPlayerIndex(null)}
-        title="Pilih Avatar Pemain"
-        size="sm"
+        title={`Pilih Pion: ${
+          avatarPickerPlayerIndex !== null
+            ? players[avatarPickerPlayerIndex]?.name || `Pemain ${avatarPickerPlayerIndex + 1}`
+            : ''
+        }`}
+        size="md"
       >
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 p-2 max-h-[60vh] overflow-y-auto">
-          {PRESET_AVATARS.map((av) => (
-            <button
-              key={av.id}
-              onClick={() => avatarPickerPlayerIndex !== null && handleSelectAvatar(avatarPickerPlayerIndex, av.emoji)}
-              className="p-3 text-3xl rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800 transition-all flex items-center justify-center active:scale-95"
-              title={av.name}
-            >
-              {av.emoji}
-            </button>
-          ))}
-        </div>
+        {avatarPickerPlayerIndex !== null && (
+          <AvatarPicker
+            selectedAvatar={players[avatarPickerPlayerIndex]?.avatar || 'token-eye'}
+            onSelectAvatar={(avatar) => handleSelectAvatar(avatarPickerPlayerIndex, avatar)}
+            showNicknameInput={false}
+          />
+        )}
       </Modal>
     </div>
   );

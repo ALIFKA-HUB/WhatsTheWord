@@ -1,7 +1,7 @@
 import React from 'react';
 import { PlayerRole } from '../../types/game.types';
+import { ShieldCheck, Detective, Question, Crown, CheckCircle, XCircle, Microphone, HandWaving, WifiHigh, WifiSlash } from '@phosphor-icons/react';
 import { cn } from '../../utils/cn';
-import { Shield, EyeOff, HelpCircle } from 'lucide-react';
 
 export type BadgeVariant =
   | 'cyan'
@@ -22,24 +22,24 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  cyan: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20',
-  crimson: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
-  violet: 'bg-purple-500/10 text-purple-300 border-purple-500/20',
-  amber: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-  emerald: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  slate: 'bg-zinc-800/60 text-zinc-300 border-zinc-700/60',
-  outline: 'bg-transparent text-zinc-400 border-zinc-800',
+  cyan: 'bg-teal-light text-teal-dark border-teal',
+  crimson: 'bg-stamp-light text-stamp-dark border-stamp',
+  violet: 'bg-paper-muted text-ink-muted border-rule',
+  amber: 'bg-sun-light text-sun-dark border-sun',
+  emerald: 'bg-teal-light text-teal-dark border-teal',
+  slate: 'bg-paper-muted text-ink-muted border-rule',
+  outline: 'bg-transparent text-ink-muted border-rule',
 };
 
 const sizeStyles: Record<BadgeSize, string> = {
-  sm: 'text-[11px] px-2 py-0.5 rounded-md gap-1 font-medium font-mono',
-  md: 'text-xs px-2.5 py-1 rounded-lg gap-1.5 font-medium',
-  lg: 'text-sm px-3 py-1.5 rounded-xl gap-2 font-semibold',
+  sm: 'text-xs px-2.5 py-0.5 rounded-full gap-1 font-semibold',
+  md: 'text-xs px-3 py-1 rounded-full gap-1.5 font-semibold',
+  lg: 'text-sm px-3.5 py-1.5 rounded-full gap-2 font-semibold',
 };
 
 export const Badge: React.FC<BadgeProps> = ({
   className,
-  variant = 'cyan',
+  variant = 'slate',
   size = 'md',
   pulse = false,
   icon,
@@ -49,7 +49,7 @@ export const Badge: React.FC<BadgeProps> = ({
   return (
     <span
       className={cn(
-        'inline-flex items-center select-none border backdrop-blur-sm transition-all',
+        'inline-flex items-center select-none border transition-colors',
         variantStyles[variant],
         sizeStyles[size],
         className
@@ -58,7 +58,6 @@ export const Badge: React.FC<BadgeProps> = ({
     >
       {pulse && (
         <span className="relative flex h-1.5 w-1.5 shrink-0 mr-0.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75" />
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current" />
         </span>
       )}
@@ -87,12 +86,12 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
     case 'CIVILIAN':
       return (
         <Badge
-          variant="slate"
+          variant="emerald"
           size={size}
-          icon={showIcon ? <Shield className="w-3 h-3 text-zinc-400" /> : undefined}
+          icon={showIcon ? <ShieldCheck className="w-3.5 h-3.5 text-teal-dark" weight="bold" /> : undefined}
           className={className}
         >
-          {indonesian ? 'Warga (Civilian)' : 'Civilian'}
+          {indonesian ? 'Warga' : 'Civilian'}
         </Badge>
       );
     case 'UNDERCOVER':
@@ -100,10 +99,10 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
         <Badge
           variant="crimson"
           size={size}
-          icon={showIcon ? <EyeOff className="w-3 h-3" /> : undefined}
+          icon={showIcon ? <Detective className="w-3.5 h-3.5 text-stamp-dark" weight="bold" /> : undefined}
           className={className}
         >
-          {indonesian ? 'Impostor (Undercover)' : 'Undercover'}
+          {indonesian ? 'Impostor' : 'Undercover'}
         </Badge>
       );
     case 'MR_WHITE':
@@ -111,10 +110,10 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
         <Badge
           variant="violet"
           size={size}
-          icon={showIcon ? <HelpCircle className="w-3 h-3" /> : undefined}
+          icon={showIcon ? <Question className="w-3.5 h-3.5 text-ink-muted" weight="bold" /> : undefined}
           className={className}
         >
-          {indonesian ? 'Mr. White (Butakata)' : 'Mr. White'}
+          {indonesian ? 'Mr. White' : 'Mr. White'}
         </Badge>
       );
     default:
@@ -131,19 +130,19 @@ export interface StatusBadgeProps {
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', className }) => {
   switch (status) {
     case 'alive':
-      return <Badge variant="emerald" size={size} className={className}>Hidup</Badge>;
+      return <Badge variant="emerald" size={size} icon={<CheckCircle className="w-3.5 h-3.5" weight="bold" />} className={className}>Bertahan</Badge>;
     case 'eliminated':
-      return <Badge variant="crimson" size={size} className={className}>Gugur</Badge>;
+      return <Badge variant="crimson" size={size} icon={<XCircle className="w-3.5 h-3.5" weight="bold" />} className={className}>Gugur</Badge>;
     case 'speaking':
-      return <Badge variant="amber" size={size} pulse className={className}>Bicara</Badge>;
+      return <Badge variant="amber" size={size} pulse icon={<Microphone className="w-3.5 h-3.5" weight="bold" />} className={className}>Bicara</Badge>;
     case 'voted':
-      return <Badge variant="cyan" size={size} className={className}>Memilih</Badge>;
+      return <Badge variant="cyan" size={size} icon={<HandWaving className="w-3.5 h-3.5" weight="bold" />} className={className}>Memilih</Badge>;
     case 'host':
-      return <Badge variant="amber" size={size} className={className}>Host</Badge>;
+      return <Badge variant="amber" size={size} icon={<Crown className="w-3.5 h-3.5" weight="bold" />} className={className}>Host</Badge>;
     case 'online':
-      return <Badge variant="emerald" size={size} className={className}>Online</Badge>;
+      return <Badge variant="emerald" size={size} icon={<WifiHigh className="w-3.5 h-3.5" weight="bold" />} className={className}>Online</Badge>;
     case 'disconnected':
-      return <Badge variant="slate" size={size} className={className}>Terputus</Badge>;
+      return <Badge variant="slate" size={size} icon={<WifiSlash className="w-3.5 h-3.5" weight="bold" />} className={className}>Terputus</Badge>;
     default:
       return null;
   }

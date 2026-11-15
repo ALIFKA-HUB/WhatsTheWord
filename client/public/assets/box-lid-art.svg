@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="800" height="240" role="img" aria-label="Ilustrasi meja permainan: kartu rahasia, kaca pembesar, dan stempel">
+  <!-- Tabletop scene: three fanned secret cards, magnifying glass, rubber stamp. 2-ink riso, no gradients. -->
+  <rect width="800" height="240" fill="#FFF4E3"/>
+
+  <!-- table rule lines -->
+  <line x1="0" y1="196" x2="800" y2="196" stroke="#243348" stroke-width="3"/>
+  <line x1="0" y1="204" x2="800" y2="204" stroke="#243348" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- fanned card 1 (left, face down) -->
+  <g transform="rotate(-10 250 140)">
+    <rect x="200" y="70" width="96" height="132" rx="8" fill="#FFFFFF" stroke="#243348" stroke-width="4"/>
+    <rect x="212" y="82" width="72" height="108" rx="4" fill="none" stroke="#243348" stroke-width="2" stroke-dasharray="4 4"/>
+    <circle cx="248" cy="136" r="14" fill="none" stroke="#243348" stroke-width="3"/>
+    <circle cx="248" cy="136" r="4" fill="#243348"/>
+  </g>
+
+  <!-- fanned card 2 (middle, face down, halftone back) -->
+  <g transform="rotate(4 400 140)">
+    <rect x="352" y="58" width="96" height="132" rx="8" fill="#243348" stroke="#243348" stroke-width="4"/>
+    <g fill="#FFF4E3">
+      <circle cx="372" cy="82" r="3"/><circle cx="386" cy="82" r="3"/><circle cx="400" cy="82" r="3"/><circle cx="414" cy="82" r="3"/><circle cx="428" cy="82" r="3"/>
+      <circle cx="372" cy="96" r="3"/><circle cx="386" cy="96" r="3"/><circle cx="400" cy="96" r="3"/><circle cx="414" cy="96" r="3"/><circle cx="428" cy="96" r="3"/>
+      <circle cx="372" cy="110" r="3"/><circle cx="386" cy="110" r="3"/><circle cx="400" cy="110" r="3"/><circle cx="414" cy="110" r="3"/><circle cx="428" cy="110" r="3"/>
+      <circle cx="372" cy="124" r="3"/><circle cx="386" cy="124" r="3"/><circle cx="400" cy="124" r="3"/><circle cx="414" cy="124" r="3"/><circle cx="428" cy="124" r="3"/>
+      <circle cx="372" cy="138" r="3"/><circle cx="386" cy="138" r="3"/><circle cx="400" cy="138" r="3"/><circle cx="414" cy="138" r="3"/><circle cx="428" cy="138" r="3"/>
+      <circle cx="372" cy="152" r="3"/><circle cx="386" cy="152" r="3"/><circle cx="400" cy="152" r="3"/><circle cx="414" cy="152" r="3"/><circle cx="428" cy="152" r="3"/>
+      <circle cx="372" cy="166" r="3"/><circle cx="386" cy="166" r="3"/><circle cx="400" cy="166" r="3"/><circle cx="414" cy="166" r="3"/><circle cx="428" cy="166" r="3"/>
+    </g>
+  </g>
+
+  <!-- fanned card 3 (right, revealed word card) -->
+  <g transform="rotate(9 550 140)">
+    <rect x="504" y="66" width="96" height="132" rx="8" fill="#FF6B6B" stroke="#243348" stroke-width="4"/>
+    <rect x="516" y="78" width="72" height="108" rx="4" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+    <path d="M540 120h24M540 134h24M546 106l12 0" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <!-- magnifying glass over the middle card -->
+  <g>
+    <circle cx="470" cy="86" r="30" fill="#FFF4E3" fill-opacity="0.9" stroke="#243348" stroke-width="5"/>
+    <line x1="492" y1="108" x2="520" y2="140" stroke="#243348" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="470" cy="86" r="30" fill="none" stroke="#243348" stroke-width="2" stroke-dasharray="2 5"/>
+  </g>
+
+  <!-- rubber stamp, bottom right: pure shapes, no text -->
+  <g transform="rotate(-12 688 160)">
+    <rect x="640" y="118" width="96" height="84" rx="10" fill="#FFFFFF" stroke="#243348" stroke-width="4"/>
+    <rect x="650" y="128" width="76" height="64" rx="6" fill="none" stroke="#FF6B6B" stroke-width="3.5"/>
+    <rect x="660" y="140" width="56" height="7" rx="3.5" fill="#FF6B6B"/>
+    <rect x="660" y="153" width="40" height="7" rx="3.5" fill="#FF6B6B" opacity="0.75"/>
+    <rect x="660" y="166" width="48" height="7" rx="3.5" fill="#FF6B6B" opacity="0.5"/>
+    <rect x="646" y="204" width="84" height="6" rx="3" fill="#243348"/>
+  </g>
+
+  <!-- small scattered ink dots (print noise) -->
+  <g fill="#243348" opacity="0.5">
+    <circle cx="60" cy="50" r="2"/><circle cx="84" cy="38" r="1.5"/><circle cx="46" cy="72" r="1.5"/>
+    <circle cx="740" cy="48" r="2"/><circle cx="760" cy="66" r="1.5"/><circle cx="724" cy="34" r="1.5"/>
+  </g>
+</svg>

@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import { cn } from '../../utils/cn';
 import { Button } from './Button';
 
@@ -72,26 +72,26 @@ export const Modal: React.FC<ModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md -z-10"
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/50 -z-10"
             onClick={() => closeOnOutsideClick && onClose()}
             aria-hidden="true"
           />
 
-          {/* Modal Dialog Content */}
+          {/* Dossier dialog card */}
           <motion.div
             role="dialog"
             aria-modal="true"
-            initial={{ opacity: 0, scale: 0.92, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
             transition={{
               type: 'spring',
-              damping: 25,
+              damping: 26,
               stiffness: 320,
             }}
             className={cn(
-              'relative w-full rounded-2xl bg-slate-900/95 border border-white/10 shadow-2xl shadow-cyan-950/40 text-slate-100 flex flex-col max-h-[90dvh] overflow-hidden my-auto',
+              'relative w-full rounded-2xl bg-cardstock border border-rule shadow-print-lg text-ink flex flex-col max-h-[90dvh] overflow-hidden my-auto',
               sizeStyles[size],
               className
             )}
@@ -99,42 +99,42 @@ export const Modal: React.FC<ModalProps> = ({
           >
             {/* Header */}
             {(title || showCloseButton) && (
-              <div className="flex items-start justify-between px-6 py-4 border-b border-white/10 shrink-0 gap-4">
-                <div className="flex flex-col space-y-1">
+              <div className="flex items-start justify-between px-5 py-3.5 border-b border-rule shrink-0 gap-4 bg-cardstock-warm">
+                <div className="flex flex-col space-y-0.5">
                   {typeof title === 'string' ? (
-                    <h2 className="text-lg sm:text-xl font-bold font-display text-slate-100">
+                    <h2 className="font-condensed text-lg sm:text-xl text-ink leading-tight">
                       {title}
                     </h2>
                   ) : (
                     title
                   )}
                   {subtitle && (
-                    <p className="text-xs sm:text-sm text-slate-400 font-sans">{subtitle}</p>
+                    <p className="text-xs sm:text-sm text-ink-muted font-sans">{subtitle}</p>
                   )}
                 </div>
 
                 {showCloseButton && (
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     size="icon"
                     onClick={onClose}
-                    className="text-slate-400 hover:text-slate-100 -mr-2 -mt-1 h-8 w-8 rounded-lg"
+                    className="text-ink -mr-1 -mt-1 h-8 w-8 rounded-lg"
                     aria-label="Tutup Dialog"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4" weight="bold" />
                   </Button>
                 )}
               </div>
             )}
 
-            {/* Scrollable Body */}
-            <div className="px-6 py-5 overflow-y-auto flex-1 text-slate-200 text-sm leading-relaxed">
+            {/* Scrollable body */}
+            <div className="px-5 py-4 overflow-y-auto flex-1 text-ink text-sm leading-relaxed">
               {children}
             </div>
 
             {/* Footer */}
             {footer && (
-              <div className="px-6 py-4 bg-slate-950/40 border-t border-white/10 flex items-center justify-end gap-3 shrink-0">
+              <div className="px-5 py-3.5 bg-paper-muted border-t border-rule flex items-center justify-end gap-3 shrink-0">
                 {footer}
               </div>
             )}

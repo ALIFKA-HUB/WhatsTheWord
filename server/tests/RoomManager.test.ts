@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { RoomManager } from '../src/managers/RoomManager.js';
 import { GameSettings, WordPair } from '../src/types/game.types.js';
 
@@ -48,10 +48,38 @@ describe('RoomManager', () => {
       expect(p2.playerToken).not.toBe(p3.playerToken);
     });
 
-    it('should throw error when joining non-existent room', () => {
+    it('should throw Indonesian error when joining non-existent room', () => {
       expect(() => {
         roomManager.joinRoom('ZZZZ', 'Bob', 'avatar_2');
-      }).toThrow(/Room not found/i);
+      }).toThrow(/Ruangan tidak ditemukan/i);
+    });
+
+    it('should safely handle whitespace and lowercase room codes', () => {
+      const { roomId } = roomManager.createRoom('Host', 'avatar_1');
+      const joined = roomManager.joinRoom(` ${roomId.toLowerCase()} `, 'Guest', 'avatar_2');
+      expect(joined.room.roomId).toBe(roomId);
+    });
+
+    it('should safely handle missing or empty playerName and avatar with defaults', () => {
+      const { roomId, player: host } = roomManager.createRoom('   ', '');
+      expect(host.name).toBe('Host');
+      expect(host.avatar).toBe('avatar_1');
+
+      const joined = roomManager.joinRoom(roomId, '   ', '');
+      expect(joined.player.name).toBe('Player 2');
+      expect(joined.player.avatar).toBe('avatar_1');
+    });
+
+    it('should throw Indonesian error when joining game in progress', () => {
+      const { roomId } = roomManager.createRoom('Host', 'avatar_1');
+      roomManager.joinRoom(roomId, 'Bob', 'avatar_2');
+      roomManager.joinRoom(roomId, 'Charlie', 'avatar_3');
+      roomManager.joinRoom(roomId, 'Dave', 'avatar_4');
+      roomManager.startGame(roomId);
+
+      expect(() => {
+        roomManager.joinRoom(roomId, 'Eve', 'avatar_5');
+      }).toThrow(/Tidak dapat bergabung: permainan sedang berlangsung/i);
     });
 
     it('should reconnect existing player if existingToken is provided and valid', () => {
@@ -121,7 +149,7 @@ describe('RoomManager', () => {
 
       expect(() => {
         roomManager.updateSettings(roomId, { civilianCount: 3 });
-      }).toThrow(/Cannot update settings while game is in progress/i);
+      }).toThrow(/Pengaturan tidak dapat diubah saat permainan sedang berlangsung/i);
     });
   });
 
@@ -137,6 +165,31 @@ describe('RoomManager', () => {
     it('should return null for invalid or expired token', () => {
       const reconnectData = roomManager.reconnectPlayer('invalid-token-1234');
       expect(reconnectData).toBeNull();
+    });
+
+    it('should cancel scheduled disconnect cleanup when player reconnects', () => {
+      const { roomId, playerToken, player } = roomManager.createRoom('Host', 'avatar_1');
+      let expiredCalled = false;
+
+      roomManager.schedulePlayerCleanup(roomId, player.id, 50, () => {
+        expiredCalled = true;
+      });
+
+      const reconnected = roomManager.reconnectPlayer(playerToken);
+      expect(reconnected).not.toBeNull();
+
+      // Wait past the grace duration
+      return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          try {
+            expect(expiredCalled).toBe(false);
+            expect(roomManager.getRoom(roomId)).toBeDefined();
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }, 70);
+      });
     });
   });
 
@@ -292,6 +345,25 @@ describe('RoomManager', () => {
       expect(res.eliminatedPlayer?.id).toBe(mrWhite.id);
       expect(res.room.phase).toBe('MR_WHITE_GUESS');
     });
+
+    it('should throw Indonesian errors for invalid voting states and players', () => {
+      // Voter not active / not found
+      expect(() => {
+        roomManager.castVote(roomId, 'non-existent-voter', p2Id);
+      }).toThrow(/Pemain yang memilih tidak aktif dalam permainan/i);
+
+      // Target not active / not found
+      expect(() => {
+        roomManager.castVote(roomId, p1Id, 'non-existent-target');
+      }).toThrow(/Target voting tidak ditemukan atau sudah tereliminasi/i);
+
+      // Voting is not active when phase changes
+      const room = roomManager.getRoom(roomId)!;
+      room.phase = 'TURN_PHASE';
+      expect(() => {
+        roomManager.castVote(roomId, p1Id, p2Id);
+      }).toThrow(/Sesi voting belum aktif/i);
+    });
   });
 
   describe('handleMrWhiteGuess', () => {
@@ -355,6 +427,13 @@ describe('RoomManager', () => {
       expect(guessRes.room.phase).toBe('TURN_PHASE');
       expect(guessRes.room.round).toBe(2);
     });
+
+    it('should throw Indonesian error when Mr. White guess phase is not active', () => {
+      const { roomId } = roomManager.createRoom('Host', 'av1');
+      expect(() => {
+        roomManager.handleMrWhiteGuess(roomId, 'Nasi');
+      }).toThrow(/Fase tebak kata Mr. White tidak sedang aktif/i);
+    });
   });
 
   describe('rematch', () => {
@@ -391,6 +470,77 @@ describe('RoomManager', () => {
         expect(roomManager.getRoom(roomId)).toBeUndefined();
       } finally {
         Date.now = realDateNow;
+      }
+    });
+  });
+
+  describe('schedulePlayerCleanup (disconnect grace period)', () => {
+    it('should remove ghost player after grace period and migrate host', () => {
+      vi.useFakeTimers();
+      try {
+        const { roomId, player } = roomManager.createRoom('Host', 'av1');
+        roomManager.joinRoom(roomId, 'Ghost', 'av2');
+
+        let expiredRoom: ReturnType<typeof roomManager.getRoom> | null | undefined;
+        roomManager.schedulePlayerCleanup(roomId, player.id, 60_000, (_rid, _pid, room) => {
+          expiredRoom = room;
+        });
+
+        vi.advanceTimersByTime(59_999);
+        expect(roomManager.getRoom(roomId)?.players).toHaveLength(2);
+
+        vi.advanceTimersByTime(1);
+        expect(expiredRoom).toBeDefined();
+        expect(expiredRoom!.players).toHaveLength(1);
+        expect(expiredRoom!.players[0].name).toBe('Ghost');
+        expect(expiredRoom!.players[0].isHost).toBe(true);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('should not remove player if cleanup is cancelled (reconnect within grace)', () => {
+      vi.useFakeTimers();
+      try {
+        const { roomId, player } = roomManager.createRoom('Host', 'av1');
+        roomManager.schedulePlayerCleanup(roomId, player.id, 60_000, () => {});
+
+        roomManager.cancelPlayerCleanup(roomId, player.id);
+        vi.advanceTimersByTime(120_000);
+        expect(roomManager.getRoom(roomId)?.players).toHaveLength(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('should return null room when last player is cleaned up (room disbanded)', () => {
+      vi.useFakeTimers();
+      try {
+        const { roomId, player } = roomManager.createRoom('Solo', 'av1');
+        let disbanded: string | null = null;
+        roomManager.schedulePlayerCleanup(roomId, player.id, 30_000, (rid, _pid, room) => {
+          disbanded = room === null ? rid : null;
+        });
+
+        vi.advanceTimersByTime(30_000);
+        expect(disbanded).toBe(roomId);
+        expect(roomManager.getRoom(roomId)).toBeUndefined();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('explicit leave cancels the scheduled cleanup', () => {
+      vi.useFakeTimers();
+      try {
+        const { roomId, player } = roomManager.createRoom('Host', 'av1');
+        roomManager.schedulePlayerCleanup(roomId, player.id, 60_000, () => {});
+
+        roomManager.leaveRoom(roomId, player.id);
+        vi.advanceTimersByTime(120_000);
+        expect(roomManager.getRoom(roomId)).toBeUndefined();
+      } finally {
+        vi.useRealTimers();
       }
     });
   });

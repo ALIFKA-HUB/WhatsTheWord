@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { Loader2 } from 'lucide-react';
+import { SpinnerGap } from '@phosphor-icons/react';
 import { cn } from '../../utils/cn';
 import { useGameSound } from '../../hooks/useGameSound';
 
@@ -19,26 +19,26 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-zinc-100 text-zinc-950 font-semibold hover:bg-white active:bg-zinc-200 border border-zinc-200 shadow-sm',
+    'bg-teal text-ink border border-teal-dark/20 shadow-push-teal hover:brightness-105 active:translate-y-[2px] active:shadow-none font-bold',
   secondary:
-    'bg-zinc-900/90 text-zinc-200 font-medium hover:bg-zinc-800 hover:text-white active:bg-zinc-800/60 border border-zinc-800 hover:border-zinc-700 shadow-sm',
+    'bg-cardstock text-ink border border-rule shadow-push-card hover:bg-paper-muted active:translate-y-[2px] active:shadow-none font-bold',
   danger:
-    'bg-rose-950/40 text-rose-300 font-medium hover:bg-rose-900/50 hover:text-rose-200 border border-rose-900/50 hover:border-rose-700 active:bg-rose-900/70',
+    'bg-stamp text-cardstock border border-stamp-dark/20 shadow-push-coral hover:brightness-105 active:translate-y-[2px] active:shadow-none font-bold',
   accent:
-    'bg-cyan-500/15 text-cyan-300 font-medium hover:bg-cyan-500/25 hover:text-cyan-200 border border-cyan-500/30 hover:border-cyan-400/50',
+    'bg-ink text-cardstock shadow-push-navy hover:brightness-110 active:translate-y-[2px] active:shadow-none font-bold',
   outline:
-    'bg-transparent border border-zinc-700/80 text-zinc-300 hover:bg-zinc-800/60 hover:text-white hover:border-zinc-600 active:bg-zinc-800',
+    'bg-transparent text-ink border border-rule hover:bg-paper-muted font-semibold active:translate-y-[1px]',
   ghost:
-    'bg-transparent text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 active:bg-zinc-800 border border-transparent',
+    'bg-transparent text-ink-muted hover:text-ink hover:bg-paper-muted border border-transparent font-semibold',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  xs: 'px-2.5 py-1 text-xs rounded-lg gap-1.5',
-  sm: 'px-3 py-1.5 text-xs sm:text-sm rounded-lg gap-2',
-  md: 'px-4 py-2 text-sm sm:text-base rounded-xl gap-2',
-  lg: 'px-5 py-2.5 text-base rounded-xl gap-2.5 font-medium',
-  xl: 'px-6 py-3.5 text-base sm:text-lg rounded-xl gap-3 font-semibold tracking-wide',
-  icon: 'p-2.5 rounded-xl aspect-square flex items-center justify-center',
+  xs: 'px-3 py-1.5 text-xs rounded-full gap-1.5',
+  sm: 'px-4 py-2 text-xs sm:text-sm rounded-full gap-2',
+  md: 'px-5 py-2.5 text-sm sm:text-base rounded-full gap-2',
+  lg: 'px-6 py-3 text-base rounded-full gap-2.5',
+  xl: 'px-7 py-3.5 text-base sm:text-lg rounded-full gap-3',
+  icon: 'p-2.5 rounded-full aspect-square flex items-center justify-center',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -84,8 +84,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={isDisabled}
         onClick={handleClick}
         className={cn(
-          'relative inline-flex items-center justify-center select-none font-sans transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
-          'active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none disabled:active:scale-100',
+          'relative inline-flex items-center justify-center select-none font-sans transition-transform duration-100 ease-out outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
+          'disabled:opacity-40 disabled:pointer-events-none',
           variantStyles[variant],
           sizeStyles[size],
           fullWidth && 'w-full',
@@ -95,7 +95,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" />
+            <SpinnerGap className="w-4 h-4 animate-spin text-current shrink-0" weight="bold" />
             {loadingText ? <span>{loadingText}</span> : children ? <span>{children}</span> : null}
           </>
         ) : (

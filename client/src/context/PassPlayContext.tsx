@@ -71,10 +71,10 @@ const DEFAULT_SETTINGS: GameSettings = {
 };
 
 const DEFAULT_INITIAL_PLAYERS: Player[] = [
-  { id: 'p1', name: 'Agent Cyber', avatar: '🕵️', isHost: true, isAlive: true, hasVoted: false },
-  { id: 'p2', name: 'Neon Fox', avatar: '🦊', isHost: false, isAlive: true, hasVoted: false },
-  { id: 'p3', name: 'Shadow Byte', avatar: '🤖', isHost: false, isAlive: true, hasVoted: false },
-  { id: 'p4', name: 'Phantom V', avatar: '⚡', isHost: false, isAlive: true, hasVoted: false },
+  { id: 'p1', name: 'Penjaga Meja', avatar: 'token-eye', isHost: true, isAlive: true, hasVoted: false },
+  { id: 'p2', name: 'Tuan Kertas', avatar: 'token-triangle', isHost: false, isAlive: true, hasVoted: false },
+  { id: 'p3', name: 'Nona Tinta', avatar: 'token-detective', isHost: false, isAlive: true, hasVoted: false },
+  { id: 'p4', name: 'Saksi Kunci', avatar: 'token-bolt', isHost: false, isAlive: true, hasVoted: false },
 ];
 
 export const PassPlayContext = createContext<PassPlayContextType | null>(null);
@@ -94,7 +94,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
             return parsed.map((p: Partial<Player>, idx: number) => ({
               id: p.id || `p_${Date.now()}_${idx}`,
               name: p.name || `Pemain ${idx + 1}`,
-              avatar: p.avatar || '🕵️',
+              avatar: p.avatar || 'token-eye',
               isHost: idx === 0,
               isAlive: true,
               hasVoted: false,
@@ -199,7 +199,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       const newPlayer: Player = {
         id: `p_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         name: trimmed,
-        avatar: avatar || '🕵️',
+        avatar: avatar || 'token-eye',
         isHost: prev.length === 0,
         isAlive: true,
         hasVoted: false,
@@ -306,10 +306,11 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
 
   const nextRevealPlayer = useCallback(() => {
     setCurrentRevealIndex((prev) => {
-      const next = prev + 1;
-      return next;
+      // Clamp agar double-tap pada tombol lanjut tidak melampaui pemain terakhir
+      const maxIndex = Math.max(0, players.length - 1);
+      return Math.min(prev + 1, maxIndex);
     });
-  }, []);
+  }, [players.length]);
 
   const finishRevealPhase = useCallback(() => {
     // Alive speaking order

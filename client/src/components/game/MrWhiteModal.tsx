@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { HelpCircle, Send, AlertCircle } from 'lucide-react';
+import { PaperPlaneRight, Question, WarningCircle } from '@phosphor-icons/react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
+import { PlayerToken } from './PlayerToken';
 import { CountdownTimer } from './CountdownTimer';
 import { Player, PlayerRole } from '../../types/game.types';
 
@@ -12,6 +12,8 @@ export interface MrWhiteModalProps {
   mrWhitePlayer?: Player;
   onSubmitGuess: (guess: string) => Promise<{ success: boolean; isCorrect?: boolean; winner?: PlayerRole; error?: string }>;
   initialSeconds?: number;
+  onGiveUp?: () => void;
+  requireHandoverShield?: boolean;
 }
 
 export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
@@ -20,19 +22,29 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
   mrWhitePlayer,
   onSubmitGuess,
   initialSeconds = 45,
+  onGiveUp,
+  requireHandoverShield = false,
 }) => {
   const [guessInput, setGuessInput] = useState('');
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
+  const [hasConfirmedIdentity, setHasConfirmedIdentity] = useState(!requireHandoverShield);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setRemainingSeconds(initialSeconds);
+      return;
+    }
 
     setRemainingSeconds(initialSeconds);
     setGuessInput('');
     setErrorMsg(null);
+    setHasConfirmedIdentity(!requireHandoverShield);
+  }, [isOpen, initialSeconds, requireHandoverShield]);
+
+  useEffect(() => {
+    if (!isOpen || !hasConfirmedIdentity) return;
 
     const timer = setInterval(() => {
       setRemainingSeconds((prev) => {
@@ -45,7 +57,13 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen, initialSeconds]);
+  }, [isOpen, hasConfirmedIdentity]);
+
+  useEffect(() => {
+    if (isOpen && remainingSeconds === 0 && onGiveUp) {
+      onGiveUp();
+    }
+  }, [isOpen, remainingSeconds, onGiveUp]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -68,30 +86,29 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={() => {}} // modal cannot be dismissed by clicking outside during emergency guess
+      onClose={() => {}}
       closeOnOutsideClick={false}
       closeOnEscape={false}
       showCloseButton={false}
       size="md"
-      className="border-purple-500/40 shadow-2xl shadow-purple-950/60"
+      className="border border-rule shadow-print-lg"
       title={
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
-            <HelpCircle className="w-5 h-5 animate-pulse" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-sun-light border border-sun flex items-center justify-center text-sun-dark shadow-print-sm">
+            <Question className="w-5 h-5" weight="bold" />
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-black font-display bg-gradient-to-r from-purple-400 to-rose-400 bg-clip-text text-transparent">
-              {isMrWhite ? 'TEBAK KATA RAHASIA WARGA!' : 'MR. WHITE TERTANGKAP!'}
+            <h3 className="text-base sm:text-lg font-bold font-display text-ink">
+              {isMrWhite ? 'Tebak Kata Rahasia Warga!' : 'Mr. White Tertangkap!'}
             </h3>
-            <p className="text-[11px] text-purple-300/80 font-mono uppercase tracking-wider">
-              Kesempatan Darurat Butakata
+            <p className="text-xs text-ink-muted font-normal">
+              Kesempatan menebak kata rahasia
             </p>
           </div>
         </div>
       }
     >
       <div className="space-y-5">
-        {/* Countdown Timer */}
         <div className="flex justify-center">
           <CountdownTimer
             totalSeconds={initialSeconds}
@@ -101,76 +118,112 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
           />
         </div>
 
-        {isMrWhite ? (
-          /* Mr White Interface */
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="p-4 rounded-2xl bg-purple-950/40 border border-purple-500/30 text-center space-y-1">
-              <p className="text-sm font-bold text-purple-200 font-display">
-                Kamu Terpilih Tereliminasi!
+        {isMrWhite && !hasConfirmedIdentity ? (
+          <div className="text-center space-y-4 py-2">
+            <PlayerToken
+              avatar={mrWhitePlayer?.avatar}
+              name={mrWhitePlayer?.name}
+              size="lg"
+              className="mx-auto"
+            />
+            <div className="space-y-1.5">
+              <p className="text-base font-bold text-ink font-display">
+                {mrWhitePlayer?.name || 'Mr. White'} Tereliminasi!
               </p>
-              <p className="text-xs text-purple-300/80 leading-relaxed font-sans">
-                Namun, kamu tetap bisa <strong className="text-white">MENANG</strong> secara instan jika berhasil menebak <span className="text-cyan-300 font-bold">Kata Rahasia Warga</span>!
+              <p className="text-xs text-ink-muted max-w-xs mx-auto leading-relaxed">
+                Oper HP ke <strong>{mrWhitePlayer?.name || 'Mr. White'}</strong> dan pastikan pemain lain tidak melihat layar sebelum menebak kata Warga.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={() => setHasConfirmedIdentity(true)}
+            >
+              Saya {mrWhitePlayer?.name || 'Mr. White'}, Siap Menebak
+            </Button>
+          </div>
+        ) : isMrWhite ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="p-4 rounded-2xl bg-stamp-light border border-stamp text-center space-y-1">
+              <p className="text-sm font-bold text-stamp-dark font-display">
+                Kamu Terpilih untuk Dieliminasi!
+              </p>
+              <p className="text-xs text-ink-muted leading-relaxed font-sans">
+                Namun, kamu tetap bisa <strong className="text-ink">menang seketika</strong> jika berhasil menebak <span className="text-stamp-dark font-bold">kata rahasia Warga</span>!
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">
-                Tuliskan Kata Rahasia Warga (Fuzzy Tolerance Aktif):
+              <label className="text-xs font-semibold text-ink">
+                Tuliskan Kata Rahasia Warga:
               </label>
               <input
                 type="text"
                 autoFocus
                 value={guessInput}
                 onChange={(e) => setGuessInput(e.target.value)}
-                placeholder="Ketik tebakan kata di sini..."
+                placeholder="Ketik tebakan kata di sini…"
                 maxLength={30}
-                className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-purple-500/40 text-purple-100 placeholder:text-slate-600 text-base font-bold focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 tracking-wide text-center"
+                className="w-full px-4 py-3 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-base font-bold focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal text-center"
               />
             </div>
 
             {errorMsg && (
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-stamp-light border border-stamp text-stamp-dark text-xs">
+                <WarningCircle className="w-4 h-4 shrink-0 text-stamp-dark" weight="bold" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            <Button
-              type="submit"
-              variant="accent"
-              size="lg"
-              fullWidth
-              disabled={!guessInput.trim() || remainingSeconds === 0}
-              isLoading={isSubmitting}
-              leftIcon={<Send className="w-4 h-4" />}
-              className="mt-2"
-            >
-              Kirim Tebakan Sekarang
-            </Button>
+            <div className="flex items-center gap-2 pt-2">
+              {onGiveUp && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="lg"
+                  onClick={onGiveUp}
+                  className="flex-1"
+                >
+                  Menyerah
+                </Button>
+              )}
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                fullWidth={!onGiveUp}
+                disabled={!guessInput.trim() || remainingSeconds === 0}
+                isLoading={isSubmitting}
+                leftIcon={<PaperPlaneRight className="w-4 h-4" weight="bold" />}
+                className={onGiveUp ? 'flex-[2]' : 'mt-2'}
+              >
+                Kirim Tebakan
+              </Button>
+            </div>
           </form>
         ) : (
-          /* Spectator / Other Players Interface */
           <div className="text-center space-y-4 py-2">
-            <motion.div
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-              className="w-16 h-16 mx-auto rounded-2xl bg-purple-500/15 border-2 border-purple-500/40 flex items-center justify-center text-3xl shadow-[0_0_30px_-5px_rgba(168,85,247,0.4)]"
-            >
-              {mrWhitePlayer?.avatar || '🕵️'}
-            </motion.div>
+            <PlayerToken
+              avatar={mrWhitePlayer?.avatar}
+              name={mrWhitePlayer?.name}
+              size="lg"
+              className="mx-auto"
+            />
 
             <div className="space-y-1">
-              <p className="text-base font-bold text-slate-100 font-display">
-                <span className="text-purple-300 font-bold">{mrWhitePlayer?.name || 'Mr. White'}</span> sedang menebak kata rahasia!
+              <p className="text-base font-bold text-ink font-display">
+                <span className="text-stamp-dark font-bold">{mrWhitePlayer?.name || 'Mr. White'}</span> sedang menebak kata rahasia!
               </p>
-              <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-                Jika tebakannya benar, Mr. White mencuri kemenangan! Jika salah, warga atau undercover yang bertahan akan menang.
+              <p className="text-xs text-ink-muted max-w-xs mx-auto leading-relaxed">
+                Jika tebakannya benar, Mr. White mencuri kemenangan! Jika salah, warga atau impostor yang bertahan akan menang.
               </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-white/5 flex items-center justify-center gap-2 text-xs text-purple-300 font-mono">
-              <span className="inline-block w-2 h-2 rounded-full bg-purple-400 animate-ping" />
-              <span>Menunggu input Mr. White...</span>
+            <div className="p-3 rounded-xl bg-paper border border-rule flex items-center justify-center gap-2 text-xs text-ink-muted font-medium">
+              <span className="inline-block w-2 h-2 rounded-full bg-sun-dark" />
+              <span>Menunggu tebakan Mr. White…</span>
             </div>
           </div>
         )}
