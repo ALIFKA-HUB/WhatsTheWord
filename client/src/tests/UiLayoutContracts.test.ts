@@ -66,3 +66,19 @@ describe('RoomGamePage parity and HomePage focus contract', () => {
     expect(headerSrc).toContain('max-w-[130px] sm:max-w-none');
   });
 });
+
+describe('Landing CSS token resolution and copy accuracy', () => {
+  it('defines .lp-root aliases for paper-2, ink-2, and shadow-card in landing.css', () => {
+    const css = fs.readFileSync(path.join(srcDir, 'landing/landing.css'), 'utf-8');
+    expect(css).toContain('.lp-root .bg-paper-2');
+    expect(css).toContain('.lp-root .text-ink-2');
+    expect(css).toContain('.lp-root .shadow-card');
+  });
+
+  it('states 4-character room code accurately in landing content', () => {
+    const content = fs.readFileSync(path.join(srcDir, 'landing/content.ts'), 'utf-8');
+    expect(content).toContain('4 karakter');
+    expect(content).not.toContain('6 karakter');
+  });
+});
+

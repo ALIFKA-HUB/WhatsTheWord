@@ -272,3 +272,45 @@ a.lp-plate:hover, button.lp-plate:hover {
   opacity: 0;
   pointer-events: none;
 }
+
+/* Scoped Terrazzo utility bridges for classes referenced by landing TSX */
+.lp-root .bg-paper-2 {
+  background-color: var(--color-paper-2);
+}
+
+.lp-root .text-ink-2 {
+  color: var(--color-ink-2);
+}
+
+.lp-root .hover\:text-ink-2:hover {
+  color: var(--color-ink-2);
+}
+
+.lp-root .hover\:border-ink-2:hover {
+  border-color: var(--color-ink-2);
+}
+
+.lp-root .shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+@media (max-width: 480px) {
+  .lp-deal-fan {
+    min-height: 250px;
+  }
+
+  .lp-deal-card {
+    width: clamp(92px, 23vw, 130px);
+    padding: var(--space-sm) var(--space-xs);
+  }
+
+  .lp-deal-card:not(:first-child) {
+    margin-left: clamp(-34px, -7vw, -22px);
+  }
+
+  .lp-stamp {
+    font-size: var(--text-xs);
+    padding: 2px 6px;
+  }
+}
+

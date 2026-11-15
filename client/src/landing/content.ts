@@ -7,7 +7,7 @@ export const HERO = {
   secondary: 'Buat room online',
   fact1: '3 sampai 20 pemain',
   fact2: 'tanpa perlu akun',
-  caption: 'Tiga kartu Kopi, satu kartu Teh. Yang pegang Teh adalah penyamar.',
+  caption: 'Tiga kartu Kopi, satu kartu Teh. Ketuk kartu mana saja untuk mengintip.',
 };
 
 export const BEFORE_AFTER = {
@@ -69,7 +69,7 @@ export const MODES = {
       badge: 'Multi-device',
       points: [
         'Tiap orang pegang HP masing-masing',
-        'Masuk dengan satu kode room 6 karakter',
+        'Masuk dengan satu kode room 4 karakter',
         'Host atur kategori kata dan jumlah penyamar',
       ],
       action: 'Buat room online',
