@@ -219,30 +219,30 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                         : 'bg-cardstock border-rule shadow-print-sm'
                     )}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className="shrink-0">
                         <PlayerToken avatar={player.avatar} name={player.name} size="md" showCode={false} />
                       </div>
 
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-bold text-ink truncate">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-sm font-bold text-ink truncate block min-w-0">
                             {player.name}
                           </span>
                           {isMe && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-cardstock border border-rule text-teal-dark font-semibold">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-cardstock border border-rule text-teal-dark font-semibold shrink-0">
                               Kamu
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
                           {player.isHost ? (
-                            <span className="text-xs text-sun-dark font-semibold flex items-center gap-1">
+                            <span className="text-xs text-sun-dark font-semibold flex items-center gap-1 shrink-0">
                               <Crown className="w-3.5 h-3.5 text-sun-dark" weight="bold" /> Pemilik Meja
                             </span>
                           ) : (
-                            <span className="text-xs text-ink-muted flex items-center gap-1">
+                            <span className="text-xs text-ink-muted flex items-center gap-1 shrink-0">
                               <WifiHigh className="w-3.5 h-3.5 text-teal-dark" weight="bold" /> Siap bermain
                             </span>
                           )}
@@ -359,11 +359,12 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                           type="button"
                           onClick={() => handleUpdateRoles(settings.undercoverCount - 1, settings.enableMrWhite)}
                           disabled={settings.undercoverCount <= 1}
-                          className="w-6 h-6 rounded-lg bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40"
+                          className="min-w-[44px] min-h-[44px] sm:min-w-[32px] sm:min-h-[32px] rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40 shadow-print-sm active:translate-y-[1px] transition-colors"
+                          aria-label="Kurangi Impostor"
                         >
                           -
                         </button>
-                        <span className="font-mono font-bold text-stamp-dark w-4 text-center">
+                        <span className="font-mono font-bold text-stamp-dark min-w-[28px] text-center text-sm">
                           {settings.undercoverCount}
                         </span>
                         <button
@@ -373,7 +374,8 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                             settings.undercoverCount >=
                             Math.max(1, Math.floor((totalPlayers - (settings.enableMrWhite ? 1 : 0)) / 2))
                           }
-                          className="w-6 h-6 rounded-lg bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40"
+                          className="min-w-[44px] min-h-[44px] sm:min-w-[32px] sm:min-h-[32px] rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40 shadow-print-sm active:translate-y-[1px] transition-colors"
+                          aria-label="Tambah Impostor"
                         >
                           +
                         </button>

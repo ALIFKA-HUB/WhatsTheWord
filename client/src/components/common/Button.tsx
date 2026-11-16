@@ -33,12 +33,12 @@ const variantStyles: Record<ButtonVariant, string> = {
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  xs: 'px-3 py-1.5 text-xs rounded-full gap-1.5',
-  sm: 'px-4 py-2 text-xs sm:text-sm rounded-full gap-2',
-  md: 'px-5 py-2.5 text-sm sm:text-base rounded-full gap-2',
-  lg: 'px-6 py-3 text-base rounded-full gap-2.5',
-  xl: 'px-7 py-3.5 text-base sm:text-lg rounded-full gap-3',
-  icon: 'p-2.5 rounded-full aspect-square flex items-center justify-center',
+  xs: 'px-3 py-1.5 text-xs rounded-full gap-1.5 min-h-[36px]',
+  sm: 'px-4 py-2 text-xs sm:text-sm rounded-full gap-2 min-h-[40px]',
+  md: 'px-5 py-2.5 text-sm sm:text-base rounded-full gap-2 min-h-[44px]',
+  lg: 'px-6 py-3 text-base rounded-full gap-2.5 min-h-[48px]',
+  xl: 'px-7 py-3.5 text-base sm:text-lg rounded-full gap-3 min-h-[52px]',
+  icon: 'w-11 h-11 p-2.5 rounded-full aspect-square flex items-center justify-center min-w-[44px] min-h-[44px] shrink-0',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -84,7 +84,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={isDisabled}
         onClick={handleClick}
         className={cn(
-          'relative inline-flex items-center justify-center select-none font-sans transition-transform duration-100 ease-out outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
+          'relative inline-flex items-center justify-center select-none font-sans transition-transform duration-100 ease-out outline-none touch-manipulation focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
           'disabled:opacity-40 disabled:pointer-events-none',
           variantStyles[variant],
           sizeStyles[size],

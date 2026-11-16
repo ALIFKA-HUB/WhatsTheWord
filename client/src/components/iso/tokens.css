@@ -1,0 +1,64 @@
+.iso {
+  --anatomy-page: #0b0b0b;
+  --anatomy-card: #131313;
+  --anatomy-text: #a3a3a3;
+  --anatomy-strong: #e6e6e6;
+  --anatomy-muted: #6e6e6e;
+  --anatomy-paper: #131313;
+  --anatomy-face: #1b1b1b;
+  --anatomy-top: #1c1c1c;
+  --anatomy-shade-0: #0f0f0f;
+  --anatomy-shade-1: #121212;
+  --anatomy-shade-2: #151515;
+  --anatomy-shade-3: #181818;
+  --anatomy-lit-top: #262626;
+  --anatomy-lit-shade: #1d1d1d;
+  --anatomy-lit-hover: #e55b35;
+  --anatomy-lit-ink: #ffffff;
+  --anatomy-hi: #d4d4d4;
+  --anatomy-mid: #6a6a6a;
+  --anatomy-lo: #3e3e3e;
+  --anatomy-faint: #2a2a2a;
+  --anatomy-lit: #ffffff;
+  --anatomy-halo: #050505;
+  --anatomy-halo-opacity: .9;
+  --anatomy-dot: #e6e6e6;
+  --anatomy-red: #ff6b6b;
+  --anatomy-green: #6be0a0;
+  --anatomy-blue: #6b9bff;
+  --anatomy-weight: .6px;
+  --anatomy-ease: cubic-bezier(.32, .72, 0, 1);
+  --anatomy-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --anatomy-lift: inset 0 1px 0 0 #ffffff0a, inset 0 0 0 1px #ffffff06, 0 0 0 1px #00000026, 0 1px 1px -.5px #00000014, 0 3px 3px -1.5px #00000014, 0 6px 6px -3px #00000014, 0 12px 12px -6px #00000014;
+}
+
+.iso[data-theme="light"] {
+  --anatomy-page: #F7F3EA;
+  --anatomy-card: #FFFCF5;
+  --anatomy-text: #4B515C;
+  --anatomy-strong: #1F242D;
+  --anatomy-muted: #6B707A;
+  --anatomy-paper: #FFFCF5;
+  --anatomy-face: #FFFFFF;
+  --anatomy-top: #FFFCF5;
+  --anatomy-shade-0: #DDD6C8;
+  --anatomy-shade-1: #E6E0D3;
+  --anatomy-shade-2: #EFEAE0;
+  --anatomy-shade-3: #F7F3EA;
+  --anatomy-lit-top: #FFF4EE;
+  --anatomy-lit-shade: #F4DAD0;
+  --anatomy-lit-hover: #AD4020;
+  --anatomy-lit-ink: #FFFCF5;
+  --anatomy-hi: #1F242D;
+  --anatomy-mid: #6D727D;
+  --anatomy-lo: #A4A096;
+  --anatomy-faint: #D8D2C5;
+  --anatomy-lit: #C44D29;
+  --anatomy-halo: #8D8576;
+  --anatomy-halo-opacity: .28;
+  --anatomy-dot: #1F242D;
+  --anatomy-red: #C44D29;
+  --anatomy-green: #1E7A61;
+  --anatomy-blue: #3460A8;
+  --anatomy-lift: inset 0 1px 0 0 #ffffff, 0 0 0 1px #1f242d14, 0 1px 1px -.5px #1f242d0a, 0 3px 3px -1.5px #1f242d0a, 0 6px 6px -3px #1f242d0a, 0 12px 12px -6px #1f242d0a;
+}

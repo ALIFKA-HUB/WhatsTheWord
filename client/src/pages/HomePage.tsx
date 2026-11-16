@@ -155,27 +155,27 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
           </div>
 
-          {/* Calm 3-role guide */}
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-4 border-t border-rule text-xs">
-            <div className="px-3.5 py-2.5 rounded-2xl bg-paper border border-rule flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-teal-dark shrink-0" />
+          {/* Calm 3-role guide - clean docket columns without nested box borders */}
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-rule text-xs">
+            <div className="flex items-start gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-teal-dark shrink-0 mt-1" />
               <div>
-                <span className="font-bold text-ink">Warga: </span>
-                <span className="text-ink-muted">Menerima kata rahasia yang sama</span>
+                <span className="font-bold text-ink block">Warga</span>
+                <span className="text-ink-muted leading-tight">Menerima kata rahasia yang sama</span>
               </div>
             </div>
-            <div className="px-3.5 py-2.5 rounded-2xl bg-paper border border-rule flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-stamp shrink-0" />
+            <div className="flex items-start gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-stamp shrink-0 mt-1" />
               <div>
-                <span className="font-bold text-ink">Impostor: </span>
-                <span className="text-ink-muted">Menerima kata yang mirip</span>
+                <span className="font-bold text-ink block">Impostor</span>
+                <span className="text-ink-muted leading-tight">Menerima kata yang mirip</span>
               </div>
             </div>
-            <div className="px-3.5 py-2.5 rounded-2xl bg-paper border border-rule flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-sun-dark shrink-0" />
+            <div className="flex items-start gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-sun-dark shrink-0 mt-1" />
               <div>
-                <span className="font-bold text-ink">Mr. White: </span>
-                <span className="text-ink-muted">Tanpa kata, menebak kata warga</span>
+                <span className="font-bold text-ink block">Mr. White</span>
+                <span className="text-ink-muted leading-tight">Tanpa kata, menebak kata warga</span>
               </div>
             </div>
           </div>

@@ -101,11 +101,23 @@ export const SecretCard: React.FC<SecretCardProps> = ({
             <span className="text-xs font-semibold text-ink-muted">
               Kartu Kata Rahasia
             </span>
-            {category && (
-              <span className="px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule text-xs font-semibold text-ink">
-                {category}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5">
+              {role === 'UNDERCOVER' && (
+                <span className="text-[10px] font-bold text-stamp-dark bg-stamp-light px-2 py-0.5 rounded-full border border-stamp">
+                  Impostor
+                </span>
+              )}
+              {role === 'CIVILIAN' && (
+                <span className="text-[10px] font-bold text-teal-dark bg-teal-light px-2 py-0.5 rounded-full border border-teal">
+                  Warga
+                </span>
+              )}
+              {category && (
+                <span className="px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule text-xs font-semibold text-ink">
+                  {category}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Secret content with opacity transition so zero leak when closed */}
@@ -122,7 +134,7 @@ export const SecretCard: React.FC<SecretCardProps> = ({
                 <p className="text-xs font-semibold text-ink-muted mb-1.5">
                   Kata rahasia kamu
                 </p>
-                <p className="font-condensed text-4xl sm:text-5xl text-ink tracking-tight py-2.5 border-y border-rule">
+                <p className="font-condensed text-3xl sm:text-5xl text-ink tracking-tight py-2.5 border-y border-rule break-words px-2">
                   {isHolding ? (word || 'Kata Rahasia') : '••••••••'}
                 </p>
                 <p className="text-xs text-ink-muted max-w-[250px] leading-relaxed mx-auto mt-2">
@@ -140,11 +152,20 @@ export const SecretCard: React.FC<SecretCardProps> = ({
         </motion.div>
 
         {/* Pocket flap (front of the envelope) - covers bottom 210px */}
-        <div className="absolute inset-x-0 bottom-0 h-[210px] z-10 card-back-hatch border-t border-rule flex flex-col items-center justify-center gap-2 px-4 shadow-flap">
+        <div className="absolute inset-x-0 bottom-0 h-[210px] z-10 card-back-hatch border-t-2 border-rule flex flex-col items-center justify-center gap-2 px-4 shadow-flap">
+          {/* Tactile envelope string rivet & seam stamp */}
+          <div className="w-6 h-6 rounded-full bg-paper border border-rule flex items-center justify-center shadow-print-sm -mt-2">
+            <span className="w-2 h-2 rounded-full bg-stamp" />
+          </div>
           <span className="rubber-stamp text-xs">Amplop Tertutup</span>
-          <p className="text-xs font-semibold text-ink-muted text-center max-w-[210px]">
+          <p className="text-xs font-semibold text-ink-muted text-center max-w-[210px] leading-relaxed">
             Sentuh dan tahan kartu untuk mengintip kata rahasiamu
           </p>
+          <div className="flex items-center gap-1.5 opacity-40 mt-1" aria-hidden="true">
+            <span className="w-8 h-px bg-rule" />
+            <span className="w-1.5 h-1.5 rounded-full border border-rule" />
+            <span className="w-8 h-px bg-rule" />
+          </div>
         </div>
       </div>
 

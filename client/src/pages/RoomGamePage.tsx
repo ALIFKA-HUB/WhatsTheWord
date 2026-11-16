@@ -464,18 +464,18 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                     key={player.id}
                     className="p-3.5 rounded-2xl bg-cardstock border border-rule flex items-center justify-between gap-3 shadow-print-sm"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className="shrink-0">
                         <PlayerToken avatar={player.avatar} name={player.name} size="sm" showCode={false} />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-bold text-ink">{player.name}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-sm font-bold text-ink truncate block min-w-0">{player.name}</span>
                           {player.id === currentPlayer?.id && (
-                            <span className="text-xs text-teal-dark font-semibold">(Kamu)</span>
+                            <span className="text-xs text-teal-dark font-semibold shrink-0">(Kamu)</span>
                           )}
                         </div>
-                        <span className="text-xs text-ink-muted">
+                        <span className="text-xs text-ink-muted truncate block">
                           Kata: <strong className="text-ink">{player.word || 'Tidak ada'}</strong>
                         </span>
                       </div>

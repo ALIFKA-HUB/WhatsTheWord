@@ -56,7 +56,7 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
         backLabel="Keluar"
         rightElement={
           phase !== 'SETUP' && (
-            <Badge variant="slate" size="sm" className="hidden sm:inline-flex">
+            <Badge variant="slate" size="sm" className="inline-flex">
               Ronde {round}
             </Badge>
           )

@@ -75,16 +75,16 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
       className="border border-rule shadow-print-lg"
       title={
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-sun-light border border-sun flex items-center justify-center text-sun-dark shadow-print-sm">
+          <div className="w-8 h-8 rounded-xl bg-stamp-light border border-stamp flex items-center justify-center text-stamp-dark shadow-print-sm shrink-0">
             <Question className="w-5 h-5" weight="bold" />
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-bold font-display text-ink">
-              {isMrWhite ? 'Tebak Kata Rahasia Warga!' : 'Mr. White Tertangkap!'}
+            <div className="flex items-center gap-2">
+              <span className="rubber-stamp text-[10px]">Interogasi Darurat</span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold font-display text-ink leading-tight">
+              {isMrWhite ? 'Kesempatan Terakhir Mr. White!' : 'Mr. White Sedang Menebak!'}
             </h3>
-            <p className="text-xs text-ink-muted font-normal">
-              Kesempatan menebak kata rahasia
-            </p>
           </div>
         </div>
       }
@@ -95,38 +95,38 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
             totalSeconds={initialSeconds}
             remainingSeconds={remainingSeconds}
             variant="compact"
-            label="Waktu Menebak"
+            label="Sisa Waktu Interogasi"
           />
         </div>
 
         {isMrWhite ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="p-4 rounded-2xl bg-stamp-light border border-stamp text-center space-y-1">
+            <div className="p-4 rounded-2xl bg-stamp-light border border-stamp text-center space-y-1 shadow-print-sm">
               <p className="text-sm font-bold text-stamp-dark font-display">
-                Kamu Terpilih untuk Dieliminasi!
+                Kamu Tereliminasi di Meja!
               </p>
               <p className="text-xs text-ink-muted leading-relaxed font-sans">
-                Namun, kamu tetap bisa <strong className="text-ink">menang seketika</strong> jika berhasil menebak <span className="text-stamp-dark font-bold">kata rahasia Warga</span>!
+                Namun sebagai Mr. White, kamu bisa <strong className="text-ink">mencuri kemenangan seketika</strong> jika berhasil menebak <span className="text-stamp-dark font-bold">kata rahasia Warga</span>!
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-ink">
-                Tuliskan Kata Rahasia Warga:
+              <label className="text-xs font-semibold text-ink block">
+                Ketik Kata Rahasia Warga:
               </label>
               <input
                 type="text"
                 autoFocus
                 value={guessInput}
                 onChange={(e) => setGuessInput(e.target.value)}
-                placeholder="Ketik tebakan kata di sini…"
+                placeholder="Contoh: Kopi"
                 maxLength={30}
-                className="w-full px-4 py-3 rounded-xl bg-paper border border-rule text-ink placeholder:text-ink-faint text-base font-bold focus:outline-none focus:border-teal-dark focus:ring-2 focus:ring-teal text-center"
+                className="w-full px-4 py-3 rounded-xl bg-paper border-2 border-rule text-ink placeholder:text-ink-faint font-mono text-lg sm:text-xl font-bold focus:outline-none focus:border-stamp focus:ring-2 focus:ring-stamp text-center transition-colors"
               />
             </div>
 
             {errorMsg && (
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-stamp-light border border-stamp text-stamp-dark text-xs">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-stamp-light border border-stamp text-stamp-dark text-xs font-semibold">
                 <WarningCircle className="w-4 h-4 shrink-0 text-stamp-dark" weight="bold" />
                 <span>{errorMsg}</span>
               </div>
@@ -134,7 +134,7 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
 
             <Button
               type="submit"
-              variant="primary"
+              variant="danger"
               size="lg"
               fullWidth
               disabled={!guessInput.trim() || remainingSeconds === 0}
@@ -159,13 +159,13 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
                 <span className="text-stamp-dark font-bold">{mrWhitePlayer?.name || 'Mr. White'}</span> sedang menebak kata rahasia!
               </p>
               <p className="text-xs text-ink-muted max-w-xs mx-auto leading-relaxed">
-                Jika tebakannya benar, Mr. White mencuri kemenangan! Jika salah, warga atau impostor yang bertahan akan menang.
+                Jika tebakannya tepat, Mr. White mencuri kemenangan seketika! Jika salah, kelompok yang bertahan akan memenangkan permainan.
               </p>
             </div>
 
             <div className="p-3 rounded-xl bg-paper border border-rule flex items-center justify-center gap-2 text-xs text-ink-muted font-medium">
-              <span className="inline-block w-2 h-2 rounded-full bg-sun-dark" />
-              <span>Menunggu tebakan Mr. White…</span>
+              <span className="inline-block w-2 h-2 rounded-full bg-sun-dark animate-pulse" />
+              <span>Menyimak tebakan Mr. White di meja…</span>
             </div>
           </div>
         )}

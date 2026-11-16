@@ -10,7 +10,12 @@ export type BadgeVariant =
   | 'amber'
   | 'emerald'
   | 'slate'
-  | 'outline';
+  | 'outline'
+  | 'mint'
+  | 'stamp'
+  | 'sun'
+  | 'cardstock'
+  | 'paper';
 
 export type BadgeSize = 'sm' | 'md' | 'lg';
 
@@ -29,6 +34,11 @@ const variantStyles: Record<BadgeVariant, string> = {
   emerald: 'bg-teal-light text-teal-dark border-teal',
   slate: 'bg-paper-muted text-ink-muted border-rule',
   outline: 'bg-transparent text-ink-muted border-rule',
+  mint: 'bg-teal-light text-teal-dark border-teal',
+  stamp: 'bg-stamp-light text-stamp-dark border-stamp',
+  sun: 'bg-sun-light text-sun-dark border-sun',
+  cardstock: 'bg-cardstock text-ink border-rule shadow-print-sm',
+  paper: 'bg-paper text-ink border-rule',
 };
 
 const sizeStyles: Record<BadgeSize, string> = {

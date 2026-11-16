@@ -145,13 +145,13 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
                 !isPlayerAlive
                   ? 'bg-paper-muted border-rule opacity-50 cursor-not-allowed'
                   : isTargetSelected
-                  ? 'bg-stamp-light border-stamp ring-1 ring-stamp cursor-pointer'
+                  ? 'bg-stamp-light border-stamp ring-2 ring-stamp cursor-pointer'
                   : canVoteThis
                   ? 'bg-cardstock border-rule hover:border-stamp hover:bg-paper-muted cursor-pointer'
                   : 'bg-paper-muted border-rule cursor-default'
               )}
             >
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="relative shrink-0">
                   <PlayerToken
                     avatar={player.avatar}
@@ -168,11 +168,11 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
                   )}
                 </div>
 
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <span
                       className={cn(
-                        'text-sm font-bold truncate',
+                        'text-sm font-bold truncate block min-w-0',
                         !isPlayerAlive
                           ? 'line-through text-ink-muted'
                           : isTargetSelected
@@ -183,21 +183,21 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
                       {player.name}
                     </span>
                     {isMe && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-paper-muted border border-rule text-ink font-semibold">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-paper-muted border border-rule text-ink font-semibold shrink-0">
                         Kamu
                       </span>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
                     {!isPlayerAlive ? (
-                      <span className="text-xs text-stamp-dark font-semibold">Tereliminasi</span>
+                      <span className="text-xs text-stamp-dark font-semibold shrink-0">Tereliminasi</span>
                     ) : player.hasVoted ? (
-                      <span className="text-xs text-teal-dark flex items-center gap-1 font-semibold">
+                      <span className="text-xs text-teal-dark flex items-center gap-1 font-semibold shrink-0">
                         <CheckCircle className="w-3.5 h-3.5 text-teal-dark" weight="bold" /> Sudah memilih
                       </span>
                     ) : (
-                      <span className="text-xs text-ink-muted">Sedang berpikir…</span>
+                      <span className="text-xs text-ink-muted truncate">Sedang berpikir…</span>
                     )}
                   </div>
                 </div>

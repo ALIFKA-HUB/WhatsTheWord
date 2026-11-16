@@ -403,7 +403,8 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount - 1)}
                     disabled={totalPlayerCount <= 3}
-                    className="w-10 h-10 rounded-2xl bg-cardstock border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:translate-y-[1px] transition-colors shadow-print-sm"
+                    className="min-w-[44px] min-h-[44px] rounded-2xl bg-cardstock border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:translate-y-[1px] transition-colors shadow-print-sm"
+                    aria-label="Kurangi pemain"
                   >
                     -
                   </button>
@@ -419,7 +420,8 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     type="button"
                     onClick={() => adjustPlayerCount(totalPlayerCount + 1)}
                     disabled={totalPlayerCount >= 20}
-                    className="w-10 h-10 rounded-2xl bg-cardstock border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:translate-y-[1px] transition-colors shadow-print-sm"
+                    className="min-w-[44px] min-h-[44px] rounded-2xl bg-cardstock border border-rule text-ink font-bold hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center text-xl active:translate-y-[1px] transition-colors shadow-print-sm"
+                    aria-label="Tambah pemain"
                   >
                     +
                   </button>
@@ -427,9 +429,9 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
             </Card>
 
-            {/* Role Breakdown Card */}
-            <Card padding="md" className="space-y-3.5">
-              <div className="flex items-center justify-between border-b border-rule pb-3">
+            {/* Role Breakdown Card - Clean Docket Rows without nested box borders */}
+            <Card padding="md" className="space-y-1">
+              <div className="flex items-center justify-between border-b border-rule pb-3 mb-1">
                 <span className="text-sm font-bold text-ink flex items-center gap-2">
                   <span className="w-7 h-7 rounded-xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center">
                     <ShieldCheck className="w-4 h-4" weight="bold" />
@@ -442,9 +444,9 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
 
               {/* Civilian Row */}
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule">
+              <div className="flex items-center justify-between py-3 border-b border-rule">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-teal-light text-teal-dark flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-teal-light text-teal-dark flex items-center justify-center shrink-0">
                     <ShieldCheck className="w-4 h-4" weight="bold" />
                   </div>
                   <div>
@@ -452,15 +454,15 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                     <p className="text-xs text-ink-muted">Mendapatkan kata rahasia yang sama</p>
                   </div>
                 </div>
-                <span className="text-base font-mono font-bold text-ink px-3 py-0.5 rounded-xl bg-cardstock border border-rule">
+                <span className="text-base font-mono font-bold text-ink px-3 py-1 rounded-xl bg-paper border border-rule">
                   {currentCivilian}
                 </span>
               </div>
 
               {/* Undercover Stepper */}
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule">
+              <div className="flex items-center justify-between py-3 border-b border-rule">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-stamp-light text-stamp-dark flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-stamp-light text-stamp-dark flex items-center justify-center shrink-0">
                     <EyeSlash className="w-4 h-4" weight="bold" />
                   </div>
                   <div>
@@ -469,23 +471,25 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => handleUndercoverChange(-1)}
                     disabled={currentUndercover <= 1}
-                    className="w-8 h-8 rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:translate-y-[1px] transition-colors"
+                    className="min-w-[44px] min-h-[44px] rounded-xl bg-paper border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:translate-y-[1px] transition-colors shadow-print-sm"
+                    aria-label="Kurangi Impostor"
                   >
                     -
                   </button>
-                  <span className="text-base font-mono font-bold text-stamp-dark min-w-[26px] text-center">
+                  <span className="text-base font-mono font-bold text-stamp-dark min-w-[28px] text-center">
                     {currentUndercover}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleUndercoverChange(1)}
                     disabled={currentUndercover >= maxUndercover}
-                    className="w-8 h-8 rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:translate-y-[1px] transition-colors"
+                    className="min-w-[44px] min-h-[44px] rounded-xl bg-paper border border-rule text-ink hover:bg-paper-muted disabled:opacity-30 flex items-center justify-center font-bold active:translate-y-[1px] transition-colors shadow-print-sm"
+                    aria-label="Tambah Impostor"
                   >
                     +
                   </button>
@@ -493,9 +497,9 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
               </div>
 
               {/* Mr. White Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule">
+              <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-sun-light text-sun-dark flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-sun-light text-sun-dark flex items-center justify-center shrink-0">
                     <Question className="w-4 h-4" weight="bold" />
                   </div>
                   <div>
@@ -508,10 +512,10 @@ export const PassPlaySetupPage: React.FC<PassPlaySetupPageProps> = ({ onBack }) 
                   type="button"
                   onClick={handleToggleMrWhite}
                   className={cn(
-                    'px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors border',
+                    'min-h-[44px] px-4 py-2 rounded-full text-xs font-bold transition-colors border shadow-print-sm flex items-center justify-center active:translate-y-[1px]',
                     settings.enableMrWhite
-                      ? 'bg-teal-light border-teal text-teal-dark shadow-print-sm'
-                      : 'bg-cardstock border-rule text-ink-muted hover:text-ink'
+                      ? 'bg-teal-light border-teal text-teal-dark'
+                      : 'bg-paper border-rule text-ink-muted hover:text-ink'
                   )}
                 >
                   {settings.enableMrWhite ? 'Aktif (1)' : 'Nonaktif'}

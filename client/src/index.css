@@ -27,8 +27,9 @@
     color: var(--color-ink);
   }
 
-  input, button, textarea, select {
+  input, button, textarea, select, a {
     font-family: inherit;
+    touch-action: manipulation;
   }
 }
 

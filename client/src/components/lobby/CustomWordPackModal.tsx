@@ -359,38 +359,62 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                     </span>
                   </div>
 
-                  <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+                  <div className="space-y-2.5">
                     {pairs.map((pair, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 py-1.5 px-2 rounded-xl bg-paper border border-rule"
+                        className="p-2 sm:p-2.5 rounded-xl bg-paper border border-rule space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-2.5"
                       >
-                        <span className="text-xs font-mono font-bold text-ink-muted w-6 text-center shrink-0">
-                          {String(index + 1).padStart(2, '0')}
-                        </span>
-                        <input
-                          type="text"
-                          placeholder="Kata Warga (mis. Kopi)"
-                          value={pair.civilian}
-                          onChange={(e) => handlePairChange(index, 'civilian', e.target.value)}
-                          maxLength={25}
-                          className="flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-cardstock border border-rule text-ink placeholder:text-ink-faint text-xs focus:outline-none focus:border-teal"
-                        />
-                        <span className="text-ink-muted text-xs font-bold shrink-0">vs</span>
-                        <input
-                          type="text"
-                          placeholder="Kata Penyamar (mis. Teh)"
-                          value={pair.undercover}
-                          onChange={(e) => handlePairChange(index, 'undercover', e.target.value)}
-                          maxLength={25}
-                          className="flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-cardstock border border-rule text-stamp-dark placeholder:text-ink-faint text-xs focus:outline-none focus:border-stamp"
-                        />
+                        <div className="flex items-center justify-between sm:justify-start gap-2">
+                          <span className="text-xs font-mono font-bold text-ink-muted w-6 text-center shrink-0">
+                            {String(index + 1).padStart(2, '0')}
+                          </span>
+                          {pairs.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePair(index)}
+                              className="sm:hidden p-1.5 text-ink-muted hover:text-stamp-dark rounded-lg hover:bg-stamp-light transition-colors shrink-0 touch-manipulation"
+                              title="Hapus baris ini"
+                              aria-label={`Hapus pasangan kata ${index + 1}`}
+                            >
+                              <Trash className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 min-w-0">
+                          <div className="space-y-0.5">
+                            <span className="text-[10px] font-semibold text-ink-muted sm:hidden">Kata Warga</span>
+                            <input
+                              type="text"
+                              placeholder="Kata Warga (mis. Kopi)"
+                              value={pair.civilian}
+                              onChange={(e) => handlePairChange(index, 'civilian', e.target.value)}
+                              maxLength={25}
+                              className="w-full px-3 py-2 sm:py-1.5 rounded-lg bg-cardstock border border-rule text-ink placeholder:text-ink-faint text-xs focus:outline-none focus:border-teal"
+                            />
+                          </div>
+
+                          <div className="space-y-0.5">
+                            <span className="text-[10px] font-semibold text-stamp-dark sm:hidden">Kata Penyamar</span>
+                            <input
+                              type="text"
+                              placeholder="Kata Penyamar (mis. Teh)"
+                              value={pair.undercover}
+                              onChange={(e) => handlePairChange(index, 'undercover', e.target.value)}
+                              maxLength={25}
+                              className="w-full px-3 py-2 sm:py-1.5 rounded-lg bg-cardstock border border-rule text-stamp-dark placeholder:text-ink-faint text-xs focus:outline-none focus:border-stamp"
+                            />
+                          </div>
+                        </div>
+
                         {pairs.length > 1 && (
                           <button
                             type="button"
                             onClick={() => handleRemovePair(index)}
-                            className="p-1.5 text-ink-muted hover:text-stamp-dark rounded-lg hover:bg-stamp-light transition-colors shrink-0"
+                            className="hidden sm:inline-flex p-1.5 text-ink-muted hover:text-stamp-dark rounded-lg hover:bg-stamp-light transition-colors shrink-0 touch-manipulation"
                             title="Hapus baris ini"
+                            aria-label={`Hapus pasangan kata ${index + 1}`}
                           >
                             <Trash className="w-4 h-4" />
                           </button>
@@ -553,13 +577,13 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                 </Button>
               </div>
             ) : (
-              <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+              <div className="space-y-2.5">
                 {savedPacks.map((pack) => (
                   <div
                     key={pack.id || pack.shareCode}
-                    className="flex items-center justify-between p-3.5 rounded-2xl bg-cardstock border border-rule hover:border-teal transition-colors shadow-print-sm"
+                    className="p-3.5 rounded-2xl bg-cardstock border border-rule hover:border-teal transition-colors shadow-print-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                   >
-                    <div className="space-y-1 min-w-0 pr-3">
+                    <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-bold text-ink truncate">
                           {pack.title}
@@ -573,11 +597,12 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 pt-1 sm:pt-0 border-t border-rule sm:border-t-0">
                       <Button
                         variant="primary"
                         size="sm"
                         onClick={() => handleSelectAndClose(pack)}
+                        className="flex-1 sm:flex-initial"
                       >
                         Pilih
                       </Button>
@@ -589,14 +614,16 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
                           handleCopyCode(pack.shareCode);
                         }}
                         title="Salin Kode Share"
+                        className="flex-1 sm:flex-initial"
                       >
                         {copiedCode === pack.shareCode ? 'Tersalin' : 'Salin'}
                       </Button>
                       <button
                         type="button"
                         onClick={(e) => handleDeletePack(e, pack.id)}
-                        className="p-2 text-ink-muted hover:text-stamp-dark rounded-lg hover:bg-stamp-light transition-colors"
+                        className="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-ink-muted hover:text-stamp-dark rounded-full hover:bg-stamp-light border border-rule transition-colors shrink-0 touch-manipulation"
                         title="Hapus dari penyimpanan"
+                        aria-label={`Hapus paket ${pack.title}`}
                       >
                         <Trash className="w-4 h-4" />
                       </button>

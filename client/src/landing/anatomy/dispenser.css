@@ -1,0 +1,159 @@
+/* Hallmark · shape: iso dispenser · genre: playful · v2.0.0 */
+.rd-wrap {
+  color: var(--anatomy-strong);
+}
+
+.rd-stage {
+  position: relative;
+  border-radius: 8px;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.rd-stage:focus-visible {
+  outline: 2px solid var(--anatomy-lit);
+  outline-offset: 8px;
+}
+
+.rd-needle {
+  stroke-width: 1.4;
+}
+
+.rd-plunger-hit,
+.rd-card-hit {
+  cursor: pointer;
+}
+
+.rd-plunger-hit:hover .iso-solid > .iso-edge {
+  stroke: var(--anatomy-lit);
+}
+
+.rd-card-hit:hover .rd-card-slab > .iso-edge {
+  stroke: var(--anatomy-strong);
+}
+
+.rd-card-hit[data-role="warga"] .rd-card-inner {
+  stroke: var(--anatomy-green);
+}
+
+.rd-card-hit[data-role="penyamar"] .rd-card-inner {
+  stroke: var(--anatomy-lit);
+}
+
+.rd-card-hit[data-role="penyamar"] .rd-card-label {
+  fill: var(--anatomy-lit);
+  font-weight: 600;
+}
+
+.rd-card-hit[data-role="warga"] .rd-card-label {
+  fill: var(--anatomy-green);
+  font-weight: 500;
+}
+
+.rd-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--anatomy-faint);
+}
+
+.rd-preset-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.rd-preset-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--anatomy-muted);
+  margin-right: 4px;
+}
+
+.rd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--anatomy-strong);
+  background: var(--anatomy-card);
+  color: var(--anatomy-strong);
+  font-family: var(--anatomy-mono);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 2px 0 0 var(--anatomy-shade-0);
+  transition: background-color 140ms var(--anatomy-ease), transform 100ms var(--anatomy-ease), color 140ms var(--anatomy-ease);
+}
+
+.rd-btn:hover {
+  background: var(--anatomy-shade-2);
+}
+
+.rd-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 var(--anatomy-shade-0);
+}
+
+.rd-btn:focus-visible {
+  outline: 2px solid var(--anatomy-lit);
+  outline-offset: 2px;
+}
+
+.rd-btn[aria-pressed="true"] {
+  background: var(--anatomy-strong);
+  color: var(--anatomy-card);
+  box-shadow: 0 2px 0 0 var(--anatomy-mid);
+}
+
+.rd-btn--action {
+  background: var(--anatomy-lit);
+  border-color: var(--anatomy-strong);
+  color: var(--anatomy-lit-ink);
+  padding: 0 16px;
+  gap: 8px;
+  box-shadow: 0 2px 0 0 var(--anatomy-strong);
+}
+
+.rd-btn--action:hover {
+  background: var(--anatomy-lit-hover);
+}
+
+.rd-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 560px) {
+  .rd-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rd-btn--action {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rd-btn {
+    transition: none;
+  }
+}

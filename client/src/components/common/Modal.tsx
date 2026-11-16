@@ -2,7 +2,6 @@ import React, { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from '@phosphor-icons/react';
 import { cn } from '../../utils/cn';
-import { Button } from './Button';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
@@ -66,7 +65,7 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto overscroll-contain">
           {/* Backdrop overlay */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -82,7 +81,7 @@ export const Modal: React.FC<ModalProps> = ({
           <motion.div
             role="dialog"
             aria-modal="true"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{
@@ -99,42 +98,41 @@ export const Modal: React.FC<ModalProps> = ({
           >
             {/* Header */}
             {(title || showCloseButton) && (
-              <div className="flex items-start justify-between px-5 py-3.5 border-b border-rule shrink-0 gap-4 bg-cardstock-warm">
-                <div className="flex flex-col space-y-0.5">
+              <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-rule shrink-0 gap-3 bg-cardstock-warm">
+                <div className="flex flex-col space-y-0.5 min-w-0 pr-1">
                   {typeof title === 'string' ? (
-                    <h2 className="font-condensed text-lg sm:text-xl text-ink leading-tight">
+                    <h2 className="font-condensed text-lg sm:text-xl text-ink leading-tight truncate">
                       {title}
                     </h2>
                   ) : (
                     title
                   )}
                   {subtitle && (
-                    <p className="text-xs sm:text-sm text-ink-muted font-sans">{subtitle}</p>
+                    <p className="text-xs sm:text-sm text-ink-muted font-sans leading-snug">{subtitle}</p>
                   )}
                 </div>
 
                 {showCloseButton && (
-                  <Button
-                    variant="secondary"
-                    size="icon"
+                  <button
+                    type="button"
                     onClick={onClose}
-                    className="text-ink -mr-1 -mt-1 h-8 w-8 rounded-lg"
+                    className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border border-rule bg-cardstock hover:bg-paper-muted active:translate-y-[1px] text-ink flex items-center justify-center shrink-0 transition-colors shadow-print-sm -mr-1 -my-1 touch-manipulation focus-visible:ring-2 focus-visible:ring-ink"
                     aria-label="Tutup Dialog"
                   >
                     <X className="w-4 h-4" weight="bold" />
-                  </Button>
+                  </button>
                 )}
               </div>
             )}
 
-            {/* Scrollable body */}
-            <div className="px-5 py-4 overflow-y-auto flex-1 text-ink text-sm leading-relaxed">
+            {/* Scrollable body with unified overscroll containment */}
+            <div className="px-4 py-3.5 sm:px-5 sm:py-4 overflow-y-auto overscroll-contain flex-1 text-ink text-sm leading-relaxed">
               {children}
             </div>
 
             {/* Footer */}
             {footer && (
-              <div className="px-5 py-3.5 bg-paper-muted border-t border-rule flex items-center justify-end gap-3 shrink-0">
+              <div className="px-4 py-3 sm:px-5 sm:py-3.5 bg-paper-muted border-t border-rule flex flex-wrap items-center justify-end gap-2.5 sm:gap-3 shrink-0">
                 {footer}
               </div>
             )}

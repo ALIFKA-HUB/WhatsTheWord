@@ -272,7 +272,7 @@ export const PassPlayVotingView: React.FC = () => {
                 setCurrentVoterId(null);
               }}
               className={cn(
-                'py-2 px-3 rounded-full transition-colors whitespace-nowrap',
+                'py-2 px-2.5 sm:px-3 rounded-full transition-colors text-center',
                 votingMode === 'consensus'
                   ? 'bg-cardstock text-ink font-bold shadow-print-sm'
                   : 'text-ink-muted hover:text-ink'
@@ -287,13 +287,14 @@ export const PassPlayVotingView: React.FC = () => {
                 setCurrentVoterId(alivePlayers[0]?.id || null);
               }}
               className={cn(
-                'py-2 px-3 rounded-full transition-colors whitespace-nowrap',
+                'py-2 px-2.5 sm:px-3 rounded-full transition-colors text-center',
                 votingMode === 'individual'
                   ? 'bg-cardstock text-ink font-bold shadow-print-sm'
                   : 'text-ink-muted hover:text-ink'
               )}
             >
-              Voting Rahasia (Oper HP)
+              <span>Voting Rahasia</span>
+              <span className="hidden sm:inline text-xs text-ink-muted font-normal ml-1">(Oper HP)</span>
             </button>
           </div>
 
@@ -315,7 +316,7 @@ export const PassPlayVotingView: React.FC = () => {
                     key={player.id}
                     type="button"
                     onClick={() => handleOpenConfirmModal(player.id)}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule hover:border-stamp hover:bg-stamp-light transition-colors text-left group active:translate-y-[1px] whitespace-nowrap"
+                    className="flex items-center justify-between p-3 rounded-2xl bg-paper border border-rule hover:border-stamp hover:bg-stamp-light transition-colors text-left group active:translate-y-[1px]"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <PlayerToken avatar={player.avatar} name={player.name} size="md" showCode={false} />
@@ -323,7 +324,7 @@ export const PassPlayVotingView: React.FC = () => {
                         <p className="text-sm font-semibold text-ink truncate">{player.name}</p>
                       </div>
                     </div>
-                    <span className="text-xs font-semibold text-stamp-dark bg-stamp-light px-2.5 py-1 rounded-full border border-stamp ml-2">
+                    <span className="text-xs font-semibold text-stamp-dark bg-stamp-light px-2.5 py-1 rounded-full border border-stamp ml-2 shrink-0">
                       Eliminasi
                     </span>
                   </button>
@@ -413,17 +414,33 @@ export const PassPlayVotingView: React.FC = () => {
             </Card>
           )}
 
-          {/* All Votes In Summary Button */}
+          {/* All Votes In Summary Ballot Box */}
           {votingMode === 'individual' && allVoted && (
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              onClick={() => processElimination()}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
-            >
-              Semua Suara Masuk, Buka Hasil Voting
-            </Button>
+            <Card padding="md" className="space-y-4 text-center py-6 px-4 bg-cardstock border border-rule shadow-print">
+              <div className="w-12 h-12 rounded-2xl bg-teal-light border border-teal text-teal-dark flex items-center justify-center mx-auto shadow-print-sm">
+                <ListChecks className="w-6 h-6" weight="bold" />
+              </div>
+              <div className="space-y-1">
+                <span className="rubber-stamp text-xs">Kotak Suara Tersegel</span>
+                <h3 className="text-lg sm:text-xl font-bold text-ink pt-1">
+                  Semua Suara Telah Terkumpul!
+                </h3>
+                <p className="text-xs text-ink-muted max-w-sm mx-auto leading-relaxed">
+                  Seluruh {alivePlayers.length} pemain telah mengunci pilihan masing-masing. Buka rekapitulasi untuk mengumumkan hasil eliminasi putaran ini.
+                </p>
+              </div>
+              <div className="pt-2">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onClick={() => processElimination()}
+                  rightIcon={<ArrowRight className="w-4 h-4" weight="bold" />}
+                >
+                  Buka Hasil Rekapitulasi Voting
+                </Button>
+              </div>
+            </Card>
           )}
         </div>
       )}

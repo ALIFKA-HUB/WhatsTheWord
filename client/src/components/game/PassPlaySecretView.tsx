@@ -68,31 +68,40 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
   return (
     <div className="w-full max-w-md mx-auto flex flex-col justify-center items-center px-4 py-6 font-sans">
       {/* Top progress stepper */}
-      <div className="w-full flex items-center justify-between mb-5 px-1">
-        <div className="flex items-center gap-2">
-          <span className="rubber-stamp">Bagikan Kata</span>
-          <span className="text-xs font-semibold text-ink-muted">
+      <div className="w-full flex items-center justify-between mb-5 px-1 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="rubber-stamp shrink-0">Bagikan Kata</span>
+          <span className="text-xs font-semibold text-ink-muted truncate">
             Pemain {safeRevealIndex + 1} dari {totalPlayers}
           </span>
         </div>
-        {/* seat dots */}
-        <div className="flex items-center gap-1.5">
-          {players.map((p, idx) => (
-            <span
-              key={p.id}
-              className={cn(
-                'w-2.5 h-2.5 rounded-full border border-rule transition-colors',
-                idx === safeRevealIndex && 'bg-teal-dark border-teal-dark',
-                idx < safeRevealIndex && 'bg-ink-muted border-ink-muted',
-                idx > safeRevealIndex && 'bg-cardstock'
-              )}
+        {/* seat progress indicators (clean bar on >8 players, chips on <=8) */}
+        {totalPlayers <= 8 ? (
+          <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
+            {players.map((p, idx) => (
+              <span
+                key={p.id}
+                className={cn(
+                  'w-2.5 h-2.5 rounded-full border border-rule transition-colors',
+                  idx === safeRevealIndex && 'bg-teal-dark border-teal-dark',
+                  idx < safeRevealIndex && 'bg-ink-muted border-ink-muted',
+                  idx > safeRevealIndex && 'bg-cardstock'
+                )}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="w-20 sm:w-28 h-2 rounded-full bg-paper-muted border border-rule overflow-hidden shrink-0">
+            <div
+              className="h-full bg-teal-dark origin-left transition-transform duration-200"
+              style={{ transform: `scaleX(${((safeRevealIndex + 1) / totalPlayers)})` }}
             />
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       <AnimatePresence mode="wait">
-        {/* SUB-SCREEN 1: Pass prompt */}
+        {/* SUB-SCREEN 1: Confidential Pass Prompt Cover */}
         {subScreen === 'PASS_PROMPT' && (
           <motion.div
             key="pass-prompt"
@@ -102,14 +111,21 @@ export const PassPlaySecretView: React.FC<PassPlaySecretViewProps> = ({ onAllRev
             className="w-full paper-stack"
           >
             <div className="bg-cardstock border border-rule shadow-print rounded-3xl p-6 sm:p-8 text-center space-y-5">
-              <PlayerToken avatar={currentPlayer?.avatar} name={currentPlayer?.name} size="xl" className="mx-auto" />
+              {/* Privacy seal banner */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-paper-muted border border-rule text-xs font-semibold text-ink-muted">
+                <span>Amplop Rahasia Pemain {safeRevealIndex + 1}</span>
+              </div>
+
+              <div className="py-2">
+                <PlayerToken avatar={currentPlayer?.avatar} name={currentPlayer?.name} size="xl" className="mx-auto" />
+              </div>
 
               <div className="space-y-1.5">
                 <h2 className="font-condensed text-2xl sm:text-3xl text-ink leading-tight">
                   Oper HP ke {currentPlayer?.name}
                 </h2>
                 <p className="text-xs sm:text-sm text-ink-muted leading-relaxed max-w-[280px] mx-auto">
-                  Giliran pemain ke-{safeRevealIndex + 1}. Tekan tombol di bawah setelah HP berada di tangan{' '}
+                  Pemain lain dilarang melihat layar! Tekan tombol di bawah setelah perangkat berada di tangan{' '}
                   <span className="font-bold text-ink">{currentPlayer?.name}</span>.
                 </p>
               </div>
