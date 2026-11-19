@@ -3,6 +3,30 @@ import { RoomManager } from '../managers/RoomManager.js';
 import { GameSettings } from '../types/game.types.js';
 import { broadcastRoomState, sanitizeRoomForPlayer } from '../utils/sanitize.js';
 
+function leavePreviousRoom(
+  io: Server,
+  socket: Socket,
+  roomManager: RoomManager
+): void {
+  const prevRoomId = socket.data.roomId;
+  const prevPlayerId = socket.data.playerId;
+  if (!prevRoomId || !prevPlayerId) return;
+
+  socket.leave(prevRoomId);
+  const prevRoom = roomManager.leaveRoom(prevRoomId, prevPlayerId);
+  if (prevRoom) {
+    broadcastRoomState(io, prevRoom, 'room:updated');
+  } else {
+    io.to(prevRoomId).emit('room:deleted', {
+      roomId: prevRoomId,
+      reason: 'Ruangan telah dibubarkan karena semua pemain telah keluar.',
+    });
+  }
+  socket.data.roomId = undefined;
+  socket.data.playerId = undefined;
+  socket.data.playerToken = undefined;
+}
+
 export function registerRoomHandlers(
   io: Server,
   socket: Socket,
@@ -19,6 +43,8 @@ export function registerRoomHandlers(
         if (!payload || typeof payload !== 'object') {
           throw new Error('Data permintaan tidak valid');
         }
+        leavePreviousRoom(io, socket, roomManager);
+
         const safePlayerName = (payload.playerName || '').trim() || 'Host';
         const safeAvatar = payload.avatar || '🕵️';
 
@@ -73,12 +99,17 @@ export function registerRoomHandlers(
         const safePlayerName = (payload.playerName || '').trim() || 'Agen Rahasia';
         const safeAvatar = payload.avatar || '🕵️';
 
+        const targetRoomId = payload.roomId.trim().toUpperCase();
         const { playerToken, player, room } = roomManager.joinRoom(
           payload.roomId,
           safePlayerName,
           safeAvatar,
           payload.playerToken
         );
+
+        if (socket.data.roomId && socket.data.roomId !== targetRoomId) {
+          leavePreviousRoom(io, socket, roomManager);
+        }
 
         const normalizedRoomId = room.roomId;
         socket.join(normalizedRoomId);

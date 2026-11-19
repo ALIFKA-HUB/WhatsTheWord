@@ -108,16 +108,34 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
       return;
     }
 
-    const validPairs: WordPair[] = pairs
-      .map((p) => ({
-        category: category.trim() || 'Kustom',
-        civilianWord: p.civilian.trim(),
-        undercoverWord: p.undercover.trim(),
-      }))
-      .filter((p) => p.civilianWord.length > 0 && p.undercoverWord.length > 0);
+    const mappedPairs = pairs.map((p) => ({
+      category: category.trim() || 'Kustom',
+      civilianWord: p.civilian.trim(),
+      undercoverWord: p.undercover.trim(),
+    }));
+
+    const hasPartialRow = mappedPairs.some(
+      (p) => (p.civilianWord && !p.undercoverWord) || (!p.civilianWord && p.undercoverWord)
+    );
+    if (hasPartialRow) {
+      setValidationError('Lengkapi kedua kolom Kata Warga dan Kata Impostor pada setiap baris');
+      return;
+    }
+
+    const validPairs: WordPair[] = mappedPairs.filter(
+      (p) => p.civilianWord.length > 0 && p.undercoverWord.length > 0
+    );
 
     if (validPairs.length === 0) {
       setValidationError('Tambahkan minimal 1 pasangan kata rahasia yang valid');
+      return;
+    }
+
+    const hasSameWord = validPairs.some(
+      (p) => p.civilianWord.toLowerCase() === p.undercoverWord.toLowerCase()
+    );
+    if (hasSameWord) {
+      setValidationError('Kata Warga dan Kata Impostor tidak boleh sama pada pasangan kata');
       return;
     }
 
@@ -133,6 +151,8 @@ export const CustomWordPackModal: React.FC<CustomWordPackModalProps> = ({
       if (result.success) {
         setSaveSuccessPack(result.pack);
         loadSavedPacks();
+      } else {
+        setValidationError(result.error || 'Gagal menyimpan paket kata');
       }
     } catch (err: any) {
       setValidationError(err?.message || 'Gagal menyimpan paket kata');

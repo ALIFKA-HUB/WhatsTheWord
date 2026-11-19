@@ -1,4 +1,4 @@
-export const PLAYER_PRESETS = [4, 6, 8, 10] as const;
+export const PLAYER_PRESETS = [4, 6, 8, 10, 12] as const;
 export type PlayerPreset = (typeof PLAYER_PRESETS)[number];
 
 export const MIN_PLAYERS = 3;
@@ -24,11 +24,21 @@ export interface DispenserModel {
 }
 
 export function impostorCountFor(players: number): number {
+  if (players >= 10) return 2;
   return players >= 3 ? 1 : 0;
 }
 
-export function civilianCountFor(players: number): number {
-  return Math.max(1, players - impostorCountFor(players));
+export function civilianCountFor(players: number, withMrWhite = false): number {
+  const mrWhite = withMrWhite && players >= 4 ? 1 : 0;
+  return Math.max(1, players - impostorCountFor(players) - mrWhite);
+}
+
+export function roleBreakdownFor(players: number, withMrWhite: boolean) {
+  const undercover = impostorCountFor(players);
+  const mrWhite = withMrWhite && players >= 4 ? 1 : 0;
+  const civilians = Math.max(1, players - undercover - mrWhite);
+  const undercoverPct = Math.round(((undercover + mrWhite) / Math.max(1, players)) * 100);
+  return { civilians, undercover, mrWhite, undercoverPct };
 }
 
 export function ratioExactFor(players: number): number {
@@ -39,11 +49,19 @@ export function ratioPercentFor(players: number): number {
   return Math.round(ratioExactFor(players));
 }
 
-export function readoutOf(players: number, shownRatio?: number): string {
+export function readoutOf(
+  players: number,
+  withMrWhiteOrRatio: boolean | number = false,
+): string {
+  if (typeof withMrWhiteOrRatio === "boolean") {
+    const b = roleBreakdownFor(players, withMrWhiteOrRatio);
+    const pct = Math.round(((b.undercover + b.mrWhite) / Math.max(1, players)) * 100);
+    return `${players} Pemain / ${b.civilians} Warga / ${b.undercover} Penyamar${b.mrWhite > 0 ? ` / ${b.mrWhite} Mr. White` : ""} / ${pct}%`;
+  }
   const imp = impostorCountFor(players);
   const civ = civilianCountFor(players);
-  const pct = Math.round(shownRatio ?? ratioExactFor(players));
-  return `${players} Pemain \u00b7 ${civ} Warga \u00b7 ${imp} Penyamar \u00b7 ${pct}%`;
+  const pct = Math.round(withMrWhiteOrRatio);
+  return `${players} Pemain / ${civ} Warga / ${imp} Penyamar / ${pct}%`;
 }
 
 export function createDispenserModel(

@@ -1,11 +1,19 @@
-/* Hallmark · shape: iso dispenser · genre: playful · v2.0.0 */
+/* Hallmark · shape: iso dispenser · genre: playful · theme: Hum · v2.0.0 */
 .rd-wrap {
   color: var(--anatomy-strong);
+  width: 100%;
+}
+
+.rd-wrap .iso-plate {
+  border-radius: var(--radius-card, 24px);
+  border: 1px solid var(--anatomy-faint);
+  background: var(--anatomy-card);
+  box-shadow: var(--anatomy-lift);
 }
 
 .rd-stage {
   position: relative;
-  border-radius: 8px;
+  border-radius: 16px;
   touch-action: pan-y;
   user-select: none;
 }
@@ -42,12 +50,12 @@
 
 .rd-card-hit[data-role="penyamar"] .rd-card-label {
   fill: var(--anatomy-lit);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .rd-card-hit[data-role="warga"] .rd-card-label {
   fill: var(--anatomy-green);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .rd-controls {
@@ -71,8 +79,8 @@
 .rd-preset-label {
   font-family: var(--font-body);
   font-size: 13px;
-  font-weight: 500;
-  color: var(--anatomy-muted);
+  font-weight: 600;
+  color: var(--anatomy-text);
   margin-right: 4px;
 }
 
@@ -80,11 +88,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 40px;
+  min-width: 40px;
   padding: 0 16px;
-  border-radius: 12px;
-  border: 1.5px solid var(--anatomy-strong);
+  border-radius: 999px;
+  border: 1px solid var(--anatomy-faint);
   background: var(--anatomy-card);
   color: var(--anatomy-strong);
   font-family: var(--anatomy-mono);
@@ -92,17 +100,22 @@
   font-weight: 600;
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: 0 2px 0 0 var(--anatomy-shade-0);
-  transition: background-color 140ms var(--anatomy-ease), transform 100ms var(--anatomy-ease), color 140ms var(--anatomy-ease);
+  box-shadow: var(--shadow-push-card, 0 2px 0 0 var(--anatomy-shade-0));
+  transition: background-color 140ms var(--anatomy-ease), transform 100ms var(--anatomy-ease), color 140ms var(--anatomy-ease), border-color 140ms var(--anatomy-ease);
 }
 
 .rd-btn:hover {
-  background: var(--anatomy-shade-2);
+  background: var(--anatomy-shade-1);
 }
 
 .rd-btn:active {
   transform: translateY(2px);
-  box-shadow: 0 0 0 0 var(--anatomy-shade-0);
+  box-shadow: none;
+}
+
+.rd-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .rd-btn:focus-visible {
@@ -111,18 +124,19 @@
 }
 
 .rd-btn[aria-pressed="true"] {
-  background: var(--anatomy-strong);
-  color: var(--anatomy-card);
-  box-shadow: 0 2px 0 0 var(--anatomy-mid);
+  background: var(--anatomy-green);
+  border-color: var(--anatomy-green);
+  color: var(--anatomy-lit-ink);
+  box-shadow: var(--shadow-push-teal);
 }
 
 .rd-btn--action {
   background: var(--anatomy-lit);
-  border-color: var(--anatomy-strong);
+  border-color: var(--anatomy-lit-hover);
   color: var(--anatomy-lit-ink);
-  padding: 0 16px;
+  padding: 0 20px;
   gap: 8px;
-  box-shadow: 0 2px 0 0 var(--anatomy-strong);
+  box-shadow: var(--shadow-push-coral, 0 2px 0 0 var(--anatomy-lit-hover));
 }
 
 .rd-btn--action:hover {

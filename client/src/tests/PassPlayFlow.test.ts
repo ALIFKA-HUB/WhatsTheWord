@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { assignRoles } from '../utils/gameEngine';
+import fs from 'fs';
+import path from 'path';
+import { assignRoles, calculateVotes, checkWinCondition, generateSpeakingOrder } from '../utils/gameEngine';
+import {
+  resolvePassPlaySettings,
+  resolveTieOutcome,
+  sanitizePassPlayPlayers,
+} from '../context/PassPlayContext';
 import { Player, GameSettings, WordPair } from '../types/game.types';
 import { getStoredToken, STORAGE_KEYS } from '../context/SocketContext';
 
@@ -198,6 +205,179 @@ describe('Session Storage Helper Isolation', () => {
       // @ts-ignore
       globalThis.window = originalWindow;
     }
+  });
+});
+
+describe('Cluster B Regression Tests (Engine, Warmup, Ties, Sanitization)', () => {
+  const basePlayers: Player[] = [
+    { id: 'p1', name: 'Alice', avatar: 'token-eye', isHost: true, isAlive: true, hasVoted: false, role: 'CIVILIAN' },
+    { id: 'p2', name: 'Bob', avatar: 'token-triangle', isHost: false, isAlive: true, hasVoted: false, role: 'CIVILIAN' },
+    { id: 'p3', name: 'Charlie', avatar: 'token-detective', isHost: false, isAlive: true, hasVoted: false, role: 'UNDERCOVER' },
+    { id: 'p4', name: 'Dana', avatar: 'token-bolt', isHost: false, isAlive: true, hasVoted: false, role: 'MR_WHITE' },
+  ];
+
+  const wordPair: WordPair = {
+    id: 'wp-1',
+    category: 'Makanan & Minuman',
+    civilianWord: 'Kopi',
+    undercoverWord: 'Teh',
+  };
+
+  it('3x consecutive ties award UNDERCOVER victory', () => {
+    // Round 1 tie (split 2-2 votes)
+    const tieVotes: Record<string, string> = {
+      p1: 'p3',
+      p2: 'p3',
+      p3: 'p1',
+      p4: 'p1',
+    };
+
+    const calc1 = calculateVotes(tieVotes, basePlayers);
+    expect(calc1.isTie).toBe(true);
+    expect(calc1.eliminatedPlayerId).toBeNull();
+
+    const tie1 = resolveTieOutcome(0, 3);
+    expect(tie1).toEqual({ nextTies: 1, reachedLimit: false, winningRole: null });
+
+    const tie2 = resolveTieOutcome(tie1.nextTies, 3);
+    expect(tie2).toEqual({ nextTies: 2, reachedLimit: false, winningRole: null });
+
+    const tie3 = resolveTieOutcome(tie2.nextTies, 3);
+    expect(tie3).toEqual({ nextTies: 3, reachedLimit: true, winningRole: 'UNDERCOVER' });
+
+    const contextSrc = fs.readFileSync(
+      path.resolve(__dirname, '../context/PassPlayContext.tsx'),
+      'utf-8'
+    );
+    expect(contextSrc).toContain("setWinningRole('UNDERCOVER')");
+    expect(contextSrc).toContain("setPhase('GAME_OVER')");
+    expect(contextSrc).toContain('setConsecutiveTies(0)');
+  });
+
+  it('advanceWarmupRound advances round in TURN_CLUE without jumping to Round 1 VOTING', () => {
+    const contextSrc = fs.readFileSync(
+      path.resolve(__dirname, '../context/PassPlayContext.tsx'),
+      'utf-8'
+    );
+    const votingViewSrc = fs.readFileSync(
+      path.resolve(__dirname, '../components/game/PassPlayVotingView.tsx'),
+      'utf-8'
+    );
+
+    expect(contextSrc).toContain('advanceWarmupRound: () => void');
+    expect(contextSrc).toMatch(/advanceWarmupRound\s*=\s*useCallback\(\(\)\s*=>\s*\{[\s\S]*setRound\(\(prev\)\s*=>\s*prev\s*\+\s*1\)[\s\S]*setCurrentSpeakerIndex\(0\)[\s\S]*clearVotes\(\)[\s\S]*setSpeakingOrder\(generateSpeakingOrder\(players\)\)[\s\S]*setPhase\('TURN_CLUE'\)/);
+    expect(votingViewSrc).toContain('onClick={() => advanceWarmupRound()}');
+  });
+
+  it('speakingOrder[0] never places MR_WHITE first across repeated shuffles', () => {
+    for (let i = 0; i < 100; i++) {
+      const order = generateSpeakingOrder(basePlayers);
+      expect(order).toHaveLength(4);
+      expect(order[0]).not.toBe('p4');
+    }
+
+    const mrWhiteSettings: GameSettings = {
+      category: 'Makanan & Minuman',
+      civilianCount: 2,
+      undercoverCount: 1,
+      mrWhiteCount: 1,
+      turnDurationSeconds: 45,
+      enableMrWhite: true,
+    };
+
+    for (let i = 0; i < 50; i++) {
+      const { players: assigned, speakingOrder } = assignRoles(basePlayers, mrWhiteSettings, wordPair);
+      const firstPlayer = assigned.find((p) => p.id === speakingOrder[0]);
+      expect(firstPlayer?.role).not.toBe('MR_WHITE');
+    }
+  });
+
+  it('blank player names are sanitized and 3-player Mr. White is clamped on startPassPlayGame', () => {
+    const dirtyPlayers: Player[] = [
+      { id: 'p1', name: '   ', avatar: 'token-eye', isHost: true, isAlive: true, hasVoted: false },
+      { id: 'p2', name: '', avatar: 'token-triangle', isHost: false, isAlive: true, hasVoted: false },
+      { id: 'p3', name: '  Budi  ', avatar: 'token-detective', isHost: false, isAlive: true, hasVoted: false },
+    ];
+
+    const sanitized = sanitizePassPlayPlayers(dirtyPlayers);
+    expect(sanitized.map((p) => p.name)).toEqual(['Pemain 1', 'Pemain 2', 'Budi']);
+
+    const staleThreePlayerSettings: GameSettings = {
+      category: 'Makanan & Minuman',
+      civilianCount: 1,
+      undercoverCount: 2,
+      mrWhiteCount: 1,
+      turnDurationSeconds: 45,
+      enableMrWhite: true,
+    };
+
+    const resolved3 = resolvePassPlaySettings(3, staleThreePlayerSettings);
+    expect(resolved3.mrWhiteCount).toBe(0);
+    expect(resolved3.enableMrWhite).toBe(false);
+    expect(resolved3.undercoverCount).toBe(1);
+    expect(resolved3.civilianCount).toBe(2);
+
+    const { players: assigned3 } = assignRoles(sanitized, staleThreePlayerSettings, wordPair);
+    expect(assigned3.filter((p) => p.role === 'MR_WHITE')).toHaveLength(0);
+    expect(assigned3.filter((p) => p.role === 'UNDERCOVER')).toHaveLength(1);
+    expect(assigned3.filter((p) => p.role === 'CIVILIAN')).toHaveLength(2);
+
+    const staleFourPlayerSettings: GameSettings = {
+      ...staleThreePlayerSettings,
+      mrWhiteCount: 0,
+      enableMrWhite: true,
+    };
+    const resolved4 = resolvePassPlaySettings(4, staleFourPlayerSettings);
+    expect(resolved4.mrWhiteCount).toBe(1);
+    expect(resolved4.undercoverCount).toBe(1);
+    expect(resolved4.civilianCount).toBe(2);
+  });
+
+  it('checkWinCondition handles Mr. White + Undercover + Civilian scenarios accurately', () => {
+    // 1 Civilian, 1 Undercover, 1 Mr. White -> game continues
+    expect(
+      checkWinCondition([
+        { ...basePlayers[0], isAlive: true, role: 'CIVILIAN' },
+        { ...basePlayers[2], isAlive: true, role: 'UNDERCOVER' },
+        { ...basePlayers[3], isAlive: true, role: 'MR_WHITE' },
+      ])
+    ).toBeNull();
+
+    // 1 Civilian, 1 Mr. White -> MR_WHITE wins
+    expect(
+      checkWinCondition([
+        { ...basePlayers[0], isAlive: true, role: 'CIVILIAN' },
+        { ...basePlayers[3], isAlive: true, role: 'MR_WHITE' },
+      ])
+    ).toBe('MR_WHITE');
+
+    // 1 Undercover, 1 Mr. White -> UNDERCOVER wins
+    expect(
+      checkWinCondition([
+        { ...basePlayers[2], isAlive: true, role: 'UNDERCOVER' },
+        { ...basePlayers[3], isAlive: true, role: 'MR_WHITE' },
+      ])
+    ).toBe('UNDERCOVER');
+
+    // 2 Civilians, 2 Undercovers, 0 Mr. White -> UNDERCOVER wins
+    expect(
+      checkWinCondition([
+        { ...basePlayers[0], isAlive: true, role: 'CIVILIAN' },
+        { ...basePlayers[1], isAlive: true, role: 'CIVILIAN' },
+        { ...basePlayers[2], isAlive: true, role: 'UNDERCOVER' },
+        { ...basePlayers[3], isAlive: true, role: 'UNDERCOVER' },
+      ])
+    ).toBe('UNDERCOVER');
+
+    // Only Civilians alive -> CIVILIAN wins
+    expect(
+      checkWinCondition([
+        { ...basePlayers[0], isAlive: true, role: 'CIVILIAN' },
+        { ...basePlayers[1], isAlive: true, role: 'CIVILIAN' },
+        { ...basePlayers[2], isAlive: false, role: 'UNDERCOVER' },
+        { ...basePlayers[3], isAlive: false, role: 'MR_WHITE' },
+      ])
+    ).toBe('CIVILIAN');
   });
 });
 

@@ -1,5 +1,30 @@
 [
  {
+  "date": "2026-11-17",
+  "mode": "redesign",
+  "depth": "full",
+  "scope": "page",
+  "genre": "playful",
+  "theme": "hum",
+  "axes": "light/rounded-sans/chromatic-yellow",
+  "shape": "asymmetric-tabletop-stage",
+  "hero": "stage",
+  "nav": "single-line-slab",
+  "footer": "signed-tabletop",
+  "imagery": "product captures + anatomy figure",
+  "signature": "interactive card table + floating control dock",
+  "sections": [
+   "hero-deal",
+   "marquee",
+   "setup-mechanism-anatomy",
+   "mini-round-and-steps",
+   "mode-switcher",
+   "word-pack-showcase",
+   "close"
+  ],
+  "prompt": "full redesign landing page unified with Hum, lightweight Jiro/WebCube micro-interactions, connected RoleDispenserFigure, and playable mini-round"
+ },
+ {
   "shape": "split-studio",
   "theme": "terrazzo",
   "axes": "light/geometric-sans/warm",

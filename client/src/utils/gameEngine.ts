@@ -24,6 +24,24 @@ export function shuffleArray<T>(array: readonly T[]): T[] {
 }
 
 /**
+ * Generates speaking order from living players, ensuring Mr. White never speaks 1st
+ * when at least one non-Mr. White living player exists.
+ */
+export function generateSpeakingOrder(players: Player[]): string[] {
+  const alivePlayers = players.filter((p) => p.isAlive);
+  const shuffled = shuffleArray(alivePlayers);
+
+  if (shuffled.length > 1 && shuffled[0].role === 'MR_WHITE') {
+    const swapIdx = shuffled.findIndex((p, idx) => idx > 0 && p.role !== 'MR_WHITE');
+    if (swapIdx > 0) {
+      [shuffled[0], shuffled[swapIdx]] = [shuffled[swapIdx], shuffled[0]];
+    }
+  }
+
+  return shuffled.map((p) => p.id);
+}
+
+/**
  * Assigns roles and words to all players according to room settings and selected word pair.
  */
 export function assignRoles(
@@ -32,8 +50,12 @@ export function assignRoles(
   wordPair: WordPair
 ): RoleAssignmentResult {
   const totalPlayers = players.length;
-  const undercoverCount = settings.undercoverCount || 0;
-  const mrWhiteCount = settings.enableMrWhite ? (settings.mrWhiteCount || 0) : 0;
+  const mrWhiteCount = totalPlayers >= 4 && settings.enableMrWhite ? 1 : 0;
+  const maxUndercover = Math.max(1, Math.floor((totalPlayers - mrWhiteCount - 1) / 2));
+  const undercoverCount =
+    totalPlayers === 3
+      ? 1
+      : Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
   const civilianCount = totalPlayers - undercoverCount - mrWhiteCount;
 
   if (civilianCount < 1 || undercoverCount < 1 || totalPlayers < (undercoverCount + mrWhiteCount + 1)) {
@@ -73,7 +95,7 @@ export function assignRoles(
     };
   });
 
-  const speakingOrder = shuffleArray(assignedPlayers.map((p) => p.id));
+  const speakingOrder = generateSpeakingOrder(assignedPlayers);
 
   return {
     players: assignedPlayers,
@@ -149,37 +171,34 @@ export function calculateVotes(
  */
 export function checkWinCondition(players: Player[]): 'CIVILIAN' | 'UNDERCOVER' | 'MR_WHITE' | null {
   const alive = players.filter((p) => p.isAlive);
-  const totalOriginal = players.length;
   const totalAlive = alive.length;
-
-  // If no one is eliminated yet (game started with 2 players), continue game
-  if (totalOriginal === 2 && totalAlive === 2) {
-    return null;
-  }
 
   const aliveCivilians = alive.filter((p) => p.role === 'CIVILIAN').length;
   const aliveUndercovers = alive.filter((p) => p.role === 'UNDERCOVER').length;
-  const aliveMrWhites = alive.filter((p) => p.role === 'MR_WHITE').length;
+  const aliveMrWhite = alive.filter((p) => p.role === 'MR_WHITE').length;
 
   // 1. Civilian Victory: All Undercovers and Mr. Whites are eliminated
-  if (aliveCivilians > 0 && aliveUndercovers === 0 && aliveMrWhites === 0) {
+  if (aliveUndercovers === 0 && aliveMrWhite === 0) {
     return 'CIVILIAN';
   }
 
-  // 2. Mr. White Victory: Survives to the final 2 players (when original game had > 2 players)
-  if (aliveMrWhites > 0 && totalAlive <= 2 && totalOriginal > 2) {
-    return 'MR_WHITE';
-  }
-
-  // 3. Undercover Victory: Alive Undercovers >= Alive Civilians
-  if (aliveUndercovers > 0 && aliveUndercovers >= aliveCivilians) {
-    return 'UNDERCOVER';
-  }
-
-  // 4. All civilians eliminated fallback
+  // 2. All civilians eliminated
   if (aliveCivilians === 0) {
+    return aliveUndercovers > 0 ? 'UNDERCOVER' : 'MR_WHITE';
+  }
+
+  // 3. Final 2 players (or fewer)
+  if (totalAlive <= 2) {
     if (aliveUndercovers > 0) return 'UNDERCOVER';
-    if (aliveMrWhites > 0) return 'MR_WHITE';
+    if (aliveMrWhite > 0) return 'MR_WHITE';
+  }
+
+  // 4. Undercover Victory: parity with no Mr. White, or strict majority
+  if (
+    (aliveUndercovers >= aliveCivilians && aliveMrWhite === 0) ||
+    aliveUndercovers > aliveCivilians
+  ) {
+    return 'UNDERCOVER';
   }
 
   // Game continues
@@ -193,6 +212,10 @@ export class GameEngine {
     wordPair: WordPair
   ): RoleAssignmentResult {
     return assignRoles(players, settings, wordPair);
+  }
+
+  static generateSpeakingOrder(players: Player[]): string[] {
+    return generateSpeakingOrder(players);
   }
 
   static calculateVotes(

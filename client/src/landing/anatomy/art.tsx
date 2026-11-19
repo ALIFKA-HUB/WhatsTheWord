@@ -191,7 +191,17 @@ const DIAL_HUB = (
 const LABEL =
   "Mesin pembagi peran isometrik dengan empat kereta kartu yang meluncur di atas rel pemandu, pegas penarik, tuas pendorong samping, skala pemain 3 sampai 20, dan jarum dial penunjuk rasio penyamar.";
 
-export function RoleDispenserArt() {
+export interface RoleDispenserArtProps {
+  controlledPlayers?: number;
+  onPlayersChange?: (count: number) => void;
+  hidePresetButtons?: boolean;
+}
+
+export function RoleDispenserArt({
+  controlledPlayers,
+  onPlayersChange,
+  hidePresetButtons,
+}: RoleDispenserArtProps = {}) {
   return (
     <RoleDispenserLive
       label={LABEL}
@@ -208,6 +218,9 @@ export function RoleDispenserArt() {
       plungerBody={PLUNGER_BODY}
       dialBack={DIAL_BACK}
       dialHub={DIAL_HUB}
+      controlledPlayers={controlledPlayers}
+      onPlayersChange={onPlayersChange}
+      hidePresetButtons={hidePresetButtons}
     />
   );
 }

@@ -32,12 +32,17 @@ export function sanitizeRoomForPlayer(
         ...p,
         role: undefined,
         word: undefined,
+        votedTargetId: undefined,
       };
     }),
     eliminatedPlayer: room.eliminatedPlayer
       ? {
           ...room.eliminatedPlayer,
           word: undefined,
+          votedTargetId:
+            room.eliminatedPlayer.id === playerId
+              ? room.eliminatedPlayer.votedTargetId
+              : undefined,
           // Only reveal role if eliminated player is Mr. White during MR_WHITE_GUESS phase
           role:
             room.phase === 'MR_WHITE_GUESS' &&

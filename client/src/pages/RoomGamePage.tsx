@@ -46,6 +46,8 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [isRematching, setIsRematching] = useState(false);
   const soundPlayedForGameOverRef = useRef(false);
+  const autoAdvancedTurnKeyRef = useRef<string>('');
+  const lastEliminatedIdRef = useRef<string | null>(null);
 
   const phase = room?.phase || 'LOBBY';
   const players = room?.players || [];
@@ -65,24 +67,49 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
     setLocalSecondsRemaining(room?.activeTurnRemainingSeconds ?? 45);
 
     const timer = setInterval(() => {
-      setLocalSecondsRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          if (isCurrentSpeakerMe || isHost) {
-            advanceTurn();
-          }
-          return 0;
-        }
-        const nextSec = prev - 1;
-        if (isHost && nextSec % 5 === 0) {
-          syncTimerTick(nextSec);
-        }
-        return nextSec;
-      });
+      setLocalSecondsRemaining((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [phase, room?.currentSpeakerIndex, isCurrentSpeakerMe, isHost, advanceTurn, syncTimerTick, room?.activeTurnRemainingSeconds]);
+  }, [phase, room?.currentSpeakerIndex, currentSpeakerId]);
+
+  useEffect(() => {
+    if (phase !== 'TURN_PHASE') {
+      autoAdvancedTurnKeyRef.current = '';
+      return;
+    }
+
+    if (isHost && localSecondsRemaining > 0 && localSecondsRemaining % 5 === 0) {
+      syncTimerTick(localSecondsRemaining);
+    }
+
+    if (localSecondsRemaining === 0) {
+      const turnKey = `${room?.round}-${room?.currentSpeakerIndex}`;
+      if (autoAdvancedTurnKeyRef.current === turnKey) return;
+
+      if (isCurrentSpeakerMe) {
+        autoAdvancedTurnKeyRef.current = turnKey;
+        advanceTurn();
+      } else if (isHost) {
+        const timeoutId = setTimeout(() => {
+          if (autoAdvancedTurnKeyRef.current !== turnKey) {
+            autoAdvancedTurnKeyRef.current = turnKey;
+            advanceTurn();
+          }
+        }, 1500);
+        return () => clearTimeout(timeoutId);
+      }
+    }
+  }, [
+    phase,
+    localSecondsRemaining,
+    isHost,
+    isCurrentSpeakerMe,
+    room?.round,
+    room?.currentSpeakerIndex,
+    syncTimerTick,
+    advanceTurn,
+  ]);
 
   useEffect(() => {
     if (room?.activeTurnRemainingSeconds !== undefined) {
@@ -120,12 +147,18 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
   }, [phase, room?.winningRole, currentPlayer?.role, playVictory, playDefeat]);
 
   useEffect(() => {
-    if (room?.eliminatedPlayer) {
+    if (phase === 'LOBBY' || phase === 'ROLE_REVEAL') {
+      lastEliminatedIdRef.current = null;
+      return;
+    }
+    const eliminatedId = room?.eliminatedPlayer?.id;
+    if (eliminatedId && eliminatedId !== lastEliminatedIdRef.current) {
+      lastEliminatedIdRef.current = eliminatedId;
       try {
         playElimination();
       } catch {}
     }
-  }, [room?.eliminatedPlayer, playElimination]);
+  }, [phase, room?.eliminatedPlayer?.id, playElimination]);
 
   const handleAdvanceTurn = async () => {
     if (isAdvancing) return;
@@ -195,7 +228,7 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {currentPlayer?.role && (
+            {(phase === 'GAME_OVER' || !isAlive) && currentPlayer?.role && (
               <RoleBadge role={currentPlayer.role} size="sm" />
             )}
             {!isAlive && (
@@ -242,7 +275,7 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                 </Button>
               ) : (
                 <div className="p-3 rounded-2xl bg-cardstock border border-rule text-center text-xs text-ink flex items-center gap-2 shadow-print-sm">
-                  <span className="w-2 h-2 rounded-full bg-teal-dark" />
+                  <Clock className="w-4 h-4 text-teal-dark" weight="bold" />
                   <span>Menunggu Host memulai putaran diskusi…</span>
                 </div>
               )}
@@ -419,33 +452,38 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                     ? 'Warga Sipil Menang!'
                     : room?.winningRole === 'UNDERCOVER'
                     ? 'Impostor (Undercover) Menang!'
-                    : 'Mr. White Berhasil Menebak & Menang!'}
+                    : 'Kemenangan Mr. White!'}
                 </h2>
                 <p className="text-xs sm:text-sm text-ink-muted max-w-md mx-auto">
                   {room?.winningRole === 'CIVILIAN'
                     ? 'Semua impostor dan Mr. White telah berhasil dieliminasi dari kelompok!'
                     : room?.winningRole === 'UNDERCOVER'
                     ? 'Impostor berhasil menyamarkan diri dan mengelabui warga sipil!'
-                    : 'Mr. White berhasil menebak kata rahasia warga dengan tepat!'}
+                    : 'Mr. White berhasil bertahan hingga akhir atau menebak kata rahasia Warga dengan tepat!'}
                 </p>
               </div>
 
               {room?.wordPair && (
-                <div className="flex flex-wrap items-center justify-center gap-6 p-4 rounded-2xl bg-paper border border-rule max-w-lg mx-auto shadow-print-sm">
-                  <div className="text-center">
-                    <span className="text-xs font-semibold text-ink-muted block">
-                      Kata Warga
-                    </span>
-                    <span className="text-lg sm:text-xl font-bold text-ink font-condensed">
+                <div className="grid grid-cols-2 gap-3 max-w-lg mx-auto pt-2 text-left">
+                  <div className="p-4 rounded-3xl bg-teal-light/40 border border-teal flex flex-col justify-between min-h-[116px]">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-mono text-ink-muted">01</span>
+                      <span className="px-2 py-0.5 rounded-full bg-teal-light border border-teal text-teal-dark font-bold">
+                        Warga
+                      </span>
+                    </div>
+                    <span className="text-xl sm:text-2xl font-bold text-ink font-condensed text-center my-auto py-1">
                       {room.wordPair.civilianWord}
                     </span>
                   </div>
-                  <span className="text-ink-muted font-bold text-sm">vs</span>
-                  <div className="text-center">
-                    <span className="text-xs font-semibold text-stamp-dark block">
-                      Kata Impostor
-                    </span>
-                    <span className="text-lg sm:text-xl font-bold text-stamp-dark font-condensed">
+                  <div className="p-4 rounded-3xl bg-stamp-light border border-stamp flex flex-col justify-between min-h-[116px]">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-mono text-stamp-dark">02</span>
+                      <span className="px-2 py-0.5 rounded-full bg-cardstock border border-stamp text-stamp-dark font-bold">
+                        Impostor
+                      </span>
+                    </div>
+                    <span className="text-xl sm:text-2xl font-bold text-stamp-dark font-condensed text-center my-auto py-1">
                       {room.wordPair.undercoverWord}
                     </span>
                   </div>
@@ -503,7 +541,7 @@ export const RoomGamePage: React.FC<RoomGamePageProps> = ({
                 </Button>
               ) : (
                 <div className="p-3 rounded-2xl bg-cardstock border border-rule text-xs text-ink flex items-center gap-2 shadow-print-sm">
-                  <span className="w-2 h-2 rounded-full bg-teal-dark" />
+                  <Clock className="w-4 h-4 text-teal-dark" weight="bold" />
                   <span>Menunggu Host memulai rematch…</span>
                 </div>
               )}

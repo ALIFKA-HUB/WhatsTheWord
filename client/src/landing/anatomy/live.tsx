@@ -71,6 +71,9 @@ export interface DispenserLiveProps {
   plungerBody: React.ReactNode;
   dialBack: React.ReactNode;
   dialHub: React.ReactNode;
+  controlledPlayers?: number;
+  onPlayersChange?: (count: number) => void;
+  hidePresetButtons?: boolean;
 }
 
 function setLitAttr(node: Element | null | undefined, active: boolean) {
@@ -187,6 +190,7 @@ export function RoleDispenserLive(props: DispenserLiveProps) {
           model.dealAge = 0;
           peekRef.current = [false, false, false, false];
           setSelectedPlayers(nextPreset);
+          props.onPlayersChange?.(nextPreset);
         }
       }
 
@@ -196,7 +200,7 @@ export function RoleDispenserLive(props: DispenserLiveProps) {
       frameRef.current = keepGoing ? requestAnimationFrame(tick) : 0;
     };
     frameRef.current = requestAnimationFrame(tick);
-  }, [drawFrame]);
+  }, [drawFrame, props.onPlayersChange]);
 
   const wakeUser = React.useCallback(() => {
     touringRef.current = false;
@@ -211,6 +215,7 @@ export function RoleDispenserLive(props: DispenserLiveProps) {
       if (nextPlayers !== undefined) {
         model.playerCount = nextPlayers;
         setSelectedPlayers(nextPlayers);
+        if (fromUser) props.onPlayersChange?.(nextPlayers);
       }
       model.impostorSlot = nextSlotFrom(model.impostorSlot);
       model.dealing = true;
@@ -224,8 +229,15 @@ export function RoleDispenserLive(props: DispenserLiveProps) {
       }
       setLiveAnnouncement(readoutOf(model.playerCount));
     },
-    [drawFrame, runLoop, wakeUser],
+    [drawFrame, props.onPlayersChange, runLoop, wakeUser],
   );
+
+  React.useEffect(() => {
+    const next = props.controlledPlayers;
+    if (next !== undefined && next !== modelRef.current.playerCount) {
+      triggerDeal(next, false);
+    }
+  }, [props.controlledPlayers, triggerDeal]);
 
   const toggleCardPeek = React.useCallback(
     (slotIndex: number) => {
@@ -444,20 +456,26 @@ export function RoleDispenserLive(props: DispenserLiveProps) {
       </IsoFigure>
 
       <div className="rd-controls">
-        <div className="rd-preset-group" role="group" aria-label="Pilih jumlah pemain">
-          <span className="rd-preset-label">Pemain:</span>
-          {PLAYER_PRESETS.map((count) => (
-            <button
-              key={count}
-              type="button"
-              className="rd-btn"
-              aria-pressed={selectedPlayers === count}
-              onClick={() => triggerDeal(count)}
-            >
-              {count}
-            </button>
-          ))}
-        </div>
+        {!props.hidePresetButtons ? (
+          <div className="rd-preset-group" role="group" aria-label="Pilih jumlah pemain">
+            <span className="rd-preset-label">Pemain:</span>
+            {PLAYER_PRESETS.map((count) => (
+              <button
+                key={count}
+                type="button"
+                className="rd-btn"
+                aria-pressed={selectedPlayers === count}
+                onClick={() => triggerDeal(count)}
+              >
+                {count}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <span className="rd-preset-label">
+            Klik kartu di mesin untuk intip, atau tekan tuas di kanan.
+          </span>
+        )}
         <button
           type="button"
           className="rd-btn rd-btn--action"

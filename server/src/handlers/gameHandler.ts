@@ -57,8 +57,42 @@ export function registerGameHandlers(
     try {
       const roomId = socket.data.roomId;
       const playerId = socket.data.playerId;
-      if (!roomId) {
+      if (!roomId || !playerId) {
         throw new Error('Not connected to a room');
+      }
+
+      const existingRoom = roomManager.getRoom(roomId);
+      if (!existingRoom) {
+        if (callback) {
+          callback({ success: false, error: 'Ruangan tidak ditemukan' });
+        }
+        return;
+      }
+
+      if (existingRoom.phase !== 'ROLE_REVEAL' && existingRoom.phase !== 'TURN_PHASE') {
+        if (callback) {
+          callback({ success: false, error: 'Fase giliran tidak sedang aktif' });
+        }
+        return;
+      }
+
+      const caller = existingRoom.players.find((p) => p.id === playerId);
+      const isHost = Boolean(caller?.isHost);
+      const livingSpeakerIds = existingRoom.speakingOrder.filter((id) =>
+        existingRoom.players.find((p) => p.id === id)?.isAlive
+      );
+      const isCurrentSpeaker =
+        existingRoom.phase === 'TURN_PHASE' &&
+        livingSpeakerIds[existingRoom.currentSpeakerIndex] === playerId;
+
+      if (!isHost && !isCurrentSpeaker) {
+        if (callback) {
+          callback({
+            success: false,
+            error: 'Hanya pembicara aktif atau host yang dapat mengakhiri giliran',
+          });
+        }
+        return;
       }
 
       const room = roomManager.advanceTurn(roomId);
@@ -77,15 +111,33 @@ export function registerGameHandlers(
   // Turn Timer Tick Sync
   socket.on('turn:timer_tick', (payload: { remainingSeconds: number }) => {
     const roomId = socket.data.roomId;
-    if (roomId) {
-      const room = roomManager.getRoom(roomId);
-      if (room) {
-        room.activeTurnRemainingSeconds = payload.remainingSeconds;
-        io.to(roomId).emit('turn:timer_sync', {
-          remainingSeconds: payload.remainingSeconds,
-        });
-      }
+    const playerId = socket.data.playerId;
+    if (!roomId || !playerId) return;
+
+    const room = roomManager.getRoom(roomId);
+    if (!room || room.phase !== 'TURN_PHASE') return;
+
+    const caller = room.players.find((p) => p.id === playerId);
+    const isHost = Boolean(caller?.isHost);
+    const livingSpeakerIds = room.speakingOrder.filter((id) =>
+      room.players.find((p) => p.id === id)?.isAlive
+    );
+    const isCurrentSpeaker = livingSpeakerIds[room.currentSpeakerIndex] === playerId;
+
+    if (!isHost && !isCurrentSpeaker) return;
+    if (
+      !payload ||
+      typeof payload.remainingSeconds !== 'number' ||
+      !Number.isFinite(payload.remainingSeconds)
+    ) {
+      return;
     }
+
+    const clampedSeconds = Math.min(300, Math.max(0, Math.round(payload.remainingSeconds)));
+    room.activeTurnRemainingSeconds = clampedSeconds;
+    io.to(room.roomId).emit('turn:timer_sync', {
+      remainingSeconds: clampedSeconds,
+    });
   });
 
   // Rematch

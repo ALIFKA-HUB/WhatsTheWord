@@ -16,7 +16,7 @@ const AppRouter: React.FC = () => {
     resolveInitialView(window.location.pathname, window.location.search)
   );
   const { phase: passPlayPhase, resetToSetup } = usePassPlay();
-  const { room } = useSocket();
+  const { room, leaveRoom } = useSocket();
 
   const goToApp = (view: Exclude<AppView, 'LANDING'>) => {
     if (window.location.pathname !== PLAY_PATH) {
@@ -32,10 +32,16 @@ const AppRouter: React.FC = () => {
   }, [currentView]);
 
   useEffect(() => {
-    const onPop = () => setCurrentView(resolveInitialView(window.location.pathname, window.location.search));
+    const onPop = () => {
+      const nextView = resolveInitialView(window.location.pathname, window.location.search);
+      if (nextView === 'LANDING' && room) {
+        void leaveRoom();
+      }
+      setCurrentView(nextView);
+    };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, []);
+  }, [room, leaveRoom]);
 
   // If a room is active, switch to ONLINE view
   useEffect(() => {

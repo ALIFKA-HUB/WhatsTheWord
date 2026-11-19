@@ -56,13 +56,15 @@ describe('Anti-Slop Pre-Flight Audit (design-taste-frontend)', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('guarantees SecretCard has leak-proof geometry and opacity transition and DOM bullet mask', () => {
+  it('guarantees SecretCard has leak-proof geometry, opacity transition, DOM bullet mask, and zero Warga/Impostor role clues', () => {
     const secretCardPath = path.join(srcDir, 'components', 'game', 'SecretCard.tsx');
     const content = fs.readFileSync(secretCardPath, 'utf-8');
     expect(content).toContain('h-[210px]');
     expect(content).toContain('opacity-100');
     expect(content).toContain('opacity-0');
     expect(content).toContain("isHolding ? (word || 'Kata Rahasia') : '••••••••'");
+    expect(content).not.toContain("role === 'UNDERCOVER'");
+    expect(content).not.toContain("role === 'CIVILIAN'");
   });
 
   it('has zero class syntax typos like "-xl" in pages and components', () => {

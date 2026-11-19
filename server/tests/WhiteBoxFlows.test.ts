@@ -74,8 +74,8 @@ describe('White-Box Flow Verification Test Suite', () => {
       expect(result.players.filter((p) => p.role === 'MR_WHITE')).toHaveLength(1);
     });
 
-    it('WB-1.4: Mr. White Toggle - 1 Civilian, 1 Undercover, 1 Mr. White for 3 Players', () => {
-      const players: Player[] = [
+    it('WB-1.4: Mr. White Toggle - clamps Mr. White to 0 for 3 Players (2 Civ, 1 UC) and allows 1 for 4+ Players', () => {
+      const threePlayers: Player[] = [
         { id: 'p1', name: 'Alpha', avatar: '🕵️', isHost: true, isAlive: true, hasVoted: false },
         { id: 'p2', name: 'Beta', avatar: '🦊', isHost: false, isAlive: true, hasVoted: false },
         { id: 'p3', name: 'Gamma', avatar: '🤖', isHost: false, isAlive: true, hasVoted: false },
@@ -90,12 +90,22 @@ describe('White-Box Flow Verification Test Suite', () => {
         turnDurationSeconds: 45,
       };
 
-      const result = GameEngine.assignRoles(players, settings, mockWordPair);
-      expect(result.players.filter((p) => p.role === 'CIVILIAN')).toHaveLength(1);
+      const clampedResult = GameEngine.assignRoles(threePlayers, settings, mockWordPair);
+      expect(clampedResult.players.filter((p) => p.role === 'CIVILIAN')).toHaveLength(2);
+      expect(clampedResult.players.filter((p) => p.role === 'UNDERCOVER')).toHaveLength(1);
+      expect(clampedResult.players.filter((p) => p.role === 'MR_WHITE')).toHaveLength(0);
+
+      const fourPlayers: Player[] = [
+        ...threePlayers,
+        { id: 'p4', name: 'Delta', avatar: '⚡', isHost: false, isAlive: true, hasVoted: false },
+      ];
+      const result = GameEngine.assignRoles(fourPlayers, settings, mockWordPair);
+      expect(result.players.filter((p) => p.role === 'CIVILIAN')).toHaveLength(2);
       expect(result.players.filter((p) => p.role === 'UNDERCOVER')).toHaveLength(1);
       const mrWhite = result.players.find((p) => p.role === 'MR_WHITE');
       expect(mrWhite).toBeDefined();
       expect(mrWhite?.word).toBe('');
+      expect(result.speakingOrder[0]).not.toBe(mrWhite?.id);
     });
 
     it('WB-1.5: Random Mystery Category Generation', () => {

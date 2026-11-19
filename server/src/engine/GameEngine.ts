@@ -24,6 +24,24 @@ export function shuffleArray<T>(array: readonly T[]): T[] {
 }
 
 /**
+ * Generates a randomized speaking order of living players, ensuring Mr. White
+ * never speaks first when at least one word-holder is alive.
+ */
+export function generateSpeakingOrder(players: Player[]): string[] {
+  const livingPlayers = players.filter((p) => p.isAlive);
+  const shuffled = shuffleArray(livingPlayers);
+
+  if (shuffled.length > 1 && shuffled[0].role === 'MR_WHITE') {
+    const nonMrWhiteIdx = shuffled.findIndex((p, idx) => idx > 0 && p.role !== 'MR_WHITE');
+    if (nonMrWhiteIdx !== -1) {
+      [shuffled[0], shuffled[nonMrWhiteIdx]] = [shuffled[nonMrWhiteIdx], shuffled[0]];
+    }
+  }
+
+  return shuffled.map((p) => p.id);
+}
+
+/**
  * Assigns roles and words to all players according to room settings and selected word pair.
  */
 export function assignRoles(
@@ -32,34 +50,23 @@ export function assignRoles(
   wordPair: WordPair
 ): RoleAssignmentResult {
   const totalPlayers = players.length;
-  const undercoverCount = settings.undercoverCount || 0;
-  const mrWhiteCount = settings.enableMrWhite ? (settings.mrWhiteCount || 0) : 0;
-  const totalImpostors = undercoverCount + mrWhiteCount;
-  const civilianCount = totalPlayers - totalImpostors;
 
   if (totalPlayers < 3) {
     throw new Error('Minimal 3 pemain untuk memulai permainan.');
   }
 
-  if (undercoverCount < 1) {
-    throw new Error('Minimal 1 Undercover diperlukan dalam permainan.');
-  }
+  const rawMrWhite = settings.enableMrWhite
+    ? Math.min(Math.max(0, settings.mrWhiteCount ?? 1), 1)
+    : 0;
+  // Mr. White is only allowed for 4+ players so Civilians outnumber Impostors at start
+  const mrWhiteCount = totalPlayers >= 4 && rawMrWhite === 1 ? 1 : 0;
 
-  if (civilianCount < 1) {
-    throw new Error('Minimal 1 Warga diperlukan dalam permainan.');
-  }
-
-  // Undercover team must not outnumber or equal civilians from the start
-  const maxUndercover =
-    totalPlayers === 3
-      ? 1
-      : Math.max(1, Math.floor((totalPlayers - mrWhiteCount - 1) / 2));
-
-  if (undercoverCount > maxUndercover) {
-    throw new Error(
-      `Konfigurasi peran tidak valid: Maksimal ${maxUndercover} Undercover untuk ${totalPlayers} pemain.`
-    );
-  }
+  const maxUndercover = Math.max(1, Math.floor((totalPlayers - mrWhiteCount - 1) / 2));
+  const undercoverCount = Math.min(
+    Math.max(1, settings.undercoverCount || 1),
+    maxUndercover
+  );
+  const civilianCount = totalPlayers - undercoverCount - mrWhiteCount;
 
   const rolePool: PlayerRole[] = [
     ...Array(undercoverCount).fill('UNDERCOVER' as PlayerRole),
@@ -92,7 +99,7 @@ export function assignRoles(
     };
   });
 
-  const speakingOrder = shuffleArray(assignedPlayers.map((p) => p.id));
+  const speakingOrder = generateSpeakingOrder(assignedPlayers);
 
   return {
     players: assignedPlayers,
@@ -181,24 +188,24 @@ export function checkWinCondition(players: Player[]): 'CIVILIAN' | 'UNDERCOVER' 
   const aliveMrWhites = alive.filter((p) => p.role === 'MR_WHITE').length;
 
   // 1. Civilian Victory: All Undercovers and Mr. Whites are eliminated
-  if (aliveCivilians > 0 && aliveUndercovers === 0 && aliveMrWhites === 0) {
+  if (aliveUndercovers === 0 && aliveMrWhites === 0) {
     return 'CIVILIAN';
   }
 
-  // 2. Mr. White Victory: Survives to the final 2 players (when original game had > 2 players)
-  if (aliveMrWhites > 0 && totalAlive <= 2 && totalOriginal > 2) {
-    return 'MR_WHITE';
-  }
-
-  // 3. Undercover Victory: Alive Undercovers >= Alive Civilians
-  if (aliveUndercovers > 0 && aliveUndercovers >= aliveCivilians) {
-    return 'UNDERCOVER';
-  }
-
-  // 4. All civilians eliminated fallback
+  // 2. All civilians eliminated: Undercover takes priority over Mr. White
   if (aliveCivilians === 0) {
+    return aliveUndercovers > 0 ? 'UNDERCOVER' : 'MR_WHITE';
+  }
+
+  // 3. Final 2 survivors (when original game had > 2 players): Undercover takes priority
+  if (totalAlive <= 2 && totalOriginal > 2) {
     if (aliveUndercovers > 0) return 'UNDERCOVER';
     if (aliveMrWhites > 0) return 'MR_WHITE';
+  }
+
+  // 4. Undercover parity/majority: win immediately if no Mr. White remains, or if Undercovers strictly outnumber Civilians
+  if ((aliveUndercovers >= aliveCivilians && aliveMrWhites === 0) || aliveUndercovers > aliveCivilians) {
+    return 'UNDERCOVER';
   }
 
   // Game continues
@@ -206,6 +213,9 @@ export function checkWinCondition(players: Player[]): 'CIVILIAN' | 'UNDERCOVER' 
 }
 
 export class GameEngine {
+  static generateSpeakingOrder(players: Player[]): string[] {
+    return generateSpeakingOrder(players);
+  }
   static assignRoles(
     players: Player[],
     settings: GameSettings,

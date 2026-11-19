@@ -137,33 +137,48 @@ export const PassPlayGamePage: React.FC<PassPlayGamePageProps> = ({ onBackToHome
                 </div>
               </div>
 
-              {/* Secret Words Summary Card */}
+              {/* The Big Card Reveal: Side-by-Side Tabletop Word Cards */}
               {wordPair && (
-                <Card padding="md" className="space-y-3">
-                  <div className="flex items-center gap-2 border-b border-rule pb-3">
-                    <Key className="w-4 h-4 text-teal-dark" weight="bold" />
-                    <h3 className="text-sm font-bold text-ink">
-                      Pengungkapan Kata Rahasia
-                    </h3>
+                <Card padding="md" className="space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-rule pb-3">
+                    <span className="flex items-center gap-2 text-sm font-bold text-ink">
+                      <Key className="w-4 h-4 text-teal-dark" weight="bold" />
+                      Kartu Rahasia Meja Ini
+                    </span>
+                    <span className="text-xs font-semibold text-ink-muted">
+                      {settings.category}
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <div className="p-4 rounded-2xl bg-paper border border-rule text-center space-y-1">
-                      <span className="text-xs text-ink-muted font-semibold">
-                        Kata Warga (Civilian)
-                      </span>
-                      <p className="text-xl sm:text-2xl font-bold text-ink">
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="p-4 rounded-3xl bg-teal-light/40 border border-teal flex flex-col justify-between min-h-[128px]">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-mono text-ink-muted">01</span>
+                        <span className="px-2 py-0.5 rounded-full bg-teal-light border border-teal text-teal-dark font-bold">
+                          Warga
+                        </span>
+                      </div>
+                      <p className="font-condensed text-2xl sm:text-3xl text-ink text-center my-auto py-2">
                         {wordPair.civilianWord}
                       </p>
+                      <span className="text-[11px] text-ink-muted text-center block">
+                        Dipegang mayoritas meja
+                      </span>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-stamp-light border border-stamp text-center space-y-1">
-                      <span className="text-xs text-stamp-dark font-semibold">
-                        Kata Impostor (Undercover)
-                      </span>
-                      <p className="text-xl sm:text-2xl font-bold text-stamp-dark">
+                    <div className="p-4 rounded-3xl bg-stamp-light border border-stamp flex flex-col justify-between min-h-[128px]">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-mono text-stamp-dark">02</span>
+                        <span className="px-2 py-0.5 rounded-full bg-cardstock border border-stamp text-stamp-dark font-bold">
+                          Impostor
+                        </span>
+                      </div>
+                      <p className="font-condensed text-2xl sm:text-3xl text-stamp-dark text-center my-auto py-2">
                         {wordPair.undercoverWord}
                       </p>
+                      <span className="text-[11px] text-stamp-dark text-center block">
+                        Kata penyamar
+                      </span>
                     </div>
                   </div>
                 </Card>

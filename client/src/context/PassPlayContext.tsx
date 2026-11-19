@@ -1,9 +1,50 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { Player, GameSettings, WordPair } from '../types/game.types';
-import { assignRoles, calculateVotes, checkWinCondition, shuffleArray } from '../utils/gameEngine';
+import { assignRoles, calculateVotes, checkWinCondition, generateSpeakingOrder } from '../utils/gameEngine';
 import { getRandomWordPair } from '../data/defaultWordPacks';
 import { isFuzzyMatch } from '../utils/fuzzyMatcher';
 import { getLocalCustomPacks } from '../services/wordPackService';
+
+export function sanitizePassPlayPlayers(sourcePlayers: Player[]): Player[] {
+  return sourcePlayers.map((p, idx) => ({
+    ...p,
+    name: (p.name || '').trim() || `Pemain ${idx + 1}`,
+  }));
+}
+
+export function resolvePassPlaySettings(total: number, settings: GameSettings): GameSettings {
+  const mrWhite = settings.enableMrWhite && total >= 4 ? 1 : 0;
+  const maxUndercover = Math.max(1, Math.floor((total - mrWhite - 1) / 2));
+  const undercover =
+    total === 3 ? 1 : Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
+  const civilian = Math.max(1, total - undercover - mrWhite);
+
+  return {
+    ...settings,
+    enableMrWhite: mrWhite > 0,
+    civilianCount: civilian,
+    undercoverCount: undercover,
+    mrWhiteCount: mrWhite,
+  };
+}
+
+export function resolveTieOutcome(
+  currentConsecutiveTies: number,
+  maxConsecutiveTies = 3
+): {
+  nextTies: number;
+  reachedLimit: boolean;
+  winningRole: 'UNDERCOVER' | null;
+} {
+  const nextTies = currentConsecutiveTies + 1;
+  const maxTies = maxConsecutiveTies || 3;
+  const reachedLimit = nextTies >= maxTies;
+  return {
+    nextTies,
+    reachedLimit,
+    winningRole: reachedLimit ? 'UNDERCOVER' : null,
+  };
+}
 
 export type PassPlayPhase =
   | 'SETUP'
@@ -39,9 +80,10 @@ export interface PassPlayContextType {
   updatePlayer: (playerId: string, updates: Partial<Player>) => void;
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   updateSettings: (newSettings: Partial<GameSettings>) => void;
-  startPassPlayGame: (customPair?: WordPair) => boolean;
+  startPassPlayGame: (overridePlayers?: Player[], customPair?: WordPair) => boolean;
   nextRevealPlayer: () => void;
   finishRevealPhase: () => void;
+  advanceWarmupRound: () => void;
   nextSpeaker: () => void;
   startVotingPhase: () => void;
   castVote: (voterId: string, targetId: string) => void;
@@ -170,25 +212,23 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
     if (phase !== 'SETUP') return;
 
     const total = players.length;
-    const mrWhite = settings.enableMrWhite ? Math.min(settings.mrWhiteCount, 1) : 0;
-    // max undercovers should not exceed total - 2
-    const maxUndercover = Math.max(1, Math.floor((total - mrWhite - 1) / 2));
-    const safeUndercover = Math.min(Math.max(1, settings.undercoverCount), maxUndercover);
-    const civilian = total - safeUndercover - mrWhite;
+    const validSettings = resolvePassPlaySettings(total, settings);
 
     if (
-      settings.undercoverCount !== safeUndercover ||
-      settings.mrWhiteCount !== mrWhite ||
-      settings.civilianCount !== civilian
+      settings.enableMrWhite !== validSettings.enableMrWhite ||
+      settings.undercoverCount !== validSettings.undercoverCount ||
+      settings.mrWhiteCount !== validSettings.mrWhiteCount ||
+      settings.civilianCount !== validSettings.civilianCount
     ) {
       setSettings((prev) => ({
         ...prev,
-        mrWhiteCount: mrWhite,
-        undercoverCount: safeUndercover,
-        civilianCount: Math.max(1, civilian),
+        enableMrWhite: validSettings.enableMrWhite,
+        mrWhiteCount: validSettings.mrWhiteCount,
+        undercoverCount: validSettings.undercoverCount,
+        civilianCount: validSettings.civilianCount,
       }));
     }
-  }, [players.length, settings.enableMrWhite, settings.undercoverCount, settings.mrWhiteCount, phase]);
+  }, [players.length, settings.enableMrWhite, settings.undercoverCount, settings.mrWhiteCount, settings.civilianCount, phase]);
 
   const addPlayer = useCallback((name: string, avatar: string): boolean => {
     const trimmed = name.trim();
@@ -255,29 +295,19 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
   }, [settings.category, settings.customWordPair]);
 
   // Start Pass & Play Game
-  const startPassPlayGame = useCallback((customPair?: WordPair): boolean => {
-    if (players.length < 3) return false;
+  const startPassPlayGame = useCallback((overridePlayers?: Player[], customPair?: WordPair): boolean => {
+    const sourcePlayers = overridePlayers ?? players;
+    if (sourcePlayers.length < 3) return false;
 
+    const sanitizedPlayers = sanitizePassPlayPlayers(sourcePlayers);
     const selectedWordPair = pickWordPair(customPair);
     setWordPair(selectedWordPair);
 
-    // Calculate verified role counts
-    const total = players.length;
-    const mrWhite = settings.enableMrWhite && total >= 3 ? Math.min(settings.mrWhiteCount, 1) : 0;
-    const maxUndercover = total === 2 ? 1 : Math.max(1, Math.floor((total - mrWhite - 1) / 2));
-    const undercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
-    const civilian = Math.max(1, total - undercover - mrWhite);
-
-    const validSettings: GameSettings = {
-      ...settings,
-      civilianCount: civilian,
-      undercoverCount: undercover,
-      mrWhiteCount: mrWhite,
-    };
+    const validSettings = resolvePassPlaySettings(sanitizedPlayers.length, settings);
 
     try {
       const { players: assignedPlayers, speakingOrder: order } = assignRoles(
-        players,
+        sanitizedPlayers,
         validSettings,
         selectedWordPair
       );
@@ -292,7 +322,6 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       setPendingEliminatedPlayer(null);
       setVotes({});
       setIsTieLastRound(false);
-      setConsecutiveTies(0);
       setConsecutiveTies(0);
       setTieMessage(null);
       setMrWhiteGuessResult(null);
@@ -313,14 +342,41 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
   }, [players.length]);
 
   const finishRevealPhase = useCallback(() => {
-    // Alive speaking order
-    const aliveSpeakerIds = speakingOrder.filter(
+    // Alive speaking order ensuring Mr. White does not speak 1st
+    const aliveIds = speakingOrder.filter(
       (id) => players.find((p) => p.id === id)?.isAlive !== false
     );
-    setSpeakingOrder(aliveSpeakerIds.length > 0 ? aliveSpeakerIds : players.map((p) => p.id));
+    const orderedIds = aliveIds.length > 0 ? [...aliveIds] : players.map((p) => p.id);
+    if (orderedIds.length > 1) {
+      const firstPlayer = players.find((p) => p.id === orderedIds[0]);
+      if (firstPlayer?.role === 'MR_WHITE') {
+        const swapIdx = orderedIds.findIndex(
+          (id, idx) => idx > 0 && players.find((p) => p.id === id)?.role !== 'MR_WHITE'
+        );
+        if (swapIdx > 0) {
+          [orderedIds[0], orderedIds[swapIdx]] = [orderedIds[swapIdx], orderedIds[0]];
+        }
+      }
+    }
+    setSpeakingOrder(orderedIds);
     setCurrentSpeakerIndex(0);
     setPhase('TURN_CLUE');
   }, [speakingOrder, players]);
+
+  const clearVotes = useCallback(() => {
+    setVotes({});
+    setPlayers((prev) =>
+      prev.map((p) => ({ ...p, hasVoted: false, votedTargetId: undefined }))
+    );
+  }, []);
+
+  const advanceWarmupRound = useCallback(() => {
+    setRound((prev) => prev + 1);
+    setCurrentSpeakerIndex(0);
+    clearVotes();
+    setSpeakingOrder(generateSpeakingOrder(players));
+    setPhase('TURN_CLUE');
+  }, [clearVotes, players]);
 
   const activeSpeakerId = useMemo(() => {
     if (phase !== 'TURN_CLUE') return null;
@@ -340,16 +396,16 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       // Everyone gave their clue -> Transition to Voting
       setPhase('VOTING');
       setCurrentSpeakerIndex(0);
-      setVotes({});
+      clearVotes();
     } else {
       setCurrentSpeakerIndex((prev) => prev + 1);
     }
-  }, [speakingOrder, players, currentSpeakerIndex]);
+  }, [speakingOrder, players, currentSpeakerIndex, clearVotes]);
 
   const startVotingPhase = useCallback(() => {
     setPhase('VOTING');
-    setVotes({});
-  }, []);
+    clearVotes();
+  }, [clearVotes]);
 
   const castVote = useCallback((voterId: string, targetId: string) => {
     setVotes((prev) => ({
@@ -360,13 +416,6 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       prev.map((p) =>
         p.id === voterId ? { ...p, hasVoted: true, votedTargetId: targetId } : p
       )
-    );
-  }, []);
-
-  const clearVotes = useCallback(() => {
-    setVotes({});
-    setPlayers((prev) =>
-      prev.map((p) => ({ ...p, hasVoted: false, votedTargetId: undefined }))
     );
   }, []);
 
@@ -391,13 +440,28 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
 
       // Handle Tie
       if (isTie || !eliminatedId) {
+        const tieOutcome = resolveTieOutcome(consecutiveTies, settings.maxConsecutiveTies);
+        setConsecutiveTies(tieOutcome.nextTies);
         setIsTieLastRound(true);
+        clearVotes();
+
+        if (tieOutcome.reachedLimit) {
+          setTieMessage('Voting seri 3x berturut-turut! Impostor berhasil menyabotase meja dan menang.');
+          setWinningRole('UNDERCOVER');
+          setPhase('GAME_OVER');
+          return {
+            isTie: true,
+            eliminatedPlayer: null,
+            needsMrWhiteGuess: false,
+            winningRole: 'UNDERCOVER',
+          };
+        }
+
         setTieMessage('Hasil voting seri (Tie)! Tidak ada pemain yang tereliminasi pada ronde ini.');
         // Next round
         setRound((prev) => prev + 1);
-        setSpeakingOrder((prev) => shuffleArray(prev));
+        setSpeakingOrder(generateSpeakingOrder(players));
         setCurrentSpeakerIndex(0);
-        clearVotes();
         setPhase('TURN_CLUE');
 
         return {
@@ -408,6 +472,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
         };
       }
 
+      setConsecutiveTies(0);
       setIsTieLastRound(false);
       setTieMessage(null);
 
@@ -455,8 +520,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
 
       // Game continues to next round
       setRound((prev) => prev + 1);
-      const remainingAliveIds = updatedPlayers.filter((p) => p.isAlive).map((p) => p.id);
-      setSpeakingOrder(shuffleArray(remainingAliveIds));
+      setSpeakingOrder(generateSpeakingOrder(updatedPlayers));
       setCurrentSpeakerIndex(0);
       clearVotes();
       setPhase('TURN_CLUE');
@@ -468,7 +532,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
         winningRole: null,
       };
     },
-    [players, votes, clearVotes]
+    [players, votes, clearVotes, consecutiveTies, settings.maxConsecutiveTies]
   );
 
   // Mr. White Guess submission
@@ -509,8 +573,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
 
       // Otherwise game continues
       setRound((prev) => prev + 1);
-      const remainingAliveIds = updatedPlayers.filter((p) => p.isAlive).map((p) => p.id);
-      setSpeakingOrder(shuffleArray(remainingAliveIds));
+      setSpeakingOrder(generateSpeakingOrder(updatedPlayers));
       setCurrentSpeakerIndex(0);
       clearVotes();
       setPhase('TURN_CLUE');
@@ -539,8 +602,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
     }
 
     setRound((prev) => prev + 1);
-    const remainingAliveIds = updatedPlayers.filter((p) => p.isAlive).map((p) => p.id);
-    setSpeakingOrder(shuffleArray(remainingAliveIds));
+    setSpeakingOrder(generateSpeakingOrder(updatedPlayers));
     setCurrentSpeakerIndex(0);
     clearVotes();
     setPhase('TURN_CLUE');
@@ -551,21 +613,10 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
     const newPair = pickWordPair();
     setWordPair(newPair);
 
-    // Reset players alive status and roles
-    const total = players.length;
-    const mrWhite = settings.enableMrWhite && total >= 3 ? Math.min(settings.mrWhiteCount, 1) : 0;
-    const maxUndercover = total === 2 ? 1 : Math.max(1, Math.floor((total - mrWhite - 1) / 2));
-    const undercover = Math.min(Math.max(1, settings.undercoverCount || 1), maxUndercover);
-    const civilian = Math.max(1, total - undercover - mrWhite);
+    const sanitizedRoster = sanitizePassPlayPlayers(players);
+    const validSettings = resolvePassPlaySettings(sanitizedRoster.length, settings);
 
-    const validSettings: GameSettings = {
-      ...settings,
-      civilianCount: civilian,
-      undercoverCount: undercover,
-      mrWhiteCount: mrWhite,
-    };
-
-    const resetRoster = players.map((p) => ({
+    const resetRoster = sanitizedRoster.map((p) => ({
       ...p,
       isAlive: true,
       hasVoted: false,
@@ -607,6 +658,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
     setPendingEliminatedPlayer(null);
     setVotes({});
     setIsTieLastRound(false);
+    setConsecutiveTies(0);
     setTieMessage(null);
     setMrWhiteGuessResult(null);
     setPlayers((prev) =>
@@ -648,6 +700,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       startPassPlayGame,
       nextRevealPlayer,
       finishRevealPhase,
+      advanceWarmupRound,
       nextSpeaker,
       startVotingPhase,
       castVote,
@@ -683,6 +736,7 @@ export const PassPlayProvider: React.FC<PassPlayProviderProps> = ({ children }) 
       startPassPlayGame,
       nextRevealPlayer,
       finishRevealPhase,
+      advanceWarmupRound,
       nextSpeaker,
       startVotingPhase,
       castVote,

@@ -129,11 +129,11 @@ export class RoomManager {
 
     const defaultSettings: GameSettings = {
       category: 'Semua Kategori',
-      civilianCount: 3,
+      civilianCount: 2,
       undercoverCount: 1,
-      mrWhiteCount: 1,
+      mrWhiteCount: 0,
       turnDurationSeconds: 45,
-      enableMrWhite: true,
+      enableMrWhite: false,
     };
 
     const room: RoomState = {
@@ -180,6 +180,7 @@ export class RoomManager {
       if (session && session.roomId === normalizedRoomId) {
         const existingPlayer = room.players.find((p) => p.id === session.playerId);
         if (existingPlayer) {
+          this.cancelPlayerCleanup(normalizedRoomId, existingPlayer.id);
           this.roomLastActivity.set(normalizedRoomId, Date.now());
           return {
             playerToken: existingToken,
@@ -244,8 +245,24 @@ export class RoomManager {
     const playerIndex = room.players.findIndex((p) => p.id === playerId);
     if (playerIndex === -1) return room;
 
-    const wasHost = room.players[playerIndex].isHost;
+    const leavingPlayer = room.players[playerIndex];
+    const wasHost = leavingPlayer.isHost;
+    const wasLiving = leavingPlayer.isAlive;
+    const livingSpeakersBefore = room.speakingOrder.filter((id) =>
+      room.players.find((p) => p.id === id)?.isAlive
+    );
+    const removedLivingSpeakerIdx = wasLiving
+      ? livingSpeakersBefore.indexOf(playerId)
+      : -1;
+
     room.players.splice(playerIndex, 1);
+
+    // Always clean up session tokens belonging to the leaving player
+    for (const [token, session] of this.sessions.entries()) {
+      if (session.roomId === normalizedRoomId && session.playerId === playerId) {
+        this.sessions.delete(token);
+      }
+    }
 
     if (room.players.length === 0) {
       this.rooms.delete(normalizedRoomId);
@@ -262,7 +279,71 @@ export class RoomManager {
       room.players[0].isHost = true;
     }
 
-    if (room.speakingOrder.includes(playerId)) {
+    if (room.phase === 'LOBBY') {
+      const effectiveMrWhite =
+        room.players.length <= 3 ? 0 : room.settings.enableMrWhite ? 1 : 0;
+      const maxUndercover = Math.max(
+        1,
+        Math.floor((Math.max(3, room.players.length) - effectiveMrWhite - 1) / 2)
+      );
+      room.settings.undercoverCount = Math.min(
+        Math.max(1, room.settings.undercoverCount || 1),
+        maxUndercover
+      );
+    }
+
+    if (room.phase !== 'LOBBY' && room.phase !== 'GAME_OVER') {
+      room.speakingOrder = room.speakingOrder.filter((id) => id !== playerId);
+      if (
+        removedLivingSpeakerIdx !== -1 &&
+        removedLivingSpeakerIdx < room.currentSpeakerIndex
+      ) {
+        room.currentSpeakerIndex = Math.max(0, room.currentSpeakerIndex - 1);
+      }
+
+      const winner = GameEngine.checkWinCondition(room.players);
+      if (winner) {
+        room.phase = 'GAME_OVER';
+        room.winningRole = winner;
+        room.players.forEach((p) => {
+          p.isSpeaking = false;
+        });
+        this.roomLastActivity.set(normalizedRoomId, Date.now());
+        return room;
+      }
+
+      if (room.phase === 'TURN_PHASE') {
+        const livingSpeakerIds = room.speakingOrder.filter((id) =>
+          room.players.find((p) => p.id === id)?.isAlive
+        );
+        if (room.currentSpeakerIndex >= livingSpeakerIds.length) {
+          room.phase = 'VOTING';
+          room.currentSpeakerIndex = 0;
+          room.players.forEach((p) => {
+            p.hasVoted = false;
+            p.votedTargetId = undefined;
+            p.isSpeaking = false;
+          });
+        } else {
+          const curSpeakerId = livingSpeakerIds[room.currentSpeakerIndex];
+          room.players.forEach((p) => {
+            p.isSpeaking = p.id === curSpeakerId;
+          });
+        }
+      } else if (room.phase === 'VOTING') {
+        const livingPlayers = room.players.filter((p) => p.isAlive);
+        if (livingPlayers.length > 0 && livingPlayers.every((p) => p.hasVoted)) {
+          this.resolveVoting(normalizedRoomId);
+          return room;
+        }
+      } else if (
+        room.phase === 'MR_WHITE_GUESS' &&
+        room.eliminatedPlayer?.id === playerId
+      ) {
+        this.handleMrWhiteGuess(normalizedRoomId, '');
+        return room;
+      }
+    } else if (room.speakingOrder.includes(playerId)) {
       room.speakingOrder = room.speakingOrder.filter((id) => id !== playerId);
       if (room.currentSpeakerIndex >= room.speakingOrder.length) {
         room.currentSpeakerIndex = Math.max(0, room.speakingOrder.length - 1);
@@ -289,14 +370,19 @@ export class RoomManager {
     }
 
     const totalPlayers = room.players.length;
-    const prospectiveUndercover = settings.undercoverCount ?? room.settings.undercoverCount ?? 1;
+    const prospectiveUndercover = Math.max(
+      1,
+      settings.undercoverCount ?? room.settings.undercoverCount ?? 1
+    );
     const prospectiveEnableMrWhite = settings.enableMrWhite ?? room.settings.enableMrWhite ?? false;
-    const prospectiveMrWhite = prospectiveEnableMrWhite
-      ? (settings.mrWhiteCount ?? room.settings.mrWhiteCount ?? 0)
-      : 0;
+    const prospectiveMrWhite = prospectiveEnableMrWhite ? 1 : 0;
 
-    if (totalPlayers >= 4) {
-      const maxUndercover = Math.max(1, Math.floor((totalPlayers - prospectiveMrWhite - 1) / 2));
+    if (totalPlayers >= 3) {
+      const effectiveMrWhite = totalPlayers === 3 ? 0 : prospectiveMrWhite;
+      const maxUndercover = Math.max(
+        1,
+        Math.floor((totalPlayers - effectiveMrWhite - 1) / 2)
+      );
       if (prospectiveUndercover > maxUndercover) {
         throw new Error(
           `Konfigurasi peran tidak valid: Maksimal ${maxUndercover} Undercover untuk ${totalPlayers} pemain.`
@@ -307,6 +393,9 @@ export class RoomManager {
     room.settings = {
       ...room.settings,
       ...settings,
+      enableMrWhite: prospectiveEnableMrWhite,
+      mrWhiteCount: prospectiveMrWhite,
+      undercoverCount: prospectiveUndercover,
     };
 
     if (settings.turnDurationSeconds) {
@@ -332,11 +421,52 @@ export class RoomManager {
       throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
     }
 
+    if (room.phase !== 'LOBBY') {
+      throw new Error('Permainan sudah berlangsung');
+    }
+
+    if (room.players.length < 3) {
+      throw new Error('Minimal 3 pemain untuk memulai permainan.');
+    }
+
     if (settings) {
       room.settings = { ...room.settings, ...settings };
     }
 
-    const wordPair = customWordPair || getRandomWordPair(room.settings.category);
+    if (room.players.length === 3) {
+      room.settings.enableMrWhite = false;
+      room.settings.mrWhiteCount = 0;
+      room.settings.undercoverCount = 1;
+    } else {
+      room.settings.mrWhiteCount = room.settings.enableMrWhite ? 1 : 0;
+      const maxUndercover = Math.max(
+        1,
+        Math.floor((room.players.length - room.settings.mrWhiteCount - 1) / 2)
+      );
+      room.settings.undercoverCount = Math.min(
+        Math.max(1, room.settings.undercoverCount || 1),
+        maxUndercover
+      );
+    }
+
+    const rawCustomPair = customWordPair || room.settings.customWordPair;
+    let wordPair: WordPair;
+    if (rawCustomPair) {
+      const civWord = (rawCustomPair.civilianWord || '').trim();
+      const ucWord = (rawCustomPair.undercoverWord || '').trim();
+      if (!civWord || !ucWord || civWord.toLowerCase() === ucWord.toLowerCase()) {
+        throw new Error('Pasangan kata kustom tidak valid atau identik');
+      }
+      wordPair = {
+        ...rawCustomPair,
+        category: (rawCustomPair.category || '').trim() || 'Kustom',
+        civilianWord: civWord,
+        undercoverWord: ucWord,
+      };
+    } else {
+      wordPair = getRandomWordPair(room.settings.category);
+    }
+
     const { players: assignedPlayers, speakingOrder } = GameEngine.assignRoles(
       room.players,
       room.settings,
@@ -345,6 +475,7 @@ export class RoomManager {
 
     room.phase = 'ROLE_REVEAL';
     room.round = 1;
+    room.consecutiveTies = 0;
     room.players = assignedPlayers;
     room.speakingOrder = speakingOrder;
     room.currentSpeakerIndex = 0;
@@ -373,6 +504,12 @@ export class RoomManager {
       throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
     }
 
+    if (room.phase !== 'ROLE_REVEAL' && room.phase !== 'TURN_PHASE') {
+      throw new Error('Fase giliran tidak sedang aktif');
+    }
+
+    room.eliminatedPlayer = undefined;
+
     const livingSpeakerIds = room.speakingOrder.filter((id) =>
       room.players.find((p) => p.id === id)?.isAlive
     );
@@ -400,6 +537,26 @@ export class RoomManager {
   }
 
   /**
+   * Transitions room to next speaking round with a fresh speaking order.
+   */
+  private startNextTurnRound(room: RoomState, clearEliminated: boolean): void {
+    if (clearEliminated) {
+      room.eliminatedPlayer = undefined;
+    }
+    room.round++;
+    room.phase = 'TURN_PHASE';
+    room.speakingOrder = GameEngine.generateSpeakingOrder(room.players);
+    room.currentSpeakerIndex = 0;
+    room.activeTurnRemainingSeconds = room.settings.turnDurationSeconds || 45;
+    const firstSpeakerId = room.speakingOrder[0];
+    room.players.forEach((p) => {
+      p.hasVoted = false;
+      p.votedTargetId = undefined;
+      p.isSpeaking = p.id === firstSpeakerId;
+    });
+  }
+
+  /**
    * Casts a vote from an active player for another player.
    * If all active players have voted, calculates outcome: Instant Skip on tie, Mr. White Guess, or Elimination.
    */
@@ -415,11 +572,19 @@ export class RoomManager {
       throw new Error('Sesi voting belum aktif');
     }
 
+    if (voterId === targetId) {
+      throw new Error('Tidak bisa memilih diri sendiri');
+    }
+
     const voter = room.players.find((p) => p.id === voterId);
     const target = room.players.find((p) => p.id === targetId);
 
     if (!voter || !voter.isAlive) {
       throw new Error('Pemain yang memilih tidak aktif dalam permainan');
+    }
+
+    if (voter.hasVoted) {
+      throw new Error('Kamu sudah memberikan suara');
     }
 
     if (!target || !target.isAlive) {
@@ -437,7 +602,21 @@ export class RoomManager {
       return { room, isComplete: false };
     }
 
-    // All living players have voted -> calculate votes
+    return this.resolveVoting(normalizedRoomId);
+  }
+
+  /**
+   * Resolves voting once all living players have voted.
+   */
+  public resolveVoting(roomId: string): CastVoteResult {
+    const normalizedRoomId = (roomId || '').trim().toUpperCase();
+    const room = this.rooms.get(normalizedRoomId);
+
+    if (!room) {
+      throw new Error(`Ruangan tidak ditemukan: ${normalizedRoomId}`);
+    }
+
+    const livingPlayers = room.players.filter((p) => p.isAlive);
     const votes: Record<string, string> = {};
     livingPlayers.forEach((p) => {
       if (p.votedTargetId) votes[p.id] = p.votedTargetId;
@@ -457,19 +636,7 @@ export class RoomManager {
       }
 
       // Instant Skip on Tie Rule
-      room.round++;
-      room.phase = 'TURN_PHASE';
-      room.currentSpeakerIndex = 0;
-      room.activeTurnRemainingSeconds = room.settings.turnDurationSeconds || 45;
-      const livingSpeakerIds = room.speakingOrder.filter((id) =>
-        room.players.find((x) => x.id === id)?.isAlive
-      );
-      room.players.forEach((p) => {
-        p.hasVoted = false;
-        p.votedTargetId = undefined;
-        p.isSpeaking = p.id === livingSpeakerIds[0];
-      });
-
+      this.startNextTurnRound(room, true);
       this.roomLastActivity.set(normalizedRoomId, Date.now());
       return { room, isComplete: true, isTie: true };
     }
@@ -499,18 +666,7 @@ export class RoomManager {
     }
 
     // Advance to next round
-    room.round++;
-    room.phase = 'TURN_PHASE';
-    room.currentSpeakerIndex = 0;
-    room.activeTurnRemainingSeconds = room.settings.turnDurationSeconds || 45;
-    const livingSpeakerIds = room.speakingOrder.filter((id) =>
-      room.players.find((x) => x.id === id)?.isAlive
-    );
-    room.players.forEach((p) => {
-      p.hasVoted = false;
-      p.votedTargetId = undefined;
-      p.isSpeaking = p.id === livingSpeakerIds[0];
-    });
+    this.startNextTurnRound(room, false);
 
     this.roomLastActivity.set(normalizedRoomId, Date.now());
     return { room, isComplete: true, isTie: false, eliminatedPlayer: eliminated };
@@ -519,7 +675,11 @@ export class RoomManager {
   /**
    * Handles Mr. White's emergency guess using fuzzy text matching.
    */
-  public handleMrWhiteGuess(roomId: string, guess: string): MrWhiteGuessResult {
+  public handleMrWhiteGuess(
+    roomId: string,
+    guess: string,
+    callerPlayerId?: string
+  ): MrWhiteGuessResult {
     const normalizedRoomId = (roomId || '').trim().toUpperCase();
     const room = this.rooms.get(normalizedRoomId);
 
@@ -529,6 +689,16 @@ export class RoomManager {
 
     if (room.phase !== 'MR_WHITE_GUESS') {
       throw new Error('Fase tebak kata Mr. White tidak sedang aktif');
+    }
+
+    if (callerPlayerId && room.eliminatedPlayer && callerPlayerId !== room.eliminatedPlayer.id) {
+      const isHostTimeout =
+        typeof guess === 'string' &&
+        guess.trim() === '' &&
+        room.players.some((p) => p.id === callerPlayerId && p.isHost);
+      if (!isHostTimeout) {
+        throw new Error('Hanya Mr. White yang tereliminasi yang dapat menebak kata');
+      }
     }
 
     const civilianWord = room.wordPair?.civilianWord || '';
@@ -550,18 +720,7 @@ export class RoomManager {
       return { room, isCorrect: false, winner };
     }
 
-    room.round++;
-    room.phase = 'TURN_PHASE';
-    room.currentSpeakerIndex = 0;
-    room.activeTurnRemainingSeconds = room.settings.turnDurationSeconds || 45;
-    const livingSpeakerIds = room.speakingOrder.filter((id) =>
-      room.players.find((x) => x.id === id)?.isAlive
-    );
-    room.players.forEach((p) => {
-      p.hasVoted = false;
-      p.votedTargetId = undefined;
-      p.isSpeaking = p.id === livingSpeakerIds[0];
-    });
+    this.startNextTurnRound(room, true);
 
     this.roomLastActivity.set(normalizedRoomId, Date.now());
     return { room, isCorrect: false };

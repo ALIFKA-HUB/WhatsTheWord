@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PaperPlaneRight, Question, WarningCircle } from '@phosphor-icons/react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
@@ -25,13 +25,17 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const hasAutoSubmittedTimeoutRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) return;
 
+    hasAutoSubmittedTimeoutRef.current = false;
     setRemainingSeconds(initialSeconds);
     setGuessInput('');
     setErrorMsg(null);
+    setValidationError(null);
 
     const timer = setInterval(() => {
       setRemainingSeconds((prev) => {
@@ -46,10 +50,24 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
     return () => clearInterval(timer);
   }, [isOpen, initialSeconds]);
 
+  useEffect(() => {
+    if (isOpen && remainingSeconds === 0 && !hasAutoSubmittedTimeoutRef.current) {
+      hasAutoSubmittedTimeoutRef.current = true;
+      if (isMrWhite) {
+        void onSubmitGuess('');
+      }
+    }
+  }, [isOpen, remainingSeconds, isMrWhite, onSubmitGuess]);
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!guessInput.trim() || !isMrWhite) return;
+    if (!isMrWhite) return;
+    if (!guessInput.trim()) {
+      setValidationError('Masukkan tebakan kata terlebih dahulu!');
+      return;
+    }
 
+    setValidationError(null);
     setIsSubmitting(true);
     setErrorMsg(null);
     try {
@@ -118,11 +136,17 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
                 type="text"
                 autoFocus
                 value={guessInput}
-                onChange={(e) => setGuessInput(e.target.value)}
+                onChange={(e) => {
+                  setGuessInput(e.target.value);
+                  if (validationError) setValidationError(null);
+                }}
                 placeholder="Contoh: Kopi"
                 maxLength={30}
                 className="w-full px-4 py-3 rounded-xl bg-paper border-2 border-rule text-ink placeholder:text-ink-faint font-mono text-lg sm:text-xl font-bold focus:outline-none focus:border-stamp focus:ring-2 focus:ring-stamp text-center transition-colors"
               />
+              {validationError && (
+                <p className="text-xs font-semibold text-stamp-dark pt-1">{validationError}</p>
+              )}
             </div>
 
             {errorMsg && (
@@ -132,18 +156,32 @@ export const MrWhiteModal: React.FC<MrWhiteModalProps> = ({
               </div>
             )}
 
-            <Button
-              type="submit"
-              variant="danger"
-              size="lg"
-              fullWidth
-              disabled={!guessInput.trim() || remainingSeconds === 0}
-              isLoading={isSubmitting}
-              leftIcon={<PaperPlaneRight className="w-4 h-4" weight="bold" />}
-              className="mt-2"
-            >
-              Kirim Tebakan Sekarang
-            </Button>
+            {remainingSeconds === 0 ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="lg"
+                fullWidth
+                isLoading={isSubmitting}
+                onClick={() => void onSubmitGuess('')}
+                className="mt-2"
+              >
+                Waktu Habis, Lanjutkan Permainan
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                variant="danger"
+                size="lg"
+                fullWidth
+                disabled={isSubmitting}
+                isLoading={isSubmitting}
+                leftIcon={<PaperPlaneRight className="w-4 h-4" weight="bold" />}
+                className="mt-2"
+              >
+                Kirim Tebakan
+              </Button>
+            )}
           </form>
         ) : (
           <div className="text-center space-y-4 py-2">

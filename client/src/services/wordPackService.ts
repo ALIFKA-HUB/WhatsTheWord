@@ -43,7 +43,11 @@ export function getLocalCustomPacks(): CustomWordPack[] {
     const raw = localStorage.getItem(LOCAL_STORAGE_CUSTOM_PACKS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (p): p is CustomWordPack =>
+        Boolean(p && typeof p === 'object' && typeof p.title === 'string' && Array.isArray(p.wordPairs))
+    );
   } catch (error) {
     console.warn('[WordPackService] Failed to parse local custom packs:', error);
     return [];
@@ -53,9 +57,9 @@ export function getLocalCustomPacks(): CustomWordPack[] {
 /**
  * Saves or updates a custom pack in localStorage.
  */
-export function saveLocalCustomPack(pack: CustomWordPack): void {
+export function saveLocalCustomPack(pack: CustomWordPack): boolean {
   if (typeof window === 'undefined' || !window.localStorage) {
-    return;
+    return false;
   }
   try {
     const existing = getLocalCustomPacks();
@@ -68,8 +72,10 @@ export function saveLocalCustomPack(pack: CustomWordPack): void {
       updated = [pack, ...existing];
     }
     localStorage.setItem(LOCAL_STORAGE_CUSTOM_PACKS_KEY, JSON.stringify(updated));
+    return true;
   } catch (error) {
     console.warn('[WordPackService] Failed to save local custom pack:', error);
+    return false;
   }
 }
 
@@ -228,11 +234,14 @@ export async function saveCustomPack(
   authorName: string,
   pairs: WordPair[],
   isPublic: boolean = true
-): Promise<{ success: boolean; pack: CustomWordPack; shareCode: string }> {
+): Promise<
+  | { success: true; pack: CustomWordPack; shareCode: string }
+  | { success: false; error: string }
+> {
   const code = generateShareCode();
   const id = generateUUID();
 
-  const newPack: CustomWordPack = {
+  const localPack: CustomWordPack = {
     id,
     title: title.trim() || 'Paket Kustom',
     authorName: authorName.trim() || 'Anonim',
@@ -243,19 +252,19 @@ export async function saveCustomPack(
   };
 
   // 1. Save to local storage for immediate offline reliability
-  saveLocalCustomPack(newPack);
+  const savedLocally = saveLocalCustomPack(localPack);
 
   // 2. Upload to Supabase cloud if configured
   try {
-    if (isSupabaseConfigured()) {
+    if (supabase && isSupabaseConfigured()) {
       const { error } = await supabase.from('custom_packs').insert({
-        id: newPack.id,
-        title: newPack.title,
-        author_name: newPack.authorName,
-        share_code: newPack.shareCode,
-        word_pairs: newPack.wordPairs,
-        is_public: newPack.isPublic,
-        created_at: newPack.createdAt,
+        id: localPack.id,
+        title: localPack.title,
+        author_name: localPack.authorName,
+        share_code: localPack.shareCode,
+        word_pairs: localPack.wordPairs,
+        is_public: localPack.isPublic,
+        created_at: localPack.createdAt,
       });
 
       if (error) {
@@ -266,10 +275,17 @@ export async function saveCustomPack(
     console.warn('[WordPackService] Supabase upload failed, pack saved locally:', err);
   }
 
+  if (!savedLocally) {
+    return {
+      success: false,
+      error: 'Gagal menyimpan paket kata ke penyimpanan lokal',
+    };
+  }
+
   return {
     success: true,
-    pack: newPack,
-    shareCode: newPack.shareCode,
+    pack: localPack,
+    shareCode: localPack.shareCode,
   };
 }
 

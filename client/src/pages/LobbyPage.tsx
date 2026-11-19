@@ -41,6 +41,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
   const isHost = currentPlayer?.isHost ?? false;
   const players = room?.players || [];
   const totalPlayers = players.length;
+  const effectivePlayers = Math.max(3, totalPlayers);
   const settings = room?.settings || {
     category: 'Semua Kategori',
     civilianCount: 3,
@@ -49,6 +50,11 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
     turnDurationSeconds: 45,
     enableMrWhite: true,
   };
+  const isMrWhiteAllowed = totalPlayers > 3;
+  const activeMrWhite = totalPlayers === 3 || totalPlayers < 3 ? 0 : (settings.enableMrWhite ? 1 : 0);
+  const maxUndercover = Math.max(1, Math.floor((effectivePlayers - activeMrWhite - 1) / 2));
+  const displayedUndercover = Math.min(Math.max(1, settings.undercoverCount), maxUndercover);
+  const displayedCivilian = Math.max(1, effectivePlayers - displayedUndercover - activeMrWhite);
 
   useEffect(() => {
     if (room && room.phase !== 'LOBBY') {
@@ -77,14 +83,14 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
 
   const handleUpdateRoles = (undercover: number, enableMrWhite: boolean) => {
     if (!isHost) return;
-    const mrWhite = enableMrWhite ? 1 : 0;
-    const maxUndercover = Math.max(1, Math.floor((totalPlayers - mrWhite) / 2));
-    const clampedUndercover = Math.min(Math.max(1, undercover), maxUndercover);
-    const civilian = Math.max(1, totalPlayers - clampedUndercover - mrWhite);
+    const mrWhite = totalPlayers > 3 && enableMrWhite ? 1 : 0;
+    const nextMaxUndercover = Math.max(1, Math.floor((effectivePlayers - mrWhite - 1) / 2));
+    const clampedUndercover = Math.min(Math.max(1, undercover), nextMaxUndercover);
+    const civilian = Math.max(1, effectivePlayers - clampedUndercover - mrWhite);
 
     updateSettings({
       undercoverCount: clampedUndercover,
-      enableMrWhite,
+      enableMrWhite: totalPlayers === 3 ? false : enableMrWhite,
       mrWhiteCount: mrWhite,
       civilianCount: civilian,
     });
@@ -103,6 +109,8 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
     if (pack.wordPairs.length > 0) {
       const randomPair = pack.wordPairs[Math.floor(Math.random() * pack.wordPairs.length)];
       setSelectedCustomWordPair(randomPair);
+    } else {
+      setSelectedCustomWordPair(null);
     }
     updateSettings({ category: `Kustom: ${pack.title}` });
   };
@@ -140,48 +148,74 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
       />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
-        {/* Room Header & Share Bar */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-cardstock border border-rule shadow-print flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-center sm:text-left space-y-1.5">
-            <div className="flex items-center justify-center sm:justify-start gap-2">
-              <span className="text-xs font-semibold text-ink-muted">
-                Ruang Tunggu Online
-              </span>
-              <Badge variant="amber" size="sm" pulse>
-                Menunggu Pemain
-              </Badge>
+        {/* Perforated Tabletop Room Ticket Bar */}
+        <div className="rounded-3xl bg-cardstock border border-rule shadow-print overflow-hidden">
+          <div className="p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* 4-Char Ticket Code Tiles */}
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                title="Ketuk untuk menyalin kode meja"
+                className="inline-flex items-center gap-1.5 p-2 rounded-2xl bg-paper border border-dashed border-rule hover:border-teal-dark transition-colors cursor-pointer self-start"
+              >
+                {(room?.roomId || '----').split('').map((ch, idx) => (
+                  <span
+                    key={idx}
+                    className="w-10 h-11 sm:w-11 sm:h-12 rounded-xl bg-cardstock border border-rule font-mono text-xl sm:text-2xl font-extrabold text-ink flex items-center justify-center shadow-print-sm"
+                  >
+                    {ch}
+                  </span>
+                ))}
+              </button>
+
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-ink">
+                    Tiket Meja Online
+                  </span>
+                  <Badge variant="amber" size="sm" pulse>
+                    Menunggu Pemain
+                  </Badge>
+                </div>
+                <p className="text-xs text-ink-muted max-w-[38ch]">
+                  Ketuk kode 4 huruf di samping atau bagikan tautan untuk mengundang teman ke meja ini.
+                </p>
+              </div>
             </div>
-            <div className="flex items-center justify-center sm:justify-start gap-2.5 pt-1">
-              <span className="text-xs font-semibold text-ink-muted">
-                Kode meja:
-              </span>
-              <span className="px-3.5 py-1 rounded-2xl bg-paper border border-rule text-ink font-mono text-2xl sm:text-3xl font-extrabold shadow-print-sm">
-                {room?.roomId || '----'}
-              </span>
+
+            <div className="flex flex-wrap items-center gap-2 pt-3 md:pt-0 border-t md:border-t-0 border-dashed border-rule">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleCopyCode}
+                leftIcon={copiedCode ? <Check className="w-4 h-4 text-teal-dark" /> : <Copy className="w-4 h-4" />}
+              >
+                {copiedCode ? 'Kode Tersalin!' : 'Salin Kode'}
+              </Button>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleCopyShareLink}
+                leftIcon={copiedLink ? <Check className="w-4 h-4 text-ink" /> : <ShareNetwork className="w-4 h-4" />}
+              >
+                {copiedLink ? 'Tautan Tersalin!' : 'Bagikan Tautan'}
+              </Button>
             </div>
-            <p className="text-xs text-ink-muted pt-0.5">
-              Bagikan kode atau tautan untuk mengundang teman ke meja ini.
-            </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleCopyCode}
-              leftIcon={copiedCode ? <Check className="w-4 h-4 text-teal-dark" /> : <Copy className="w-4 h-4" />}
-            >
-              {copiedCode ? 'Kode Tersalin!' : 'Salin Kode'}
-            </Button>
-
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleCopyShareLink}
-              leftIcon={copiedLink ? <Check className="w-4 h-4 text-ink" /> : <ShareNetwork className="w-4 h-4" />}
-            >
-              {copiedLink ? 'Tautan Tersalin!' : 'Bagikan Tautan'}
-            </Button>
+          {/* Visual Seat Fill Bar */}
+          <div className="px-5 sm:px-6 py-2.5 bg-paper-muted border-t border-rule flex items-center justify-between gap-4 text-xs">
+            <span className="font-semibold text-ink-muted">
+              Kapasitas Kursi: <strong className="text-ink">{totalPlayers}/20 terisi</strong>
+            </span>
+            <div className="w-32 sm:w-48 h-2 rounded-full bg-paper border border-rule overflow-hidden">
+              <div
+                className="h-full bg-teal-dark origin-left transition-transform duration-200"
+                style={{ transform: `scaleX(${Math.min(1, Math.max(0.08, totalPlayers / 20))})` }}
+              />
+            </div>
           </div>
         </div>
 
@@ -330,11 +364,16 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
 
               {/* Role Distribution */}
               <div className="space-y-2 pt-1">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <label className="text-xs font-semibold text-ink">Komposisi Peran</label>
-                  <span className="text-xs text-ink-muted">
-                    Total: {totalPlayers} pemain
-                  </span>
+                  <div className="flex items-center gap-1.5 text-xs text-ink-muted">
+                    <span>Total: {totalPlayers} pemain</span>
+                    {totalPlayers < 3 && (
+                      <span className="px-2 py-0.5 rounded-full bg-paper-muted border border-rule text-[11px] font-medium text-ink-muted">
+                        Simulasi min. 3 pemain
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -344,7 +383,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                       <ShieldCheck className="w-3.5 h-3.5 text-teal-dark" weight="bold" /> Warga (Civilian)
                     </span>
                     <span className="font-semibold text-ink px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule">
-                      {Math.max(1, totalPlayers - settings.undercoverCount - (settings.enableMrWhite ? 1 : 0))} orang
+                      {displayedCivilian} orang
                     </span>
                   </div>
 
@@ -357,23 +396,20 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleUpdateRoles(settings.undercoverCount - 1, settings.enableMrWhite)}
-                          disabled={settings.undercoverCount <= 1}
+                          onClick={() => handleUpdateRoles(displayedUndercover - 1, settings.enableMrWhite)}
+                          disabled={displayedUndercover <= 1}
                           className="min-w-[44px] min-h-[44px] sm:min-w-[32px] sm:min-h-[32px] rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40 shadow-print-sm active:translate-y-[1px] transition-colors"
                           aria-label="Kurangi Impostor"
                         >
                           -
                         </button>
                         <span className="font-mono font-bold text-stamp-dark min-w-[28px] text-center text-sm">
-                          {settings.undercoverCount}
+                          {displayedUndercover}
                         </span>
                         <button
                           type="button"
-                          onClick={() => handleUpdateRoles(settings.undercoverCount + 1, settings.enableMrWhite)}
-                          disabled={
-                            settings.undercoverCount >=
-                            Math.max(1, Math.floor((totalPlayers - (settings.enableMrWhite ? 1 : 0)) / 2))
-                          }
+                          onClick={() => handleUpdateRoles(displayedUndercover + 1, settings.enableMrWhite)}
+                          disabled={displayedUndercover >= maxUndercover}
                           className="min-w-[44px] min-h-[44px] sm:min-w-[32px] sm:min-h-[32px] rounded-xl bg-cardstock border border-rule text-ink hover:bg-paper-muted flex items-center justify-center font-bold disabled:opacity-40 shadow-print-sm active:translate-y-[1px] transition-colors"
                           aria-label="Tambah Impostor"
                         >
@@ -382,7 +418,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                       </div>
                     ) : (
                       <span className="font-semibold text-stamp-dark px-2.5 py-0.5 rounded-full bg-stamp-light border border-stamp">
-                        {settings.undercoverCount} orang
+                        {displayedUndercover} orang
                       </span>
                     )}
                   </div>
@@ -393,20 +429,21 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                       <Question className="w-3.5 h-3.5" weight="bold" /> Mr. White (Tanpa Kata)
                     </span>
                     {isHost ? (
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      <label className={cn("flex items-center gap-2", isMrWhiteAllowed ? "cursor-pointer" : "cursor-not-allowed opacity-60")}>
                         <input
                           type="checkbox"
-                          checked={settings.enableMrWhite}
-                          onChange={(e) => handleUpdateRoles(settings.undercoverCount, e.target.checked)}
-                          className="rounded border-rule text-teal-dark focus:ring-teal"
+                          checked={activeMrWhite === 1}
+                          disabled={!isMrWhiteAllowed}
+                          onChange={(e) => handleUpdateRoles(displayedUndercover, e.target.checked)}
+                          className="rounded border-rule text-teal-dark focus:ring-teal disabled:cursor-not-allowed"
                         />
-                        <span className={cn("text-xs font-semibold px-2.5 py-0.5 rounded-full border", settings.enableMrWhite ? "bg-sun-light border-sun text-sun-dark" : "bg-paper-muted border-rule text-ink-muted")}>
-                          {settings.enableMrWhite ? 'Aktif (1)' : 'Nonaktif'}
+                        <span className={cn("text-xs font-semibold px-2.5 py-0.5 rounded-full border", activeMrWhite === 1 ? "bg-sun-light border-sun text-sun-dark" : "bg-paper-muted border-rule text-ink-muted")}>
+                          {!isMrWhiteAllowed ? 'Min. 4 pemain' : activeMrWhite === 1 ? 'Aktif (1)' : 'Nonaktif'}
                         </span>
                       </label>
                     ) : (
                       <span className="font-semibold text-ink-muted px-2.5 py-0.5 rounded-full bg-paper-muted border border-rule">
-                        {settings.enableMrWhite ? '1 orang' : 'Tidak ada'}
+                        {activeMrWhite === 1 ? '1 orang' : 'Tidak ada'}
                       </span>
                     )}
                   </div>
@@ -456,7 +493,7 @@ export const LobbyPage: React.FC<LobbyPageProps> = ({
                 ) : (
                   <div className="p-3.5 rounded-2xl bg-paper border border-rule text-center space-y-1">
                     <div className="flex items-center justify-center gap-2 text-xs font-bold text-ink">
-                      <span className="w-2 h-2 rounded-full bg-teal-dark" />
+                      <Timer className="w-4 h-4 text-teal-dark" weight="bold" />
                       <span>Menunggu Host memulai permainan…</span>
                     </div>
                     <p className="text-xs text-ink-muted">

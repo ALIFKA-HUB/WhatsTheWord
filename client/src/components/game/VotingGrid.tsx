@@ -206,13 +206,14 @@ export const VotingGrid: React.FC<VotingGridProps> = ({
               {/* Right Selection Indicator */}
               <div className="shrink-0">
                 {isTargetSelected && (
-                  <span className="w-6 h-6 rounded-full bg-stamp text-cardstock flex items-center justify-center shadow-print-sm">
+                  <span className="px-2.5 py-1 rounded-full bg-stamp text-cardstock text-[11px] font-bold flex items-center gap-1 shadow-print-sm -rotate-3">
                     <Flame className="w-3.5 h-3.5" weight="bold" />
+                    <span>Dicurigai</span>
                   </span>
                 )}
                 {!isTargetSelected && player.hasVoted && isPlayerAlive && (
-                  <span className="w-5 h-5 rounded-full bg-teal-light text-teal-dark border border-teal flex items-center justify-center">
-                    <UserCheck className="w-3 h-3" weight="bold" />
+                  <span className="w-6 h-6 rounded-full bg-teal-light text-teal-dark border border-teal flex items-center justify-center">
+                    <UserCheck className="w-3.5 h-3.5" weight="bold" />
                   </span>
                 )}
               </div>

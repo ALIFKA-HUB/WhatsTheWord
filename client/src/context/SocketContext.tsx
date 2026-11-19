@@ -189,6 +189,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     });
 
+    newSocket.on('turn:started', () => {
+      setTieNotification(false);
+    });
+
     newSocket.on('turn:timer_sync', (payload: { remainingSeconds: number }) => {
       setRoom((prev) => {
         if (!prev) return prev;
@@ -202,10 +206,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     newSocket.on('vote:completed', (payload: VoteResultPayload) => {
       setLastVoteResult(payload);
       setRoom(payload.room);
-
-      if (payload.isTie) {
-        setTieNotification(true);
-      }
+      setTieNotification(Boolean(payload.isTie));
 
       if (currentPlayerIdRef.current) {
         const me = payload.room.players.find((p) => p.id === currentPlayerIdRef.current);

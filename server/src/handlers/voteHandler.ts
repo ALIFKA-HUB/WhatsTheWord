@@ -19,6 +19,10 @@ export function registerVoteHandlers(
           throw new Error('Not connected to a room as active player');
         }
 
+        if (!payload || typeof payload !== 'object' || typeof payload.targetId !== 'string') {
+          throw new Error('Target voting tidak valid');
+        }
+
         const result = roomManager.castVote(roomId, voterId, payload.targetId);
         broadcastRoomState(io, result.room, 'room:updated');
 
@@ -64,11 +68,39 @@ export function registerVoteHandlers(
     (payload: { guess: string }, callback?: (res: any) => void) => {
       try {
         const roomId = socket.data.roomId;
-        if (!roomId) {
+        const playerId = socket.data.playerId;
+        if (!roomId || !playerId) {
           throw new Error('Not connected to a room');
         }
 
-        const result = roomManager.handleMrWhiteGuess(roomId, payload.guess);
+        if (!payload || typeof payload !== 'object' || typeof payload.guess !== 'string') {
+          throw new Error('Tebakan tidak valid');
+        }
+
+        const room = roomManager.getRoom(roomId);
+        if (!room) {
+          throw new Error('Ruangan tidak ditemukan');
+        }
+
+        if (room.phase !== 'MR_WHITE_GUESS') {
+          throw new Error('Fase tebak kata Mr. White tidak sedang aktif');
+        }
+
+        const caller = room.players.find((p) => p.id === playerId);
+        const isEliminatedMrWhite = room.eliminatedPlayer?.id === playerId;
+        const isHostTimeout = Boolean(caller?.isHost) && payload.guess.trim() === '';
+
+        if (!isEliminatedMrWhite && !isHostTimeout) {
+          if (callback) {
+            callback({
+              success: false,
+              error: 'Hanya Mr. White yang tereliminasi yang dapat menebak kata',
+            });
+          }
+          return;
+        }
+
+        const result = roomManager.handleMrWhiteGuess(roomId, payload.guess, playerId);
         broadcastRoomState(io, result.room, 'room:updated');
 
         const normalizedRoomId = result.room.roomId.trim().toUpperCase();

@@ -122,7 +122,7 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
           Pilih Pion ({PRESET_AVATARS.length})
         </span>
 
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
           {PRESET_AVATARS.map((item) => {
             const isSelected = selectedAvatar === item.emoji || selectedAvatar === item.id;
 
