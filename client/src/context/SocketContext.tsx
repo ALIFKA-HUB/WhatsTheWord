@@ -57,7 +57,7 @@ export const SocketContext = createContext<SocketContextType | null>(null);
 const getSocketUrl = (): string => {
   if (typeof window === 'undefined') return 'http://localhost:3002';
   if (import.meta.env.VITE_SOCKET_URL) {
-    return import.meta.env.VITE_SOCKET_URL;
+    return import.meta.env.VITE_SOCKET_URL.trim();
   }
   // If running in development with Vite proxy or standard dev setup
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -101,11 +101,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const hasConfiguredBackend = Boolean(import.meta.env.VITE_SOCKET_URL) || isLocalHost;
 
     const newSocket = io(socketUrl, {
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
+      tryAllTransports: true,
       reconnection: hasConfiguredBackend,
       reconnectionAttempts: 12,
       reconnectionDelay: 1500,
-      timeout: 15000,
+      timeout: 25000,
     });
 
     socketRef.current = newSocket;
