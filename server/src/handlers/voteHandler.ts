@@ -86,11 +86,9 @@ export function registerVoteHandlers(
           throw new Error('Fase tebak kata Mr. White tidak sedang aktif');
         }
 
-        const caller = room.players.find((p) => p.id === playerId);
         const isEliminatedMrWhite = room.eliminatedPlayer?.id === playerId;
-        const isHostTimeout = Boolean(caller?.isHost) && payload.guess.trim() === '';
 
-        if (!isEliminatedMrWhite && !isHostTimeout) {
+        if (!isEliminatedMrWhite) {
           if (callback) {
             callback({
               success: false,

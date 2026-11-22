@@ -579,9 +579,10 @@ describe('Security & Sanitization Audit Fixes (BUG-1 to BUG-5)', () => {
       const { player: p3 } = roomManager.joinRoom(roomId, 'P3', '3');
 
       roomManager.startGame(roomId);
-      roomManager.advanceTurn(roomId);
-      roomManager.advanceTurn(roomId);
-      roomManager.advanceTurn(roomId);
+      roomManager.advanceTurn(roomId); // ROLE_REVEAL -> TURN_PHASE (0)
+      roomManager.advanceTurn(roomId); // 1
+      roomManager.advanceTurn(roomId); // 2
+      roomManager.advanceTurn(roomId); // -> VOTING
 
       // Self-vote rejected
       expect(() => {

@@ -251,8 +251,13 @@ describe('RoomManager', () => {
         enableMrWhite: false,
       });
 
-      // Speaker 0 -> Speaker 1
+      // ROLE_REVEAL -> TURN_PHASE (Speaker 0 starts)
       let room = roomManager.advanceTurn(roomId);
+      expect(room.phase).toBe('TURN_PHASE');
+      expect(room.currentSpeakerIndex).toBe(0);
+
+      // Speaker 0 -> Speaker 1
+      room = roomManager.advanceTurn(roomId);
       expect(room.phase).toBe('TURN_PHASE');
       expect(room.currentSpeakerIndex).toBe(1);
 
@@ -299,7 +304,8 @@ describe('RoomManager', () => {
         undercoverWord: 'Teh',
       });
 
-      // Advance through turn phase to voting
+      // Enter TURN_PHASE (Speaker 0) then advance through all 4 speakers to VOTING
+      roomManager.advanceTurn(roomId); // ROLE_REVEAL -> TURN_PHASE (0)
       roomManager.advanceTurn(roomId); // 1
       roomManager.advanceTurn(roomId); // 2
       roomManager.advanceTurn(roomId); // 3

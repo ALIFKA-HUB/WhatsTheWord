@@ -514,6 +514,18 @@ export class RoomManager {
       room.players.find((p) => p.id === id)?.isAlive
     );
 
+    if (room.phase === 'ROLE_REVEAL') {
+      room.phase = 'TURN_PHASE';
+      room.currentSpeakerIndex = 0;
+      room.activeTurnRemainingSeconds = room.settings.turnDurationSeconds || 45;
+      const firstSpeakerId = livingSpeakerIds[0];
+      room.players.forEach((p) => {
+        p.isSpeaking = p.id === firstSpeakerId;
+      });
+      this.roomLastActivity.set(normalizedRoomId, Date.now());
+      return room;
+    }
+
     if (room.currentSpeakerIndex >= livingSpeakerIds.length - 1) {
       // Transition to VOTING
       room.phase = 'VOTING';
