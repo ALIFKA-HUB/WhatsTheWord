@@ -95,12 +95,17 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Establish socket connection on mount
   useEffect(() => {
     const socketUrl = getSocketUrl();
+    const isLocalHost =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const hasConfiguredBackend = Boolean(import.meta.env.VITE_SOCKET_URL) || isLocalHost;
+
     const newSocket = io(socketUrl, {
       transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      timeout: 10000,
+      reconnection: hasConfiguredBackend,
+      reconnectionAttempts: 12,
+      reconnectionDelay: 1500,
+      timeout: 15000,
     });
 
     socketRef.current = newSocket;
@@ -143,12 +148,22 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
 
     newSocket.on('connect_error', (err) => {
-      setIsConnecting(false);
+      if (!hasConfiguredBackend) {
+        setIsConnecting(false);
+      }
       // Hanya tandai error jika user sedang berada di room (koneksi drop di tengah game).
       // Kegagalan koneksi latar di home cukup ditunjukkan indikator status, bukan banner.
       if (roomRef.current) {
         setError(`Koneksi ke server terputus: ${err.message}`);
       }
+    });
+
+    newSocket.io.on('reconnect_attempt', () => {
+      setIsConnecting(true);
+    });
+
+    newSocket.io.on('reconnect_failed', () => {
+      setIsConnecting(false);
     });
 
     // Realtime Game Events

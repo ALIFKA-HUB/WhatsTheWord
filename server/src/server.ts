@@ -30,6 +30,14 @@ const roomManager = new RoomManager();
 const startTime = Date.now();
 const DISCONNECT_GRACE_MS = 60_000;
 
+app.get('/', (_req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'whatstheword-server',
+    health: '/health',
+  });
+});
+
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
